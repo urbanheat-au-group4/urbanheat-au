@@ -39,6 +39,16 @@ function pathData(geometry) {
     return `${i ? 'L' : 'M'}${x.toFixed(2)} ${y.toFixed(2)}`;
   }).join(' ') + ' Z').join(' ');
 }
+// Anchor label lines to the actual projected suburb polygon, not a weather grid point.
+// The bounding-box centre is simple and stable for our six small localities.
+function polygonAnchor(geometry) {
+  const points = rings(geometry).flat().map(project);
+  if (!points.length) return null;
+  const xs = points.map(point => point[0]);
+  const ys = points.map(point => point[1]);
+  return [(Math.min(...xs) + Math.max(...xs)) / 2,
+          (Math.min(...ys) + Math.max(...ys)) / 2];
+}
 function colour(temp, min, max) {
   // Cold blue -> neutral cream -> hot orange, clamped to available data range.
   const fraction = max === min ? 0.5 : Math.max(0, Math.min(1, (temp - min) / (max - min)));
@@ -110,13 +120,21 @@ function drawMap() {
       if (e.key === 'Enter' || e.key === ' ') {e.preventDefault(); chooseSuburb(name);}
     });
     map.append(polygon);
-    const anchor = project([row.requested_longitude, row.requested_latitude]);
+    const anchor = polygonAnchor(f.geometry);
+    if (!anchor) continue;
     const [dx, dy] = labelOffsets[name] || [40, -25];
-    const lx = anchor[0] + dx, ly = anchor[1] + dy;
-    labels.append(svg('line', {x1: anchor[0], y1: anchor[1], x2: lx, y2: ly - 8, class: 'label-leader'}));
+    // Keep both lines of the label within the map viewBox.
+    const lx = Math.max(90, Math.min(910, anchor[0] + dx));
+    const ly = Math.max(42, Math.min(535, anchor[1] + dy));
     const text = svg('text', {x: lx, y: ly - 10, class: 'map-label'}); text.textContent = name;
     const value = svg('text', {x: lx, y: ly + 10, class: 'map-temp'}); value.textContent = `${row.temperature_c.toFixed(1)} °C`;
-    labels.append(text, value);
+    // Connector ends on the label's nearest side, not through its text.
+    const edgeX = lx - Math.sign(lx - anchor[0]) * (name.length * 4 + 8);
+    const line = svg('line', {
+      x1: anchor[0], y1: anchor[1], x2: edgeX, y2: ly - 8,
+      class: 'label-leader'
+    });
+    labels.append(line, text, value);
   }
   map.append(labels);
   document.getElementById('temp-low').textContent = `${min.toFixed(1)} °C`;

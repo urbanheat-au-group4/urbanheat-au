@@ -23,9 +23,9 @@
       <article><h3>Demo alerts</h3><strong id="alerts">—</strong></article>
     </section>
     <section class="map-section">
-      <div class="map-heading"><div><h2>Melbourne locality temperature map</h2><p>Official Vicmap suburb boundaries. Colours represent a modelled temperature at one representative point in each suburb, not measured temperature across the whole polygon.</p></div><span id="map-status" role="status">Loading suburb boundaries…</span></div>
+      <div class="map-heading"><div><h2>Melbourne locality temperature map</h2><p>Official Vicmap locality outlines. Grey shows geographic context; colours show relative modelled air temperature at one point per monitored suburb, not conditions throughout each polygon.</p></div><span id="map-status" role="status">Loading suburb boundaries…</span></div>
       <svg id="vector-map" viewBox="0 0 1000 580" role="img" aria-label="Interactive vector map of six Melbourne suburbs"></svg>
-      <div class="map-legend"><span class="legend-dot cool"></span> Below demo threshold <span class="legend-dot hot"></span> At or above threshold</div>
+      <div class="map-legend"><span id="temp-low">Cooler</span><span class="temperature-gradient" role="img" aria-label="Temperature scale from cooler blue to warmer orange"></span><span id="temp-high">Warmer</span><span class="legend-separator">·</span> Alert threshold is set above; polygon colours show relative temperatures.</div>
       <p class="source-note">Boundary data: Victorian Government Vicmap Admin. Weather estimates: Open-Meteo.</p>
     </section>
     <section><h2>Suburb temperatures</h2><p id="error" class="error" role="alert"></p><div id="cards" class="cards"></div></section>
