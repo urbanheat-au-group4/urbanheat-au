@@ -1,5 +1,6 @@
 """Simple, offline checks for the dashboard weather contract."""
 import unittest
+import math
 
 from weather import SUBURBS, validate_weather
 
@@ -41,6 +42,36 @@ class WeatherTests(unittest.TestCase):
     def test_wrong_number_of_locations_is_rejected(self):
         with self.assertRaises(ValueError):
             validate_weather(sample_response()[:5])
+
+    def test_nonfinite_readings_are_rejected(self):
+        for invalid in (math.nan, math.inf, -math.inf):
+            with self.subTest(value=invalid):
+                data = sample_response()
+                data[0]["current"]["temperature_2m"] = invalid
+                with self.assertRaises(ValueError):
+                    validate_weather(data)
+
+    def test_invalid_model_coordinates_are_rejected(self):
+        for field, invalid in (("latitude", 100), ("longitude", math.nan), ("latitude", None)):
+            with self.subTest(field=field, value=invalid):
+                data = sample_response()
+                data[0][field] = invalid
+                with self.assertRaises(ValueError):
+                    validate_weather(data)
+
+    def test_out_of_range_humidity_is_rejected(self):
+        for invalid in (-1, 101):
+            with self.subTest(value=invalid):
+                data = sample_response()
+                data[0]["current"]["relative_humidity_2m"] = invalid
+                with self.assertRaises(ValueError):
+                    validate_weather(data)
+
+    def test_invalid_timestamp_is_rejected(self):
+        data = sample_response()
+        data[0]["current"]["time"] = "not-a-timestamp"
+        with self.assertRaises(ValueError):
+            validate_weather(data)
 
     def test_wrong_units_are_rejected(self):
         data = sample_response()
