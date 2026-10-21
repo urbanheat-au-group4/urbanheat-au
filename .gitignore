@@ -1,0 +1,32 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.env.*
+!.env.example
+.pytest_cache/
+node_modules/
+.DS_Store
+
+# Local Python environment
+venv/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Temporary backups
+static.backup/
+static.backup.*/
+*.bak
+*.backup
+
+# Logs
+*.log
+
+# Local secrets
+.env
+.env.*
+!.env.example

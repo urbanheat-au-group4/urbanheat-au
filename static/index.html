@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UrbanHeat AU</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header><h1>UrbanHeat AU</h1><p>Melbourne temperature dashboard | SDG 11: Sustainable Cities</p></header>
+  <main>
+    <section class="intro"><h2>Temperature overview</h2><p>Modelled air temperatures, not physical suburb sensor readings or official heat warnings.</p><p id="updated" aria-live="polite">Loading data…</p></section>
+    <section class="controls">
+      <label for="suburb">Find a suburb</label>
+      <select id="suburb"><option value="all">All suburbs</option></select>
+      <label for="threshold">Demo heat alert threshold (°C)</label>
+      <input id="threshold" type="number" value="30" min="0" max="55" step="1">
+      <button id="refresh" type="button">Reload saved data</button>
+    </section>
+    <section aria-label="Temperature summary" class="stats">
+      <article><h3>Locations loaded</h3><strong id="count">—</strong></article>
+      <article><h3>Warmest suburb</h3><strong id="warmest">—</strong></article>
+      <article><h3>Demo alerts</h3><strong id="alerts">—</strong></article>
+    </section>
+    <section class="map-section">
+      <div class="map-heading"><div><h2>Melbourne locality temperature map</h2><p>Official Vicmap locality outlines. Grey shows geographic context; colours show relative modelled air temperature at one point per monitored suburb, not conditions throughout each polygon.</p></div><span id="map-status" role="status">Loading suburb boundaries…</span></div>
+      <svg id="vector-map" viewBox="0 0 1000 580" role="img" aria-label="Interactive vector map of six Melbourne suburbs"></svg>
+      <div class="map-legend"><span id="temp-low">Cooler</span><span class="temperature-gradient" role="img" aria-label="Temperature scale from cooler blue to warmer orange"></span><span id="temp-high">Warmer</span><span class="legend-separator">·</span> Alert threshold is set above; polygon colours show relative temperatures.</div>
+      <p class="source-note">Boundary data: Victorian Government Vicmap Admin. Weather estimates: Open-Meteo.</p>
+    </section>
+    <section><h2>Suburb temperatures</h2><p id="error" class="error" role="alert"></p><div id="cards" class="cards"></div></section>
+  </main>
+  <footer>Data: Open-Meteo Forecast API. Weather readings are estimates and are not BoM heatwave warnings.</footer>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>
