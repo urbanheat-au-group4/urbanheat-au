@@ -1,6 +1,7 @@
 """Fetch and validate current modelled weather for six Melbourne locations."""
 
 import json
+import math
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -55,12 +56,16 @@ def validate_weather(payload):
         }
         for field, unit in expected_units.items():
             value = current.get(field)
-            if type(value) not in (int, float):
+            if type(value) not in (int, float) or not math.isfinite(value):
                 raise ValueError(f"{name}: missing or invalid {field}")
             if units.get(field) != unit:
                 raise ValueError(f"{name}: unexpected unit for {field}")
         if not 0 <= current["relative_humidity_2m"] <= 100:
             raise ValueError(f"{name}: humidity outside 0-100%")
+        for coordinate, lower, upper in (("latitude", -90, 90), ("longitude", -180, 180)):
+            value = item.get(coordinate)
+            if type(value) not in (int, float) or not math.isfinite(value) or not lower <= value <= upper:
+                raise ValueError(f"{name}: invalid model {coordinate}")
         observed_at = current.get("time")
         if not isinstance(observed_at, str):
             raise ValueError(f"{name}: missing timestamp")
