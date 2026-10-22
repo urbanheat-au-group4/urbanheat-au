@@ -80,6 +80,26 @@ function showWeather() {
   const warmest = rows.reduce((best, row) => !best || row.temperature_c > best.temperature_c ? row : best, null);
   document.getElementById('warmest').textContent = warmest ? `${warmest.suburb}: ${warmest.temperature_c.toFixed(1)} °C` : '—';
   document.getElementById('alerts').textContent = String(rows.filter(w => w.temperature_c >= threshold).length);
+  const representative = rows[0] || null;
+  const fmt = (value, suffix = '') => Number.isFinite(value) ? `${value.toFixed(1)}${suffix}` : 'Unavailable';
+  const metrics = {
+    'metric-temp': representative ? fmt(representative.temperature_c, ' °C') : '—',
+    'metric-feels': representative ? fmt(representative.feels_like_c, ' °C') : '—',
+    'metric-humidity': representative && Number.isFinite(representative.humidity_pct) ? `${representative.humidity_pct}%` : '—',
+    'metric-uv': representative ? fmt(representative.uv_index) : '—',
+    'metric-pm25': representative ? fmt(representative.pm25_ug_m3) : '—',
+  };
+  for (const [id, value] of Object.entries(metrics)) document.getElementById(id).textContent = value;
+  document.getElementById('selected-label').textContent = representative
+    ? (chosen === 'all' ? `Showing ${representative.suburb} as the summary reference` : `Showing ${representative.suburb}`)
+    : 'No data available';
+  const above = rows.filter(w => w.temperature_c >= threshold).length;
+  const status = document.querySelector('.status');
+  status.classList.toggle('warning-state', above > 0);
+  document.getElementById('alert-status').textContent = !rows.length ? 'No current readings available.'
+    : !Number.isFinite(threshold) || thresholdInput.value.trim() === '' ? 'Enter a valid threshold.'
+    : above ? `${above} of ${rows.length} displayed locations meet or exceed ${threshold} °C.`
+    : `No displayed locations meet the ${threshold} °C demo threshold.`;
   drawMap();
 }
 function chooseSuburb(name) { suburbSelect.value = name; showWeather(); }
@@ -184,7 +204,10 @@ async function loadWeather() {
     showWeather();
   } catch (exc) {
     weather = []; cards.replaceChildren(); map.replaceChildren();
-    for (const id of ['count', 'warmest', 'alerts']) document.getElementById(id).textContent = '—';
+    for (const id of ['count', 'warmest', 'alerts', 'metric-temp', 'metric-feels', 'metric-humidity', 'metric-uv', 'metric-pm25']) document.getElementById(id).textContent = '—';
+    document.getElementById('selected-label').textContent = 'No data available';
+    document.getElementById('alert-status').textContent = 'Weather data unavailable.';
+    document.querySelector('.status').classList.remove('warning-state');
     error.textContent = exc.message;
   }
 }
