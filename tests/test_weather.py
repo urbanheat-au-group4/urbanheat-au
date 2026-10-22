@@ -1,4 +1,4 @@
-"""Simple, offline checks for the dashboard weather contract."""
+"""Tests for the weather data used by the dashboard."""
 import unittest
 import math
 
