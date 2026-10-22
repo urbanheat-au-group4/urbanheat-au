@@ -1,75 +1,51 @@
 # UrbanHeat AU
 
-CST190 Software Development Fundamentals group project. UrbanHeat AU displays **modelled current weather estimates** for six Melbourne locations on a lightweight local dashboard and SVG locality map.
+CST190 software project: a dashboard comparing **modelled weather and environmental conditions** across six geographically dispersed Greater Melbourne locations: Melbourne CBD, Melton, Werribee, Craigieburn, Belgrave and Frankston.
 
-## Requirements
+## Running locally
 
-- Python 3 (tested for use with Ubuntu 24.04)
-- Internet access to update weather and locality boundary files
-- Modern web browser
-
-The current Python implementation uses the standard library. No Python packages need to be installed.
-
-## Run locally
+Requires Python 3, internet for downloading updated API data, and a modern browser. No third-party Python packages.
 
 From the repository root:
 
-```bash
+```zsh
+python3 fetch_boundaries.py
+python3 fetch_metro_context.py
 python3 weather.py
 python3 server.py
 ```
 
-Open http://localhost:8000 . Stop the server with `Ctrl+C`.
+Open http://localhost:8000. The first two scripts rebuild local GeoJSON for the revised map. Run them after changing the monitored locations. `weather.py` creates `weather_data.json`, including optional UV and PM2.5 from Open-Meteo's separate Air Quality API. If air quality is unavailable, temperature readings remain usable and the air-quality fields show as unavailable. `server.py` serves the files locally.
 
-`weather.py` obtains the current Open-Meteo forecast and writes `weather_data.json`. The dashboard reads this saved file; **data does not refresh automatically**. Run `python3 weather.py` again and use the dashboard's Refresh control to load updated values.
+The browser's **Reload saved data** button reloads the JSON; to obtain fresh observations first rerun `python3 weather.py` in another terminal.
 
-If the saved geographic boundary files need rebuilding, run:
+## Tests
 
-```bash
-python3 fetch_boundaries.py
-python3 fetch_metro_context.py
-```
-
-The geographic scripts need network access. Saved GeoJSON lets the map load locally without contacting Vicmap each time.
-
-## Test
-
-From the repository root:
-
-```bash
+```zsh
 python3 -m unittest discover -s tests -p 'test_*.py' -v
 ```
 
-These offline tests validate the Python weather data contract and selected invalid-input cases. They are **not** a comprehensive browser, usability or accessibility test suite.
+Tests use offline fixtures. They check data validation rather than full browser usability.
 
-## Architecture
+## Data flow
 
 ```text
-Open-Meteo Forecast API → weather.py → weather_data.json
-                                         ↓
-                                   server.py
-                                         ↓
-                              static/index.html
-                              static/app.js + CSS
-                                         ↓
-Vicmap GeoJSON files → interactive SVG locality map
+Open-Meteo Forecast ───┐
+                       ├── weather.py → weather_data.json ──┐
+Open-Meteo Air Quality ┘                                     │
+Vicmap boundaries → local GeoJSON ────────────────────────────┤
+                                                              ▼
+                                             server.py → static/app.js → SVG map/cards
 ```
 
-- `weather.py`: fetches and validates weather values.
-- `server.py`: serves the dashboard and its saved JSON files locally.
-- `static/`: browser interface, SVG map and stored geographic data.
-- `fetch_boundaries.py`, `fetch_metro_context.py`: prepare geographic data.
-- `tests/`: offline weather validation tests.
+## Interpretation
 
-## Data sources and limitations
+- Air and apparent temperatures are **forecast model estimates** at requested coordinates, not local sensor readings.
+- UV and PM2.5 come from the [Open-Meteo Air Quality API](https://open-meteo.com/en/docs/air-quality-api), using gridded model data. Nearby suburbs may legitimately have very similar readings.
+- PM2.5 is expressed in µg/m³. It is **not an AQI rating**.
+- The map colours encode **relative air temperature only**, not UV, PM2.5 or heat exposure across entire polygons.
+- User-set heat thresholds are demonstrations, **not** official BoM heatwave alerts.
+- Geographic outlines come from [Vicmap](https://www.land.vic.gov.au/maps-and-spatial/spatial-data/vicmap); weather from [Open-Meteo](https://open-meteo.com/).
+- All updated weather values are saved locally. The site does not automatically refresh API data.
 
-- **Weather:** [Open-Meteo Forecast API](https://open-meteo.com/en/docs), using representative coordinates for Melbourne CBD, Fitzroy, Footscray, St Kilda, Chadstone and Dandenong.
-- **Geographic boundaries:** Victorian [Vicmap](https://www.land.vic.gov.au/maps-and-spatial/spatial-data/vicmap) administrative locality boundaries; the downloader uses an ArcGIS FeatureServer.
-- The temperature is a forecast-model estimate at a representative point, **not** a suburb-wide measurement, measured surface temperature or precise street-level reading.
-- Threshold indicators are user-defined demonstrations, **not official emergency warnings**.
-- Weather timestamps are reported in GMT/UTC by the ingestion code.
-- Geographic data and saved weather values may become stale; run the ingestion scripts when updates are required.
-
-## Development
-
-Jira tracks work items and acceptance criteria; GitHub tracks source changes and tests; Confluence contains sprint reports and assessment evidence. Commit messages should reference their Jira issue key.
+Issue tracking: Jira. Source and tests: GitHub. Sprint assessment: Confluence.
