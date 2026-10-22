@@ -1,4 +1,4 @@
-// UrbanHeat AU. Read the saved weather JSON and two local GeoJSON files.
+// Read the saved weather data and map files.
 const suburbSelect = document.getElementById('suburb');
 const thresholdInput = document.getElementById('threshold');
 const cards = document.getElementById('cards');
@@ -24,7 +24,7 @@ function rings(geometry) {
   return [];
 }
 const cosLat = Math.cos(37.9 * Math.PI / 180);
-// The map uses the same extent for both layers. Screen coordinates are SVG units.
+// Use the same map area for suburb outlines and background shapes.
 const extent = {left: 144.45 * cosLat, right: 145.55 * cosLat, top: 37.45, bottom: 38.30};
 function project([lon, lat]) {
   const availableWidth = 900, availableHeight = 480;
@@ -39,8 +39,8 @@ function pathData(geometry) {
     return `${i ? 'L' : 'M'}${x.toFixed(2)} ${y.toFixed(2)}`;
   }).join(' ') + ' Z').join(' ');
 }
-// Anchor label lines to the actual projected suburb polygon, not a weather grid point.
-// The bounding-box centre is simple and stable for our six small localities.
+// Start label lines from the suburb shape, not the weather coordinates.
+// Use the middle of each shape's bounding box.
 function polygonAnchor(geometry) {
   const points = rings(geometry).flat().map(project);
   if (!points.length) return null;
@@ -50,7 +50,7 @@ function polygonAnchor(geometry) {
           (Math.min(...ys) + Math.max(...ys)) / 2];
 }
 function colour(temp, min, max) {
-  // Cold blue -> neutral cream -> hot orange, clamped to available data range.
+  // Colour the suburbs from cooler blue to warmer orange.
   const fraction = max === min ? 0.5 : Math.max(0, Math.min(1, (temp - min) / (max - min)));
   const stops = [[82, 163, 195], [244, 231, 178], [221, 110, 64]];
   const half = fraction * 2, i = Math.min(1, Math.floor(half)), t = half - i;
@@ -104,7 +104,7 @@ function showWeather() {
 }
 function chooseSuburb(name) { suburbSelect.value = name; showWeather(); }
 
-// Fixed, readable label positions. A short leader line connects each label to its suburb.
+// Set label positions and connect them to their suburbs.
 const labelOffsets = {
   'Melbourne CBD': [80, 45], Melton: [85, -30], Werribee: [-80, 38],
   Craigieburn: [85, -20], Belgrave: [-78, -35], Frankston: [-75, -35]
@@ -147,12 +147,12 @@ function drawMap() {
     const anchor = polygonAnchor(f.geometry);
     if (!anchor) continue;
     const [dx, dy] = labelOffsets[name] || [40, -25];
-    // Keep both lines of the label within the map viewBox.
+    // Keep the suburb name and temperature inside the map.
     const lx = Math.max(90, Math.min(910, anchor[0] + dx));
     const ly = Math.max(42, Math.min(535, anchor[1] + dy));
     const text = svg('text', {x: lx, y: ly - 10, class: 'map-label'}); text.textContent = name;
     const value = svg('text', {x: lx, y: ly + 10, class: 'map-temp'}); value.textContent = `${row.temperature_c.toFixed(1)} °C`;
-    // Connector ends on the label's nearest side, not through its text.
+    // Stop the line before it reaches the label text.
     const edgeX = lx - Math.sign(lx - anchor[0]) * (name.length * 4 + 8);
     const line = svg('line', {
       x1: anchor[0], y1: anchor[1], x2: edgeX, y2: ly - 8,
@@ -171,10 +171,8 @@ async function getGeoJSON(url) {
   if (body.type !== 'FeatureCollection' || !Array.isArray(body.features)) throw new Error('Invalid GeoJSON collection');
   return body.features.filter(f => rings(f.geometry).length);
 }
-// Peripheral southwest localities within the rectangular download envelope can
-// appear as detached fragments when the intervening coastline is outside the map.
-// Omit these *background-only* polygons from the Melbourne study-area view.
-// Monitored locality polygons are never filtered.
+// Hide some distant southwest background suburbs that look detached.
+// Keep all six selected suburbs visible.
 function withinMelbourneContext(feature) {
   const coordinates = rings(feature.geometry).flat();
   if (!coordinates.length) return false;
@@ -185,8 +183,7 @@ function withinMelbourneContext(feature) {
     west = Math.min(west, lon); east = Math.max(east, lon);
     south = Math.min(south, lat); north = Math.max(north, lat);
   }
-  // Southwest peninsula / coastal fragments outside the monitored study area.
-  // Preserve localities reaching the urban area or the Werribee–Frankston corridor.
+  // Hide background shapes outside this part of the Melbourne map.
   return !(east < 144.90 && north < -38.00);
 }
 
