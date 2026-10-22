@@ -3,34 +3,60 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>UrbanHeat AU</title>
+  <title>UrbanHeat AU | Melbourne environmental conditions</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <header><h1>UrbanHeat AU</h1><p>Melbourne temperature dashboard | SDG 11: Sustainable Cities</p></header>
+  <header class="site-header" id="home">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">◈</span><div><strong>UrbanHeat AU</strong><small>Greater Melbourne environment explorer</small></div></div>
+    <nav aria-label="Main navigation"><a href="#home">Home</a><a href="#about">About</a></nav>
+  </header>
   <main>
-    <section class="intro"><h2>Temperature overview</h2><p>Modelled air temperatures, not physical suburb sensor readings or official heat warnings.</p><p id="updated" aria-live="polite">Loading data…</p></section>
-    <section class="controls">
-      <label for="suburb">Find a suburb</label>
-      <select id="suburb"><option value="all">All suburbs</option></select>
-      <label for="threshold">Demo heat alert threshold (°C)</label>
-      <input id="threshold" type="number" value="30" min="0" max="55" step="1">
-      <button id="refresh" type="button">Reload saved data</button>
+    <section class="page-heading" aria-labelledby="page-title">
+      <p class="eyebrow">MELBOURNE · ENVIRONMENTAL CONDITIONS</p>
+      <h1 id="page-title">Explore conditions across Melbourne</h1>
+      <p>Compare modelled air temperatures, apparent temperature, UV and PM2.5 across six geographically dispersed locations.</p>
     </section>
-    <section aria-label="Temperature summary" class="stats">
-      <article><h3>Locations loaded</h3><strong id="count">—</strong></article>
-      <article><h3>Warmest suburb</h3><strong id="warmest">—</strong></article>
-      <article><h3>Demo alerts</h3><strong id="alerts">—</strong></article>
+    <div class="explorer">
+      <section class="controls panel" aria-label="Location and alert controls">
+        <h2>Explore a suburb</h2>
+        <label for="suburb">Suburb selection</label>
+        <select id="suburb"><option value="all">All suburbs</option></select>
+        <label for="threshold">Heat alert threshold (°C)</label>
+        <input id="threshold" type="number" value="30" min="0" max="55" step="1">
+        <p class="field-help">Demo threshold only, not an official warning.</p>
+        <button id="refresh" type="button">Reload saved data</button>
+        <div class="control-summary"><span>Locations loaded</span><strong id="count">—</strong><span>Warmest location</span><strong id="warmest">—</strong></div>
+      </section>
+      <section class="map-section panel" aria-label="Interactive Greater Melbourne locality map">
+        <div class="map-heading"><div><h2>Greater Melbourne map</h2><p>Choose a coloured locality to view its conditions.</p></div><span id="map-status" role="status">Loading boundaries…</span></div>
+        <svg id="vector-map" viewBox="0 0 1000 580" role="group" aria-label="Interactive SVG map of six monitored Greater Melbourne localities"></svg>
+        <div class="map-legend"><span id="temp-low">Cooler</span><span class="temperature-gradient" aria-hidden="true"></span><span id="temp-high">Warmer</span></div>
+        <p class="source-note">Temperature colours are relative model estimates at one point per locality, not measurements throughout the suburb.</p>
+      </section>
+    </div>
+    <section class="conditions" aria-labelledby="conditions-title">
+      <div class="section-heading"><h2 id="conditions-title">Environmental readings</h2><span id="selected-label">Showing Melbourne CBD as the summary reference</span></div>
+      <div class="metrics">
+        <article class="metric panel"><h3>Air temperature</h3><strong id="metric-temp">—</strong><p>Modelled air temperature</p></article>
+        <article class="metric panel"><h3>Feels like</h3><strong id="metric-feels">—</strong><p>Apparent temperature</p></article>
+        <article class="metric panel"><h3>Humidity</h3><strong id="metric-humidity">—</strong><p>Relative humidity</p></article>
+        <article class="metric panel"><h3>UV Index</h3><strong id="metric-uv">—</strong><p>Modelled UV index</p></article>
+        <article class="metric panel"><h3>PM2.5</h3><strong id="metric-pm25">—</strong><p>µg/m³ · model estimate</p></article>
+      </div>
     </section>
-    <section class="map-section">
-      <div class="map-heading"><div><h2>Melbourne locality temperature map</h2><p>Official Vicmap locality outlines. Grey shows geographic context; colours show relative modelled air temperature at one point per monitored suburb, not conditions throughout each polygon.</p></div><span id="map-status" role="status">Loading suburb boundaries…</span></div>
-      <svg id="vector-map" viewBox="0 0 1000 580" role="img" aria-label="Interactive vector map of six Melbourne suburbs"></svg>
-      <div class="map-legend"><span id="temp-low">Cooler</span><span class="temperature-gradient" role="img" aria-label="Temperature scale from cooler blue to warmer orange"></span><span id="temp-high">Warmer</span><span class="legend-separator">·</span> Alert threshold is set above; polygon colours show relative temperatures.</div>
-      <p class="source-note">Boundary data: Victorian Government Vicmap Admin. Weather estimates: Open-Meteo.</p>
+    <section class="status panel" aria-labelledby="status-title">
+      <div><h2 id="status-title">Heat alert / status</h2><p id="alert-status" role="status" aria-live="polite">Awaiting weather data…</p></div>
+      <div class="status-count"><strong id="alerts">—</strong><span>At or above demo threshold</span></div>
     </section>
-    <section><h2>Suburb temperatures</h2><p id="error" class="error" role="alert"></p><div id="cards" class="cards"></div></section>
+    <section class="details" aria-labelledby="details-title"><h2 id="details-title">Compare locations</h2><p id="error" class="error" role="alert"></p><div id="cards" class="cards"></div></section>
+    <section class="attribution panel" id="about" aria-label="Data source and limitations">
+      <strong>Data sources and limitations</strong>
+      <p>Open-Meteo Forecast and Air Quality APIs · Victorian Government Vicmap locality boundaries. UV and PM2.5 estimates can be unavailable. These are modelled values, not official warnings or neighbourhood sensor readings.</p>
+      <p id="updated" aria-live="polite">Loading data…</p>
+    </section>
   </main>
-  <footer>Data: Open-Meteo Forecast API. Weather readings are estimates and are not BoM heatwave warnings.</footer>
+  <footer>UrbanHeat AU · CST190 Software Development Fundamentals</footer>
   <script src="/static/app.js" defer></script>
 </body>
 </html>

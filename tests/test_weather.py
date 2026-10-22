@@ -2,7 +2,7 @@
 import unittest
 import math
 
-from weather import SUBURBS, validate_weather
+from weather import SUBURBS, validate_weather, validate_environment
 
 
 def sample_response():
@@ -31,6 +31,8 @@ class WeatherTests(unittest.TestCase):
         rows = validate_weather(sample_response())
         self.assertEqual(len(rows), 6)
         self.assertEqual(rows[0]["suburb"], "Melbourne CBD")
+        self.assertIn("Belgrave", [r["suburb"] for r in rows])
+        self.assertIn("Melton", [r["suburb"] for r in rows])
         self.assertEqual(rows[0]["temperature_c"], 27.5)
 
     def test_missing_temperature_is_rejected(self):
@@ -72,6 +74,23 @@ class WeatherTests(unittest.TestCase):
         data[0]["current"]["time"] = "not-a-timestamp"
         with self.assertRaises(ValueError):
             validate_weather(data)
+
+    def test_environment_values_are_validated(self):
+        data = [{"current": {"time": "2026-10-22T01:00", "uv_index": 5.2, "pm2_5": 8.1},
+                 "current_units": {"uv_index": "", "pm2_5": "μg/m³"}}
+                for _ in SUBURBS]
+        rows = validate_environment(data)
+        self.assertEqual(len(rows), len(SUBURBS))
+        self.assertEqual(rows[0]["uv_index"], 5.2)
+        data[0]["current"]["pm2_5"] = -1
+        with self.assertRaises(ValueError):
+            validate_environment(data)
+
+    def test_environment_missing_values_are_optional(self):
+        data = [{"current": {"time": "2026-10-22T01:00", "uv_index": None, "pm2_5": None},
+                 "current_units": {"uv_index": "", "pm2_5": "μg/m³"}}
+                for _ in SUBURBS]
+        self.assertIsNone(validate_environment(data)[0]["uv_index"])
 
     def test_wrong_units_are_rejected(self):
         data = sample_response()

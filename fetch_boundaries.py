@@ -12,7 +12,7 @@ API = (
     "https://services-ap1.arcgis.com/P744lA0wf4LlBZ84/ArcGIS/rest/"
     "services/Vicmap_Admin/FeatureServer/11/query"
 )
-SUBURBS = ["MELBOURNE", "FITZROY", "FOOTSCRAY", "ST KILDA", "CHADSTONE", "DANDENONG"]
+SUBURBS = ["MELBOURNE", "MELTON", "WERRIBEE", "CRAIGIEBURN", "BELGRAVE", "FRANKSTON"]
 OUTPUT = Path(__file__).resolve().parent / "static" / "suburb_boundaries.geojson"
 
 

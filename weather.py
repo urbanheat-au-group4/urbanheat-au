@@ -2,6 +2,7 @@
 
 import json
 import math
+import math
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -9,16 +10,17 @@ from urllib.parse import urlencode
 from urllib.request import urlopen
 
 API_URL = "https://api.open-meteo.com/v1/forecast"
+AIR_API_URL = "https://air-quality-api.open-meteo.com/v1/air-quality"
 OUTPUT_FILE = Path(__file__).resolve().parent / "weather_data.json"
 
 # Representative suburb centres, not weather sensor locations.
 SUBURBS = {
     "Melbourne CBD": (-37.8136, 144.9631),
-    "Fitzroy": (-37.7984, 144.9782),
-    "Footscray": (-37.8000, 144.9000),
-    "St Kilda": (-37.8676, 144.9809),
-    "Chadstone": (-37.8863, 145.0822),
-    "Dandenong": (-37.9875, 145.2148),
+    "Melton": (-37.6834, 144.5833),
+    "Werribee": (-37.9000, 144.6600),
+    "Craigieburn": (-37.5980, 144.9410),
+    "Belgrave": (-37.9100, 145.3530),
+    "Frankston": (-38.1440, 145.1220),
 }
 
 
@@ -66,6 +68,10 @@ def validate_weather(payload):
             value = item.get(coordinate)
             if type(value) not in (int, float) or not math.isfinite(value) or not lower <= value <= upper:
                 raise ValueError(f"{name}: invalid model {coordinate}")
+        for coordinate, lower, upper in (("latitude", -90, 90), ("longitude", -180, 180)):
+            value = item.get(coordinate)
+            if type(value) not in (int, float) or not math.isfinite(value) or not lower <= value <= upper:
+                raise ValueError(f"{name}: invalid model {coordinate}")
         observed_at = current.get("time")
         if not isinstance(observed_at, str):
             raise ValueError(f"{name}: missing timestamp")
@@ -90,12 +96,61 @@ def validate_weather(payload):
     return rows
 
 
+def get_environment():
+    """Fetch modelled UV index and PM2.5 from the separate air-quality API."""
+    params = {
+        "latitude": ",".join(str(lat) for lat, _ in SUBURBS.values()),
+        "longitude": ",".join(str(lon) for _, lon in SUBURBS.values()),
+        "current": "uv_index,pm2_5",
+        "timezone": "GMT",
+    }
+    with urlopen(AIR_API_URL + "?" + urlencode(params), timeout=15) as response:
+        return json.load(response)
+
+
+def validate_environment(payload):
+    """Return one optional air-quality reading per suburb, or reject malformed data."""
+    import math
+
+    if not isinstance(payload, list) or len(payload) != len(SUBURBS):
+        raise ValueError("Air-quality response does not match the location count")
+    result = []
+    for item in payload:
+        if not isinstance(item, dict) or not isinstance(item.get("current"), dict):
+            raise ValueError("Invalid air-quality location")
+        current = item["current"]
+        units = item.get("current_units")
+        if not isinstance(units, dict) or units.get("uv_index") not in ("", None) or units.get("pm2_5") != "μg/m³":
+            raise ValueError("Unexpected air-quality units")
+        values = {}
+        for field, key in (("uv_index", "uv_index"), ("pm2_5", "pm25_ug_m3")):
+            value = current.get(field)
+            if value is None:
+                values[key] = None
+            elif type(value) in (int, float) and math.isfinite(value) and value >= 0:
+                values[key] = value
+            else:
+                raise ValueError(f"Invalid air-quality value: {field}")
+        values["environment_observed_at_gmt"] = current.get("time")
+        result.append(values)
+    return result
+
 def main():
     try:
         rows = validate_weather(get_weather())
     except (HTTPError, URLError, TimeoutError, OSError, ValueError) as exc:
         print(f"Validation failed: {exc}")
         return 1
+
+    # Air quality is supplementary: weather remains usable when its API is offline.
+    try:
+        environment = validate_environment(get_environment())
+    except (HTTPError, URLError, TimeoutError, OSError, ValueError, TypeError) as exc:
+        print(f"Air-quality data unavailable: {exc}")
+        environment = [{"uv_index": None, "pm25_ug_m3": None, "environment_observed_at_gmt": None}
+                       for _ in rows]
+    for row, readings in zip(rows, environment):
+        row.update(readings)
 
     OUTPUT_FILE.write_text(json.dumps({
         "retrieved_at_utc": datetime.now(timezone.utc).isoformat(),

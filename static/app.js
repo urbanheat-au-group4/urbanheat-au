@@ -5,8 +5,8 @@ const cards = document.getElementById('cards');
 const map = document.getElementById('vector-map');
 const SVG = 'http://www.w3.org/2000/svg';
 const names = {
-  MELBOURNE: 'Melbourne CBD', FITZROY: 'Fitzroy', FOOTSCRAY: 'Footscray',
-  'ST KILDA': 'St Kilda', CHADSTONE: 'Chadstone', DANDENONG: 'Dandenong'
+  MELBOURNE: 'Melbourne CBD', MELTON: 'Melton', WERRIBEE: 'Werribee',
+  CRAIGIEBURN: 'Craigieburn', BELGRAVE: 'Belgrave', FRANKSTON: 'Frankston'
 };
 let weather = [];
 let monitored = [];
@@ -25,7 +25,7 @@ function rings(geometry) {
 }
 const cosLat = Math.cos(37.9 * Math.PI / 180);
 // The map uses the same extent for both layers. Screen coordinates are SVG units.
-const extent = {left: 144.78 * cosLat, right: 145.30 * cosLat, top: 37.70, bottom: 38.06};
+const extent = {left: 144.45 * cosLat, right: 145.55 * cosLat, top: 37.45, bottom: 38.30};
 function project([lon, lat]) {
   const availableWidth = 900, availableHeight = 480;
   const scale = Math.min(availableWidth / (extent.right - extent.left), availableHeight / (extent.bottom - extent.top));
@@ -70,20 +70,44 @@ function showWeather() {
     const alert = document.createElement('p');
     alert.className = item.temperature_c >= threshold ? 'warning' : 'normal';
     alert.textContent = item.temperature_c >= threshold ? 'Above demo threshold' : 'Below demo threshold';
-    card.append(title, temp, details, alert); cards.append(card);
+    const environment = document.createElement('p');
+    const uv = Number.isFinite(item.uv_index) ? item.uv_index.toFixed(1) : 'Unavailable';
+    const pm = Number.isFinite(item.pm25_ug_m3) ? item.pm25_ug_m3.toFixed(1) + ' µg/m³' : 'Unavailable';
+    environment.textContent = `UV: ${uv} · PM2.5: ${pm}`;
+    card.append(title, temp, details, environment, alert); cards.append(card);
   }
   document.getElementById('count').textContent = String(rows.length);
   const warmest = rows.reduce((best, row) => !best || row.temperature_c > best.temperature_c ? row : best, null);
   document.getElementById('warmest').textContent = warmest ? `${warmest.suburb}: ${warmest.temperature_c.toFixed(1)} °C` : '—';
   document.getElementById('alerts').textContent = String(rows.filter(w => w.temperature_c >= threshold).length);
+  const representative = rows[0] || null;
+  const fmt = (value, suffix = '') => Number.isFinite(value) ? `${value.toFixed(1)}${suffix}` : 'Unavailable';
+  const metrics = {
+    'metric-temp': representative ? fmt(representative.temperature_c, ' °C') : '—',
+    'metric-feels': representative ? fmt(representative.feels_like_c, ' °C') : '—',
+    'metric-humidity': representative && Number.isFinite(representative.humidity_pct) ? `${representative.humidity_pct}%` : '—',
+    'metric-uv': representative ? fmt(representative.uv_index) : '—',
+    'metric-pm25': representative ? fmt(representative.pm25_ug_m3) : '—',
+  };
+  for (const [id, value] of Object.entries(metrics)) document.getElementById(id).textContent = value;
+  document.getElementById('selected-label').textContent = representative
+    ? (chosen === 'all' ? `Showing ${representative.suburb} as the summary reference` : `Showing ${representative.suburb}`)
+    : 'No data available';
+  const above = rows.filter(w => w.temperature_c >= threshold).length;
+  const status = document.querySelector('.status');
+  status.classList.toggle('warning-state', above > 0);
+  document.getElementById('alert-status').textContent = !rows.length ? 'No current readings available.'
+    : !Number.isFinite(threshold) || thresholdInput.value.trim() === '' ? 'Enter a valid threshold.'
+    : above ? `${above} of ${rows.length} displayed locations meet or exceed ${threshold} °C.`
+    : `No displayed locations meet the ${threshold} °C demo threshold.`;
   drawMap();
 }
 function chooseSuburb(name) { suburbSelect.value = name; showWeather(); }
 
 // Fixed, readable label positions. A short leader line connects each label to its suburb.
 const labelOffsets = {
-  'Melbourne CBD': [-85, 55], Fitzroy: [78, -41], Footscray: [-65, -27],
-  'St Kilda': [58, 45], Chadstone: [82, -22], Dandenong: [76, 42]
+  'Melbourne CBD': [80, 45], Melton: [85, -30], Werribee: [-80, 38],
+  Craigieburn: [85, -20], Belgrave: [-78, -35], Frankston: [-75, -35]
 };
 function drawMap() {
   map.replaceChildren();
@@ -151,7 +175,8 @@ async function loadMap() {
   const status = document.getElementById('map-status');
   try {
     monitored = await getGeoJSON('/static/suburb_boundaries.geojson');
-    if (monitored.length < 6) throw new Error('Missing monitored suburb polygons');
+    const present = new Set(monitored.map(f => String(f.properties?.locality_name || '').toUpperCase()));
+    if (Object.keys(names).some(name => !present.has(name))) throw new Error('Outdated boundary data. Run python3 fetch_boundaries.py');
   } catch (error) {status.textContent = `Map unavailable: ${error.message}`; return;}
   try {
     background = await getGeoJSON('/static/metro_context.geojson');
@@ -167,8 +192,9 @@ async function loadWeather() {
     const response = await fetch('/weather_data.json', {cache: 'no-store'});
     if (!response.ok) throw new Error('Saved readings missing. Run python3 weather.py first.');
     const data = await response.json();
-    if (!Array.isArray(data.locations) || data.locations.length !== 6) throw new Error('Expected six suburb records');
+    if (!Array.isArray(data.locations) || data.locations.length !== Object.keys(names).length) throw new Error('Expected six suburb records');
     if (!data.locations.every(w => typeof w.suburb === 'string' && Number.isFinite(w.temperature_c) && Number.isFinite(w.feels_like_c) && Number.isFinite(w.humidity_pct) && Number.isFinite(w.requested_latitude) && Number.isFinite(w.requested_longitude))) throw new Error('Invalid weather records');
+    if (data.locations.some(w => !Object.values(names).includes(w.suburb))) throw new Error('Outdated locations. Run python3 weather.py');
     weather = data.locations;
     const previous = suburbSelect.value;
     suburbSelect.replaceChildren(new Option('All suburbs', 'all'));
@@ -178,7 +204,10 @@ async function loadWeather() {
     showWeather();
   } catch (exc) {
     weather = []; cards.replaceChildren(); map.replaceChildren();
-    for (const id of ['count', 'warmest', 'alerts']) document.getElementById(id).textContent = '—';
+    for (const id of ['count', 'warmest', 'alerts', 'metric-temp', 'metric-feels', 'metric-humidity', 'metric-uv', 'metric-pm25']) document.getElementById(id).textContent = '—';
+    document.getElementById('selected-label').textContent = 'No data available';
+    document.getElementById('alert-status').textContent = 'Weather data unavailable.';
+    document.querySelector('.status').classList.remove('warning-state');
     error.textContent = exc.message;
   }
 }
