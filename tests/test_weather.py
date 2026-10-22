@@ -86,6 +86,14 @@ class WeatherTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate_environment(data)
 
+    def test_environment_accepts_index_and_micro_sign_units(self):
+        data = [{"current": {"time": "2026-10-22T01:00", "uv_index": 6.4, "pm2_5": 7.2},
+                 "current_units": {"uv_index": "Index", "pm2_5": "µg/m³"}}
+                for _ in SUBURBS]
+        result = validate_environment(data)
+        self.assertEqual(result[0]["uv_index"], 6.4)
+        self.assertEqual(result[0]["pm25_ug_m3"], 7.2)
+
     def test_environment_missing_values_are_optional(self):
         data = [{"current": {"time": "2026-10-22T01:00", "uv_index": None, "pm2_5": None},
                  "current_units": {"uv_index": "", "pm2_5": "μg/m³"}}

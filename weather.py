@@ -2,7 +2,6 @@
 
 import json
 import math
-import math
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -68,10 +67,6 @@ def validate_weather(payload):
             value = item.get(coordinate)
             if type(value) not in (int, float) or not math.isfinite(value) or not lower <= value <= upper:
                 raise ValueError(f"{name}: invalid model {coordinate}")
-        for coordinate, lower, upper in (("latitude", -90, 90), ("longitude", -180, 180)):
-            value = item.get(coordinate)
-            if type(value) not in (int, float) or not math.isfinite(value) or not lower <= value <= upper:
-                raise ValueError(f"{name}: invalid model {coordinate}")
         observed_at = current.get("time")
         if not isinstance(observed_at, str):
             raise ValueError(f"{name}: missing timestamp")
@@ -110,8 +105,6 @@ def get_environment():
 
 def validate_environment(payload):
     """Return one optional air-quality reading per suburb, or reject malformed data."""
-    import math
-
     if not isinstance(payload, list) or len(payload) != len(SUBURBS):
         raise ValueError("Air-quality response does not match the location count")
     result = []
@@ -120,8 +113,16 @@ def validate_environment(payload):
             raise ValueError("Invalid air-quality location")
         current = item["current"]
         units = item.get("current_units")
-        if not isinstance(units, dict) or units.get("uv_index") not in ("", None) or units.get("pm2_5") != "μg/m³":
-            raise ValueError("Unexpected air-quality units")
+        if not isinstance(units, dict):
+            raise ValueError("Missing air-quality units")
+        # Open-Meteo labels UV as an index and PM2.5 in micrograms per cubic metre.
+        # Accept documented unit spellings; validate each metric separately.
+        uv_unit = str(units.get("uv_index", "")).strip().lower()
+        pm_unit = str(units.get("pm2_5", "")).strip().replace("µ", "μ").replace("³", "3")
+        if uv_unit not in ("", "index", "uv index"):
+            raise ValueError(f"Unexpected UV unit: {uv_unit}")
+        if pm_unit not in ("μg/m3", "ug/m3"):
+            raise ValueError(f"Unexpected PM2.5 unit: {pm_unit}")
         values = {}
         for field, key in (("uv_index", "uv_index"), ("pm2_5", "pm25_ug_m3")):
             value = current.get(field)
@@ -159,6 +160,9 @@ def main():
     print(f"{'Suburb':<16} {'Temp °C':>8} {'Feels °C':>9} {'Humidity':>9}")
     for row in rows:
         print(f"{row['suburb']:<16} {row['temperature_c']:>8.1f} {row['feels_like_c']:>9.1f} {row['humidity_pct']:>8.0f}%")
+    available_uv = sum(r["uv_index"] is not None for r in rows)
+    available_pm = sum(r["pm25_ug_m3"] is not None for r in rows)
+    print(f"Environmental fields available: UV {available_uv}/{len(rows)}, PM2.5 {available_pm}/{len(rows)}")
     print(f"\nValidated {len(rows)}/6 locations. Saved to {OUTPUT_FILE}")
     return 0
 
