@@ -12,7 +12,7 @@ API = ('https://services-ap1.arcgis.com/P744lA0wf4LlBZ84/ArcGIS/rest/'
        'services/Vicmap_Admin/FeatureServer/11/query')
 OUTPUT = Path(__file__).resolve().parent / 'static' / 'metro_context.geojson'
 # Approximate study-area envelope, not an official Greater Melbourne border.
-BBOX = (144.78, -38.06, 145.30, -37.70)
+BBOX = (144.45, -38.30, 145.55, -37.45)
 
 
 def download():
