@@ -171,6 +171,25 @@ async function getGeoJSON(url) {
   if (body.type !== 'FeatureCollection' || !Array.isArray(body.features)) throw new Error('Invalid GeoJSON collection');
   return body.features.filter(f => rings(f.geometry).length);
 }
+// Peripheral southwest localities within the rectangular download envelope can
+// appear as detached fragments when the intervening coastline is outside the map.
+// Omit these *background-only* polygons from the Melbourne study-area view.
+// Monitored locality polygons are never filtered.
+function withinMelbourneContext(feature) {
+  const coordinates = rings(feature.geometry).flat();
+  if (!coordinates.length) return false;
+  let west = Infinity, east = -Infinity, south = Infinity, north = -Infinity;
+  for (const point of coordinates) {
+    const [lon, lat] = point;
+    if (!Number.isFinite(lon) || !Number.isFinite(lat)) return false;
+    west = Math.min(west, lon); east = Math.max(east, lon);
+    south = Math.min(south, lat); north = Math.max(north, lat);
+  }
+  // Southwest peninsula / coastal fragments outside the monitored study area.
+  // Preserve localities reaching the urban area or the Werribee–Frankston corridor.
+  return !(east < 144.90 && north < -38.00);
+}
+
 async function loadMap() {
   const status = document.getElementById('map-status');
   try {
@@ -179,7 +198,7 @@ async function loadMap() {
     if (Object.keys(names).some(name => !present.has(name))) throw new Error('Outdated boundary data. Run python3 fetch_boundaries.py');
   } catch (error) {status.textContent = `Map unavailable: ${error.message}`; return;}
   try {
-    background = await getGeoJSON('/static/metro_context.geojson');
+    background = (await getGeoJSON('/static/metro_context.geojson')).filter(withinMelbourneContext);
     status.textContent = `${background.length} surrounding localities loaded`;
   } catch (error) {
     status.textContent = 'Background unavailable; monitored suburbs still shown';
