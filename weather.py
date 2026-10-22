@@ -1,4 +1,4 @@
-"""Fetch and validate current modelled weather for six Melbourne locations."""
+"""Get weather data for the six Melbourne locations and check it is valid."""
 
 import json
 import math
@@ -12,7 +12,7 @@ API_URL = "https://api.open-meteo.com/v1/forecast"
 AIR_API_URL = "https://air-quality-api.open-meteo.com/v1/air-quality"
 OUTPUT_FILE = Path(__file__).resolve().parent / "weather_data.json"
 
-# Representative suburb centres, not weather sensor locations.
+# These are suburb coordinates, not weather stations.
 SUBURBS = {
     "Melbourne CBD": (-37.8136, 144.9631),
     "Melton": (-37.6834, 144.5833),
@@ -24,7 +24,7 @@ SUBURBS = {
 
 
 def get_weather():
-    """Request current weather for the six suburbs in one API call."""
+    """Get current weather for all six suburbs."""
     params = {
         "latitude": ",".join(str(lat) for lat, _ in SUBURBS.values()),
         "longitude": ",".join(str(lon) for _, lon in SUBURBS.values()),
@@ -38,7 +38,7 @@ def get_weather():
 
 
 def validate_weather(payload):
-    """Convert the Open-Meteo response into records our dashboard understands."""
+    """Check the API response and prepare it for the dashboard."""
     if not isinstance(payload, list) or len(payload) != len(SUBURBS):
         raise ValueError("API did not return all six locations")
 
@@ -92,7 +92,7 @@ def validate_weather(payload):
 
 
 def get_environment():
-    """Fetch modelled UV index and PM2.5 from the separate air-quality API."""
+    """Get UV and PM2.5 from the air-quality API."""
     params = {
         "latitude": ",".join(str(lat) for lat, _ in SUBURBS.values()),
         "longitude": ",".join(str(lon) for _, lon in SUBURBS.values()),
@@ -104,7 +104,7 @@ def get_environment():
 
 
 def validate_environment(payload):
-    """Return one optional air-quality reading per suburb, or reject malformed data."""
+    """Check the air-quality values for each suburb."""
     if not isinstance(payload, list) or len(payload) != len(SUBURBS):
         raise ValueError("Air-quality response does not match the location count")
     result = []
@@ -115,8 +115,8 @@ def validate_environment(payload):
         units = item.get("current_units")
         if not isinstance(units, dict):
             raise ValueError("Missing air-quality units")
-        # Open-Meteo labels UV as an index and PM2.5 in micrograms per cubic metre.
-        # Accept documented unit spellings; validate each metric separately.
+        # UV is an index. PM2.5 is measured in micrograms per cubic metre.
+        # The API can use different symbols for the same units.
         uv_unit = str(units.get("uv_index", "")).strip().lower()
         pm_unit = str(units.get("pm2_5", "")).strip().replace("µ", "μ").replace("³", "3")
         if uv_unit not in ("", "index", "uv index"):
@@ -143,7 +143,7 @@ def main():
         print(f"Validation failed: {exc}")
         return 1
 
-    # Air quality is supplementary: weather remains usable when its API is offline.
+    # Keep the weather data even if the air-quality request fails.
     try:
         environment = validate_environment(get_environment())
     except (HTTPError, URLError, TimeoutError, OSError, ValueError, TypeError) as exc:
