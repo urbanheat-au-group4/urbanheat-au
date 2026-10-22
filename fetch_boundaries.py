@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Download six Victorian locality boundaries as GeoJSON for UrbanHeat AU."""
+"""Download the six suburb boundary shapes for the map."""
 
 import json
 from pathlib import Path
@@ -7,7 +7,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-# Official Vicmap Admin hosted feature layer. The old MapServer only supported maps.
+# Use the Vicmap FeatureServer because the earlier map endpoint did not work.
 API = (
     "https://services-ap1.arcgis.com/P744lA0wf4LlBZ84/ArcGIS/rest/"
     "services/Vicmap_Admin/FeatureServer/11/query"
@@ -51,7 +51,7 @@ def download_boundaries():
     ):
         raise ValueError("Non-polygon geometry received")
 
-    # Save only after all six were returned and validated.
+    # Only save the file when all six suburbs are included.
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     temporary = OUTPUT.with_suffix(".tmp")
     temporary.write_text(json.dumps(data, separators=(",", ":")), encoding="utf-8")
