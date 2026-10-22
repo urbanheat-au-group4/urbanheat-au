@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fetch simplified Melbourne locality outlines for a map background.
+"""Get nearby suburb outlines for the map background.
 
 Does not replace the six highlighted suburb polygons downloaded separately.
 """
@@ -11,7 +11,7 @@ from urllib.request import Request, urlopen
 API = ('https://services-ap1.arcgis.com/P744lA0wf4LlBZ84/ArcGIS/rest/'
        'services/Vicmap_Admin/FeatureServer/11/query')
 OUTPUT = Path(__file__).resolve().parent / 'static' / 'metro_context.geojson'
-# Approximate study-area envelope, not an official Greater Melbourne border.
+# This rectangle is just the area we want to show, not Melbourne's actual boundary.
 BBOX = (144.45, -38.30, 145.55, -37.45)
 
 
