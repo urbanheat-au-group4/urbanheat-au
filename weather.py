@@ -2,8 +2,6 @@
 
 import json
 import math
-import os
-import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -155,28 +153,10 @@ def main():
     for row, readings in zip(rows, environment):
         row.update(readings)
 
-    # Write a complete temporary file before replacing the saved data
-    content = json.dumps({
+    OUTPUT_FILE.write_text(json.dumps({
         "retrieved_at_utc": datetime.now(timezone.utc).isoformat(),
         "locations": rows,
-    }, indent=2) + "\n"
-    temporary_path = None
-    try:
-        with tempfile.NamedTemporaryFile(
-            mode="w", encoding="utf-8", dir=OUTPUT_FILE.parent,
-            prefix=".weather-", suffix=".tmp", delete=False
-        ) as handle:
-            temporary_path = Path(handle.name)
-            handle.write(content)
-            handle.flush()
-            os.fsync(handle.fileno())
-        os.replace(temporary_path, OUTPUT_FILE)
-    except OSError as exc:
-        print(f"Could not save weather data: {exc}")
-        return 1
-    finally:
-        if temporary_path is not None:
-            temporary_path.unlink(missing_ok=True)
+    }, indent=2) + "\n", encoding="utf-8")
     print(f"{'Suburb':<16} {'Temp °C':>8} {'Feels °C':>9} {'Humidity':>9}")
     for row in rows:
         print(f"{row['suburb']:<16} {row['temperature_c']:>8.1f} {row['feels_like_c']:>9.1f} {row['humidity_pct']:>8.0f}%")
