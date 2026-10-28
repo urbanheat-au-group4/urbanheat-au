@@ -214,6 +214,20 @@ async function loadWeather() {
     if (data.locations.some(w => !Object.values(names).includes(w.suburb))) throw new Error('Outdated locations. Run python3 weather.py');
     const updatedAt = new Date(data.retrieved_at_utc);
     if (typeof data.retrieved_at_utc !== 'string' || !Number.isFinite(updatedAt.getTime())) throw new Error('Weather update time is missing or invalid');
+    // Also check when each weather reading was measured
+    for (const row of data.locations) {
+      if (typeof row.observed_at_gmt !== 'string') {
+        throw new Error('Weather reading time is missing');
+      }
+      const observed = new Date(row.observed_at_gmt.endsWith('Z') ? row.observed_at_gmt : row.observed_at_gmt + 'Z');
+      if (!Number.isFinite(observed.getTime())) {
+        throw new Error('Weather reading time is invalid');
+      }
+      const readingAge = (Date.now() - observed.getTime()) / 3600000;
+      if (readingAge > 3 || readingAge < -0.25) {
+        throw new Error('Weather readings are out of date. Run python3 weather.py');
+      }
+    }
     const ageHours = (Date.now() - updatedAt.getTime()) / 3600000;
     if (ageHours > 3 || ageHours < -0.25) throw new Error('Weather data is out of date. Run python3 weather.py to refresh it');
     weather = data.locations;
