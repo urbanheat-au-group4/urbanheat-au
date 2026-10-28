@@ -59,7 +59,6 @@ function colour(temp, min, max) {
 }
 function showWeather() {
   const threshold = Number(thresholdInput.value);
-  const validThreshold = thresholdInput.value.trim() !== '' && Number.isFinite(threshold) && threshold >= 0 && threshold <= 55;
   const chosen = suburbSelect.value;
   const rows = weather.filter(w => chosen === 'all' || w.suburb === chosen);
   cards.replaceChildren();
@@ -69,8 +68,8 @@ function showWeather() {
     const temp = document.createElement('p'); temp.className = 'temperature'; temp.textContent = `${item.temperature_c.toFixed(1)} °C`;
     const details = document.createElement('p'); details.textContent = `Feels like ${item.feels_like_c.toFixed(1)} °C · Humidity ${item.humidity_pct}%`;
     const alert = document.createElement('p');
-    alert.className = validThreshold && item.temperature_c >= threshold ? 'warning' : 'normal';
-    alert.textContent = !validThreshold ? 'Enter a valid threshold' : item.temperature_c >= threshold ? 'Above demo threshold' : 'Below demo threshold';
+    alert.className = item.temperature_c >= threshold ? 'warning' : 'normal';
+    alert.textContent = item.temperature_c >= threshold ? 'Above demo threshold' : 'Below demo threshold';
     const environment = document.createElement('p');
     const uv = Number.isFinite(item.uv_index) ? item.uv_index.toFixed(1) : 'Unavailable';
     const pm = Number.isFinite(item.pm25_ug_m3) ? item.pm25_ug_m3.toFixed(1) + ' µg/m³' : 'Unavailable';
@@ -80,7 +79,7 @@ function showWeather() {
   document.getElementById('count').textContent = String(rows.length);
   const warmest = rows.reduce((best, row) => !best || row.temperature_c > best.temperature_c ? row : best, null);
   document.getElementById('warmest').textContent = warmest ? `${warmest.suburb}: ${warmest.temperature_c.toFixed(1)} °C` : '—';
-  document.getElementById('alerts').textContent = String(rows.filter(w => validThreshold && w.temperature_c >= threshold).length);
+  document.getElementById('alerts').textContent = String(rows.filter(w => w.temperature_c >= threshold).length);
   const representative = rows[0] || null;
   const fmt = (value, suffix = '') => Number.isFinite(value) ? `${value.toFixed(1)}${suffix}` : 'Unavailable';
   const metrics = {
@@ -94,11 +93,11 @@ function showWeather() {
   document.getElementById('selected-label').textContent = representative
     ? (chosen === 'all' ? `Showing ${representative.suburb} as the summary reference` : `Showing ${representative.suburb}`)
     : 'No data available';
-  const above = rows.filter(w => validThreshold && w.temperature_c >= threshold).length;
+  const above = rows.filter(w => w.temperature_c >= threshold).length;
   const status = document.querySelector('.status');
   status.classList.toggle('warning-state', above > 0);
   document.getElementById('alert-status').textContent = !rows.length ? 'No current readings available.'
-    : !validThreshold ? 'Enter a valid threshold.'
+    : !Number.isFinite(threshold) || thresholdInput.value.trim() === '' ? 'Enter a valid threshold.'
     : above ? `${above} of ${rows.length} displayed locations meet or exceed ${threshold} °C.`
     : `No displayed locations meet the ${threshold} °C demo threshold.`;
   drawMap();
@@ -212,18 +211,12 @@ async function loadWeather() {
     if (!Array.isArray(data.locations) || data.locations.length !== Object.keys(names).length) throw new Error('Expected six suburb records');
     if (!data.locations.every(w => typeof w.suburb === 'string' && Number.isFinite(w.temperature_c) && Number.isFinite(w.feels_like_c) && Number.isFinite(w.humidity_pct) && Number.isFinite(w.requested_latitude) && Number.isFinite(w.requested_longitude))) throw new Error('Invalid weather records');
     if (data.locations.some(w => !Object.values(names).includes(w.suburb))) throw new Error('Outdated locations. Run python3 weather.py');
-    const updatedAt = new Date(data.retrieved_at_utc);
-    if (typeof data.retrieved_at_utc !== 'string' || !Number.isFinite(updatedAt.getTime())) throw new Error('Weather update time is missing or invalid');
-    const ageHours = (Date.now() - updatedAt.getTime()) / 3600000;
-    if (ageHours > 3 || ageHours < -0.25) throw new Error('Weather data is out of date. Run python3 weather.py to refresh it');
     weather = data.locations;
     const previous = suburbSelect.value;
     suburbSelect.replaceChildren(new Option('All suburbs', 'all'));
     for (const row of weather) suburbSelect.add(new Option(row.suburb, row.suburb));
     suburbSelect.value = [...suburbSelect.options].some(opt => opt.value === previous) ? previous : 'all';
-    const updatedText = `Last updated: ${updatedAt.toLocaleString('en-AU', {timeZone: 'Australia/Melbourne'})} (Melbourne time)`;
-    document.getElementById('updated').textContent = updatedText;
-    document.getElementById('updated-top').textContent = updatedText;
+    document.getElementById('updated').textContent = `Data retrieved: ${data.retrieved_at_utc || 'Unknown'} (UTC)`;
     showWeather();
   } catch (exc) {
     weather = []; cards.replaceChildren(); map.replaceChildren();
@@ -231,8 +224,6 @@ async function loadWeather() {
     document.getElementById('selected-label').textContent = 'No data available';
     document.getElementById('alert-status').textContent = 'Weather data unavailable.';
     document.querySelector('.status').classList.remove('warning-state');
-    document.getElementById('updated-top').textContent = 'Weather data unavailable';
-    document.getElementById('updated').textContent = 'No valid current readings loaded';
     error.textContent = exc.message;
   }
 }
