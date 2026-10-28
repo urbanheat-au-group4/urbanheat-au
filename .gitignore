@@ -30,3 +30,6 @@ static.backup.*/
 .env
 .env.*
 !.env.example
+
+# Generated weather values must not be committed
+weather_data.json
