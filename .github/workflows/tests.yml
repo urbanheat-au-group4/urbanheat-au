@@ -20,3 +20,5 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_*.py' -v
       - name: Check JavaScript syntax
         run: node --check static/app.js
+      - name: Test dashboard error handling
+        run: node --test tests/test_frontend.cjs
