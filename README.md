@@ -11,13 +11,12 @@ From the repository root:
 ```zsh
 python3 fetch_boundaries.py
 python3 fetch_metro_context.py
-python3 weather.py
 python3 server.py
 ```
 
 Open http://localhost:8000. The first two scripts rebuild local GeoJSON for the revised map. Run them after changing the monitored locations. `weather.py` creates `weather_data.json`, including optional UV and PM2.5 from Open-Meteo's separate Air Quality API. If air quality is unavailable, temperature readings remain usable and the air-quality fields show as unavailable. `server.py` serves the files locally.
 
-The browser's **Reload saved data** button reloads the JSON; to obtain fresh observations first rerun `python3 weather.py` in another terminal.
+The server attempts to download fresh readings when it starts. If the API is unavailable, the dashboard shows an unavailable-data message instead of old values. The **Reload saved data** button reads the current saved file; run `python3 weather.py` to refresh while the server is running.
 
 ## Tests
 
@@ -46,6 +45,6 @@ Vicmap boundaries → local GeoJSON ──────────────�
 - The map colours encode **relative air temperature only**, not UV, PM2.5 or heat exposure across entire polygons.
 - User-set heat thresholds are demonstrations, **not** official BoM heatwave alerts.
 - Geographic outlines come from [Vicmap](https://www.land.vic.gov.au/maps-and-spatial/spatial-data/vicmap); weather from [Open-Meteo](https://open-meteo.com/).
-- All updated weather values are saved locally. The site does not automatically refresh API data.
+- All updated weather values are saved locally. The server refreshes weather data at startup. Restart the server or run `python3 weather.py` to update it later.
 
 Issue tracking: Jira. Source and tests: GitHub. Sprint assessment: Confluence.
