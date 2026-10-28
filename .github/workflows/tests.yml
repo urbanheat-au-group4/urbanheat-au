@@ -1,0 +1,22 @@
+name: UrbanHeat tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run Python tests
+        run: python -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Check JavaScript syntax
+        run: node --check static/app.js
