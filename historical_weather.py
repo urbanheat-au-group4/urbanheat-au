@@ -11,6 +11,7 @@ from urllib.parse import urlencode
 from urllib.request import urlopen
 
 import weather
+from location_catalogue import load_catalogue
 
 ROOT = Path(__file__).resolve().parent
 CATALOGUE = ROOT / "locations.json"
@@ -24,33 +25,16 @@ FIELDS = ("temperature_2m_mean", "temperature_2m_max",
 UNITS = ("°C", "°C", "°C", "mm")
 
 
-def locations():
-    """Use the central catalogue when it exists, otherwise use the six current suburbs."""
+def locations(group=None):
+    """Use the current six locations by default; other groups are opt-in."""
     if CATALOGUE.exists():
-        entries = json.loads(CATALOGUE.read_text(encoding="utf-8"))
-        if isinstance(entries, dict):
-            entries = entries.get("locations")
-        if not isinstance(entries, list) or not entries:
-            raise ValueError("Invalid locations catalogue")
-        rows = []
-        seen = set()
-        for entry in entries:
-            if not isinstance(entry, dict):
-                raise ValueError("Invalid catalogue entry")
-            key = entry.get("id")
-            name = entry.get("name")
-            lat, lon = entry.get("latitude"), entry.get("longitude")
-            if not isinstance(key, str) or not key or key in seen:
-                raise ValueError("Missing or duplicate location id")
-            if not isinstance(name, str) or not name.strip():
-                raise ValueError("Missing location name")
-            if type(lat) not in (int, float) or type(lon) not in (int, float):
-                raise ValueError("Invalid coordinates")
-            if not math.isfinite(lat) or not math.isfinite(lon) or not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
-                raise ValueError("Coordinates out of range")
-            seen.add(key)
-            rows.append({"id": key, "name": name, "latitude": lat, "longitude": lon})
-        return rows
+        chosen = group if group is not None else os.getenv("URBANHEAT_LOCATION_GROUP", "melbourne_dashboard")
+        records = load_catalogue(CATALOGUE, group=chosen)
+        return [{"id": r["id"], "name": r["name"],
+                 "latitude": r["latitude"], "longitude": r["longitude"]}
+                for r in records]
+    if group is not None and group != "melbourne_dashboard":
+        raise ValueError("A catalogue is required for non-Melbourne groups")
     return [{"id": name.lower().replace(" ", "-"), "name": name,
              "latitude": lat, "longitude": lon}
             for name, (lat, lon) in weather.SUBURBS.items()]

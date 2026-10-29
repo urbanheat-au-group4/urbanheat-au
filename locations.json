@@ -4,37 +4,252 @@
       "id": "melbourne-cbd",
       "name": "Melbourne CBD",
       "latitude": -37.8136,
-      "longitude": 144.9631
+      "longitude": 144.9631,
+      "state": "VIC",
+      "region": "Greater Melbourne",
+      "groups": [
+        "melbourne_dashboard",
+        "greater_melbourne",
+        "australia_historical"
+      ]
     },
     {
       "id": "melton",
       "name": "Melton",
       "latitude": -37.6834,
-      "longitude": 144.5833
+      "longitude": 144.5833,
+      "state": "VIC",
+      "region": "Greater Melbourne",
+      "groups": [
+        "melbourne_dashboard",
+        "greater_melbourne",
+        "australia_historical"
+      ]
     },
     {
       "id": "werribee",
       "name": "Werribee",
       "latitude": -37.9,
-      "longitude": 144.66
+      "longitude": 144.66,
+      "state": "VIC",
+      "region": "Greater Melbourne",
+      "groups": [
+        "melbourne_dashboard",
+        "greater_melbourne",
+        "australia_historical"
+      ]
     },
     {
       "id": "craigieburn",
       "name": "Craigieburn",
       "latitude": -37.598,
-      "longitude": 144.941
+      "longitude": 144.941,
+      "state": "VIC",
+      "region": "Greater Melbourne",
+      "groups": [
+        "melbourne_dashboard",
+        "greater_melbourne",
+        "australia_historical"
+      ]
     },
     {
       "id": "belgrave",
       "name": "Belgrave",
       "latitude": -37.91,
-      "longitude": 145.353
+      "longitude": 145.353,
+      "state": "VIC",
+      "region": "Greater Melbourne",
+      "groups": [
+        "melbourne_dashboard",
+        "greater_melbourne",
+        "australia_historical"
+      ]
     },
     {
       "id": "frankston",
       "name": "Frankston",
       "latitude": -38.144,
-      "longitude": 145.122
+      "longitude": 145.122,
+      "state": "VIC",
+      "region": "Greater Melbourne",
+      "groups": [
+        "melbourne_dashboard",
+        "greater_melbourne",
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "fitzroy",
+      "name": "Fitzroy",
+      "latitude": -37.798,
+      "longitude": 144.978,
+      "state": "VIC",
+      "region": "Greater Melbourne",
+      "groups": [
+        "greater_melbourne",
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "footscray",
+      "name": "Footscray",
+      "latitude": -37.8,
+      "longitude": 144.9,
+      "state": "VIC",
+      "region": "Greater Melbourne",
+      "groups": [
+        "greater_melbourne",
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "st-kilda",
+      "name": "St Kilda",
+      "latitude": -37.867,
+      "longitude": 144.98,
+      "state": "VIC",
+      "region": "Greater Melbourne",
+      "groups": [
+        "greater_melbourne",
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "chadstone",
+      "name": "Chadstone",
+      "latitude": -37.886,
+      "longitude": 145.083,
+      "state": "VIC",
+      "region": "Greater Melbourne",
+      "groups": [
+        "greater_melbourne",
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "dandenong",
+      "name": "Dandenong",
+      "latitude": -37.987,
+      "longitude": 145.215,
+      "state": "VIC",
+      "region": "Greater Melbourne",
+      "groups": [
+        "greater_melbourne",
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "hurstbridge",
+      "name": "Hurstbridge",
+      "latitude": -37.639,
+      "longitude": 145.194,
+      "state": "VIC",
+      "region": "Greater Melbourne",
+      "groups": [
+        "greater_melbourne",
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "lilydale",
+      "name": "Lilydale",
+      "latitude": -37.755,
+      "longitude": 145.347,
+      "state": "VIC",
+      "region": "Greater Melbourne",
+      "groups": [
+        "greater_melbourne",
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "pakenham",
+      "name": "Pakenham",
+      "latitude": -38.073,
+      "longitude": 145.484,
+      "state": "VIC",
+      "region": "Greater Melbourne",
+      "groups": [
+        "greater_melbourne",
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "sydney",
+      "name": "Sydney",
+      "state": "NSW",
+      "latitude": -33.8688,
+      "longitude": 151.2093,
+      "region": "Capital city",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "brisbane",
+      "name": "Brisbane",
+      "state": "QLD",
+      "latitude": -27.4698,
+      "longitude": 153.0251,
+      "region": "Capital city",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "perth",
+      "name": "Perth",
+      "state": "WA",
+      "latitude": -31.9523,
+      "longitude": 115.8613,
+      "region": "Capital city",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "adelaide",
+      "name": "Adelaide",
+      "state": "SA",
+      "latitude": -34.9285,
+      "longitude": 138.6007,
+      "region": "Capital city",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "hobart",
+      "name": "Hobart",
+      "state": "TAS",
+      "latitude": -42.8821,
+      "longitude": 147.3272,
+      "region": "Capital city",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "canberra",
+      "name": "Canberra",
+      "state": "ACT",
+      "latitude": -35.2809,
+      "longitude": 149.13,
+      "region": "Capital city",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "darwin",
+      "name": "Darwin",
+      "state": "NT",
+      "latitude": -12.4634,
+      "longitude": 130.8456,
+      "region": "Capital city",
+      "groups": [
+        "australia_historical"
+      ]
     }
   ]
 }
