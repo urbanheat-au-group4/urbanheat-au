@@ -36,3 +36,5 @@ weather_data.json
 
 # Generated historical reanalysis dataset
 historical_weather.json
+
+climate_statistics.json
