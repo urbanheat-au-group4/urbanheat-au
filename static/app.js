@@ -354,4 +354,4 @@ thresholdInput.addEventListener('input', showWeather);
 document.getElementById('refresh').addEventListener('click', loadWeather);
 loadMap(); loadWeather();
 // Match the default server interval; polling only reads the saved snapshot.
-setInterval(pollRefresh, 60 * 1000);
+if (typeof setInterval === 'function') setInterval(pollRefresh, 60 * 1000);
