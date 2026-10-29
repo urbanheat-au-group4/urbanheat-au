@@ -1,4 +1,5 @@
 // Read the saved weather data and map files.
+
 const suburbSelect = document.getElementById('suburb');
 const thresholdInput = document.getElementById('threshold');
 const cards = document.getElementById('cards');
@@ -12,6 +13,53 @@ let weather = [];
 let monitored = [];
 let background = [];
 
+const THRESHOLD_MIN = -10, THRESHOLD_MAX = 60;
+let activeThreshold = 30;                  // the last valid threshold; matches the starting value in the HTML
+
+// Returns a real number, or null for blank, null, undefined, text, true/false and NaN.
+function validNumber(value) {
+  if (typeof value === 'string') {
+    if (value.trim() === '') return null;
+    value = Number(value);
+  }
+  if (typeof value !== 'number' || !Number.isFinite(value)) return null;
+  if (value < -50 || value > 60) return null;
+  return value;
+}
+
+// Reads the threshold box. If the input is invalid, shows a message and keeps the last valid value.
+function readThreshold() {
+  const message = document.getElementById('threshold-message');
+  const n = validNumber(thresholdInput.value);
+  if (n === null || n < THRESHOLD_MIN || n > THRESHOLD_MAX) {
+    if (message) message.textContent = `Enter a number from ${THRESHOLD_MIN} to ${THRESHOLD_MAX}. Using ${activeThreshold} °C for now.`;
+    return activeThreshold;
+  }
+  activeThreshold = n;
+  if (message) message.textContent = '';
+  return n;
+}
+
+// The ONE place that decides a location's state: 'above', 'below' or 'unavailable'.
+function classify(temp, threshold) {
+  const t = validNumber(temp);
+  if (t === null) return 'unavailable';
+  return t >= threshold ? 'above' : 'below';
+}
+
+// Wording for each state. It says "your threshold", never "warning", so it isn't confused with official alerts.
+const STATE_LABEL = {
+  above: t => `▲ At or above your threshold (${t} °C)`,
+  below: t => `Below your threshold (${t} °C)`,
+  unavailable: () => 'No valid reading (not counted)'
+};
+
+// Formats a number to one decimal place, or 'Unavailable' for anything that isn't a real number.
+function fmt(value, suffix = '') {
+  const n = validNumber(value);
+  return n === null ? 'Unavailable' : `${n.toFixed(1)}${suffix}`;
+}
+
 function svg(tag, attrs = {}) {
   const node = document.createElementNS(SVG, tag);
   for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, String(value));
@@ -24,7 +72,9 @@ function rings(geometry) {
   return [];
 }
 const cosLat = Math.cos(37.9 * Math.PI / 180);
+
 // Use the same map area for suburb outlines and background shapes.
+
 const extent = {left: 144.45 * cosLat, right: 145.55 * cosLat, top: 37.45, bottom: 38.30};
 function project([lon, lat]) {
   const availableWidth = 900, availableHeight = 480;
@@ -39,8 +89,10 @@ function pathData(geometry) {
     return `${i ? 'L' : 'M'}${x.toFixed(2)} ${y.toFixed(2)}`;
   }).join(' ') + ' Z').join(' ');
 }
+
 // Start label lines from the suburb shape, not the weather coordinates.
 // Use the middle of each shape's bounding box.
+
 function polygonAnchor(geometry) {
   const points = rings(geometry).flat().map(project);
   if (!points.length) return null;
@@ -50,7 +102,9 @@ function polygonAnchor(geometry) {
           (Math.min(...ys) + Math.max(...ys)) / 2];
 }
 function colour(temp, min, max) {
+
   // Colour the suburbs from cooler blue to warmer orange.
+
   const fraction = max === min ? 0.5 : Math.max(0, Math.min(1, (temp - min) / (max - min)));
   const stops = [[82, 163, 195], [244, 231, 178], [221, 110, 64]];
   const half = fraction * 2, i = Math.min(1, Math.floor(half)), t = half - i;
@@ -58,19 +112,23 @@ function colour(temp, min, max) {
   return `rgb(${rgb.join(',')})`;
 }
 function showWeather() {
-  const threshold = Number(thresholdInput.value);
-  const validThreshold = thresholdInput.value.trim() !== '' && Number.isFinite(threshold) && threshold >= 0 && threshold <= 55;
+  const threshold = readThreshold();
+  const thresholdValid = thresholdInput.value.trim() !== '' && Number.isFinite(Number(thresholdInput.value)) && Number(thresholdInput.value) >= THRESHOLD_MIN && Number(thresholdInput.value) <= THRESHOLD_MAX;
   const chosen = suburbSelect.value;
   const rows = weather.filter(w => chosen === 'all' || w.suburb === chosen);
+  const stateOf = w => classify(w.temperature_c, threshold);
+  const count = s => (s === 'above' && !thresholdValid) ? 0 : rows.filter(w => stateOf(w) === s).length;
   cards.replaceChildren();
   for (const item of rows) {
+    const state = stateOf(item);
     const card = document.createElement('article');
+    card.className = `state-${state}`;
     const title = document.createElement('h3'); title.textContent = item.suburb;
-    const temp = document.createElement('p'); temp.className = 'temperature'; temp.textContent = `${item.temperature_c.toFixed(1)} °C`;
-    const details = document.createElement('p'); details.textContent = `Feels like ${item.feels_like_c.toFixed(1)} °C · Humidity ${item.humidity_pct}%`;
+    const temp = document.createElement('p'); temp.className = 'temperature'; temp.textContent = fmt(item.temperature_c, ' °C');
+    const details = document.createElement('p'); details.textContent = `Feels like ${fmt(item.feels_like_c, ' °C')} · Humidity ${Number.isFinite(item.humidity_pct) ? item.humidity_pct + '%' : 'Unavailable'}`;
     const alert = document.createElement('p');
-    alert.className = validThreshold && item.temperature_c >= threshold ? 'warning' : 'normal';
-    alert.textContent = !validThreshold ? 'Enter a valid threshold' : item.temperature_c >= threshold ? 'Above demo threshold' : 'Below demo threshold';
+    alert.className = state === 'above' ? 'warning' : state === 'below' ? 'normal' : 'no-data';
+    alert.textContent = STATE_LABEL[state](threshold);
     const environment = document.createElement('p');
     const uv = Number.isFinite(item.uv_index) ? item.uv_index.toFixed(1) : 'Unavailable';
     const pm = Number.isFinite(item.pm25_ug_m3) ? item.pm25_ug_m3.toFixed(1) + ' µg/m³' : 'Unavailable';
@@ -78,11 +136,10 @@ function showWeather() {
     card.append(title, temp, details, environment, alert); cards.append(card);
   }
   document.getElementById('count').textContent = String(rows.length);
-  const warmest = rows.reduce((best, row) => !best || row.temperature_c > best.temperature_c ? row : best, null);
+  const warmest = rows.filter(w => validNumber(w.temperature_c) !== null).reduce((best, row) => !best || row.temperature_c > best.temperature_c ? row : best, null);
   document.getElementById('warmest').textContent = warmest ? `${warmest.suburb}: ${warmest.temperature_c.toFixed(1)} °C` : '—';
-  document.getElementById('alerts').textContent = String(rows.filter(w => validThreshold && w.temperature_c >= threshold).length);
+  document.getElementById('alerts').textContent = String(count('above'));
   const representative = rows[0] || null;
-  const fmt = (value, suffix = '') => Number.isFinite(value) ? `${value.toFixed(1)}${suffix}` : 'Unavailable';
   const metrics = {
     'metric-temp': representative ? fmt(representative.temperature_c, ' °C') : '—',
     'metric-feels': representative ? fmt(representative.feels_like_c, ' °C') : '—',
@@ -94,18 +151,21 @@ function showWeather() {
   document.getElementById('selected-label').textContent = representative
     ? (chosen === 'all' ? `Showing ${representative.suburb} as the summary reference` : `Showing ${representative.suburb}`)
     : 'No data available';
-  const above = rows.filter(w => validThreshold && w.temperature_c >= threshold).length;
   const status = document.querySelector('.status');
-  status.classList.toggle('warning-state', above > 0);
-  document.getElementById('alert-status').textContent = !rows.length ? 'No current readings available.'
-    : !validThreshold ? 'Enter a valid threshold.'
-    : above ? `${above} of ${rows.length} displayed locations meet or exceed ${threshold} °C.`
-    : `No displayed locations meet the ${threshold} °C demo threshold.`;
+  status.classList.toggle('warning-state', count('above') > 0);
+  const valid = count('above') + count('below'), missing = count('unavailable');
+  let msg = !rows.length ? 'No current readings available.'
+    : !thresholdValid ? 'Enter a valid threshold. The previous threshold is kept.'
+    : !valid ? 'No valid temperature readings to compare with your threshold.'
+    : `${count('above')} of ${valid} displayed locations with valid readings are at or above your ${threshold} °C threshold.`;
+  if (missing) msg += ` ${missing} with no valid reading not counted.`;
+  document.getElementById('alert-status').textContent = msg;
   drawMap();
 }
 function chooseSuburb(name) { suburbSelect.value = name; showWeather(); }
 
 // Set label positions and connect them to their suburbs.
+
 const labelOffsets = {
   'Melbourne CBD': [80, 45], Melton: [85, -30], Werribee: [-80, 38],
   Craigieburn: [85, -20], Belgrave: [-78, -35], Frankston: [-75, -35]
@@ -113,8 +173,9 @@ const labelOffsets = {
 function drawMap() {
   map.replaceChildren();
   if (!monitored.length || !weather.length) return;
-  const thresholds = weather.map(w => w.temperature_c);
-  const min = Math.min(...thresholds), max = Math.max(...thresholds);
+  const threshold = activeThreshold;
+  const valid = weather.map(w => validNumber(w.temperature_c)).filter(t => t !== null);
+  const min = valid.length ? Math.min(...valid) : 0, max = valid.length ? Math.max(...valid) : 0;
   const defs = svg('defs');
   const gradient = svg('linearGradient', {id: 'temp-gradient'});
   [['0%', '#52a3c3'], ['50%', '#f4e7b2'], ['100%', '#dd6e40']].forEach(([offset, fill]) => gradient.append(svg('stop', {offset, 'stop-color': fill})));
@@ -133,12 +194,15 @@ function drawMap() {
     const row = weather.find(w => w.suburb === name);
     if (!row) continue;
     const active = suburbSelect.value === 'all' || suburbSelect.value === name;
+    const t = validNumber(row.temperature_c), state = classify(t, threshold);
+    const tText = t === null ? 'No data' : `${t.toFixed(1)} °C`;
+    const sText = {above: 'at or above your threshold', below: 'below your threshold', unavailable: 'no valid reading, not counted'}[state];
     const polygon = svg('path', {
-      d: pathData(f.geometry), fill: colour(row.temperature_c, min, max),
-      'fill-rule': 'evenodd', class: `monitored-suburb${active ? '' : ' faded'}`,
-      tabindex: '0', role: 'button', 'aria-label': `${name}: ${row.temperature_c.toFixed(1)} degrees Celsius`
+      d: pathData(f.geometry), fill: t === null ? '#aeb8be' : colour(t, min, max),
+      'fill-rule': 'evenodd', class: `monitored-suburb state-${state}${active ? '' : ' faded'}`,
+      tabindex: '0', role: 'button', 'aria-label': `${name}: ${tText}, ${sText}`
     });
-    const tip = svg('title'); tip.textContent = `${name} · ${row.temperature_c.toFixed(1)} °C`;
+    const tip = svg('title'); tip.textContent = `${name} · ${tText} · ${sText}`;
     polygon.append(tip);
     polygon.addEventListener('click', () => chooseSuburb(name));
     polygon.addEventListener('keydown', e => {
@@ -152,7 +216,7 @@ function drawMap() {
     const lx = Math.max(90, Math.min(910, anchor[0] + dx));
     const ly = Math.max(42, Math.min(535, anchor[1] + dy));
     const text = svg('text', {x: lx, y: ly - 10, class: 'map-label'}); text.textContent = name;
-    const value = svg('text', {x: lx, y: ly + 10, class: 'map-temp'}); value.textContent = `${row.temperature_c.toFixed(1)} °C`;
+    const value = svg('text', {x: lx, y: ly + 10, class: 'map-temp'}); value.textContent = state === 'above' ? `▲ ${tText}` : tText;
     // Stop the line before it reaches the label text.
     const edgeX = lx - Math.sign(lx - anchor[0]) * (name.length * 4 + 8);
     const line = svg('line', {
@@ -162,8 +226,8 @@ function drawMap() {
     labels.append(line, text, value);
   }
   map.append(labels);
-  document.getElementById('temp-low').textContent = `${min.toFixed(1)} °C`;
-  document.getElementById('temp-high').textContent = `${max.toFixed(1)} °C`;
+  document.getElementById('temp-low').textContent = valid.length ? `${min.toFixed(1)} °C` : '—';
+  document.getElementById('temp-high').textContent = valid.length ? `${max.toFixed(1)} °C` : '—';
 }
 async function getGeoJSON(url) {
   const response = await fetch(url, {cache: 'no-store'});
@@ -172,8 +236,10 @@ async function getGeoJSON(url) {
   if (body.type !== 'FeatureCollection' || !Array.isArray(body.features)) throw new Error('Invalid GeoJSON collection');
   return body.features.filter(f => rings(f.geometry).length);
 }
+
 // Hide some distant southwest background suburbs that look detached.
 // Keep all six selected suburbs visible.
+
 function withinMelbourneContext(feature) {
   const coordinates = rings(feature.geometry).flat();
   if (!coordinates.length) return false;
@@ -184,7 +250,9 @@ function withinMelbourneContext(feature) {
     west = Math.min(west, lon); east = Math.max(east, lon);
     south = Math.min(south, lat); north = Math.max(north, lat);
   }
+
   // Hide background shapes outside this part of the Melbourne map.
+
   return !(east < 144.90 && north < -38.00);
 }
 
