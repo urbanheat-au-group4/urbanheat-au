@@ -19,19 +19,21 @@ class CatalogueTests(unittest.TestCase):
     def test_repository_catalogue_counts_and_grouping(self):
         path = Path(__file__).resolve().parents[1] / "locations.json"
         all_records = load_catalogue(path)
-        self.assertEqual(len(all_records), 21)
+        self.assertEqual(len(all_records), 112)
+        for state in ("VIC", "NSW", "QLD", "WA", "SA", "TAS", "ACT", "NT"):
+            self.assertEqual(sum(r["state"] == state for r in all_records), 14)
         self.assertEqual({r["state"] for r in all_records},
                          {"VIC", "NSW", "QLD", "WA", "SA", "TAS", "ACT", "NT"})
         dashboard = load_catalogue(path, "melbourne_dashboard")
         self.assertEqual(len(dashboard), 6)
         self.assertEqual({r["name"] for r in dashboard},
                          set(historical_weather.weather.SUBURBS))
-        self.assertEqual(len(load_catalogue(path, "australia_historical")), 21)
+        self.assertEqual(len(load_catalogue(path, "australia_historical")), 112)
 
     def test_historical_importer_remains_six_by_default(self):
         with patch.dict("os.environ", {}, clear=True):
             self.assertEqual(len(historical_weather.locations()), 6)
-        self.assertEqual(len(historical_weather.locations("australia_historical")), 21)
+        self.assertEqual(len(historical_weather.locations("australia_historical")), 112)
 
     def test_invalid_record_rejected(self):
         for field, invalid in (

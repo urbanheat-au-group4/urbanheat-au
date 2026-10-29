@@ -250,6 +250,1007 @@
       "groups": [
         "australia_historical"
       ]
+    },
+    {
+      "id": "nsw-newcastle",
+      "name": "Newcastle",
+      "state": "NSW",
+      "latitude": -32.928,
+      "longitude": 151.781,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nsw-wollongong",
+      "name": "Wollongong",
+      "state": "NSW",
+      "latitude": -34.427,
+      "longitude": 150.894,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nsw-dubbo",
+      "name": "Dubbo",
+      "state": "NSW",
+      "latitude": -32.256,
+      "longitude": 148.601,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nsw-orange",
+      "name": "Orange",
+      "state": "NSW",
+      "latitude": -33.284,
+      "longitude": 149.1,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nsw-bathurst",
+      "name": "Bathurst",
+      "state": "NSW",
+      "latitude": -33.419,
+      "longitude": 149.58,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nsw-wagga-wagga",
+      "name": "Wagga Wagga",
+      "state": "NSW",
+      "latitude": -35.119,
+      "longitude": 147.369,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nsw-albury",
+      "name": "Albury",
+      "state": "NSW",
+      "latitude": -36.074,
+      "longitude": 146.913,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nsw-coffs-harbour",
+      "name": "Coffs Harbour",
+      "state": "NSW",
+      "latitude": -30.296,
+      "longitude": 153.114,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nsw-port-macquarie",
+      "name": "Port Macquarie",
+      "state": "NSW",
+      "latitude": -31.43,
+      "longitude": 152.909,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nsw-tamworth",
+      "name": "Tamworth",
+      "state": "NSW",
+      "latitude": -31.09,
+      "longitude": 150.929,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nsw-broken-hill",
+      "name": "Broken Hill",
+      "state": "NSW",
+      "latitude": -31.958,
+      "longitude": 141.467,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nsw-bourke",
+      "name": "Bourke",
+      "state": "NSW",
+      "latitude": -30.089,
+      "longitude": 145.938,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nsw-bega",
+      "name": "Bega",
+      "state": "NSW",
+      "latitude": -36.674,
+      "longitude": 149.841,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "qld-gold-coast",
+      "name": "Gold Coast",
+      "state": "QLD",
+      "latitude": -28.017,
+      "longitude": 153.426,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "qld-sunshine-coast",
+      "name": "Sunshine Coast",
+      "state": "QLD",
+      "latitude": -26.65,
+      "longitude": 153.067,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "qld-cairns",
+      "name": "Cairns",
+      "state": "QLD",
+      "latitude": -16.92,
+      "longitude": 145.772,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "qld-townsville",
+      "name": "Townsville",
+      "state": "QLD",
+      "latitude": -19.259,
+      "longitude": 146.816,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "qld-rockhampton",
+      "name": "Rockhampton",
+      "state": "QLD",
+      "latitude": -23.379,
+      "longitude": 150.51,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "qld-mackay",
+      "name": "Mackay",
+      "state": "QLD",
+      "latitude": -21.143,
+      "longitude": 149.186,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "qld-toowoomba",
+      "name": "Toowoomba",
+      "state": "QLD",
+      "latitude": -27.56,
+      "longitude": 151.95,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "qld-bundaberg",
+      "name": "Bundaberg",
+      "state": "QLD",
+      "latitude": -24.866,
+      "longitude": 152.348,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "qld-hervey-bay",
+      "name": "Hervey Bay",
+      "state": "QLD",
+      "latitude": -25.287,
+      "longitude": 152.769,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "qld-mount-isa",
+      "name": "Mount Isa",
+      "state": "QLD",
+      "latitude": -20.726,
+      "longitude": 139.493,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "qld-longreach",
+      "name": "Longreach",
+      "state": "QLD",
+      "latitude": -23.442,
+      "longitude": 144.249,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "qld-roma",
+      "name": "Roma",
+      "state": "QLD",
+      "latitude": -26.57,
+      "longitude": 148.789,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "qld-cooktown",
+      "name": "Cooktown",
+      "state": "QLD",
+      "latitude": -15.47,
+      "longitude": 145.252,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "wa-fremantle",
+      "name": "Fremantle",
+      "state": "WA",
+      "latitude": -32.056,
+      "longitude": 115.744,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "wa-joondalup",
+      "name": "Joondalup",
+      "state": "WA",
+      "latitude": -31.743,
+      "longitude": 115.766,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "wa-bunbury",
+      "name": "Bunbury",
+      "state": "WA",
+      "latitude": -33.327,
+      "longitude": 115.64,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "wa-busselton",
+      "name": "Busselton",
+      "state": "WA",
+      "latitude": -33.651,
+      "longitude": 115.346,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "wa-albany",
+      "name": "Albany",
+      "state": "WA",
+      "latitude": -35.024,
+      "longitude": 117.884,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "wa-geraldton",
+      "name": "Geraldton",
+      "state": "WA",
+      "latitude": -28.775,
+      "longitude": 114.614,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "wa-kalgoorlie",
+      "name": "Kalgoorlie",
+      "state": "WA",
+      "latitude": -30.749,
+      "longitude": 121.466,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "wa-broome",
+      "name": "Broome",
+      "state": "WA",
+      "latitude": -17.961,
+      "longitude": 122.236,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "wa-karratha",
+      "name": "Karratha",
+      "state": "WA",
+      "latitude": -20.736,
+      "longitude": 116.846,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "wa-port-hedland",
+      "name": "Port Hedland",
+      "state": "WA",
+      "latitude": -20.31,
+      "longitude": 118.582,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "wa-esperance",
+      "name": "Esperance",
+      "state": "WA",
+      "latitude": -33.86,
+      "longitude": 121.889,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "wa-margaret-river",
+      "name": "Margaret River",
+      "state": "WA",
+      "latitude": -33.954,
+      "longitude": 115.076,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "wa-kununurra",
+      "name": "Kununurra",
+      "state": "WA",
+      "latitude": -15.774,
+      "longitude": 128.738,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "sa-mount-gambier",
+      "name": "Mount Gambier",
+      "state": "SA",
+      "latitude": -37.829,
+      "longitude": 140.783,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "sa-whyalla",
+      "name": "Whyalla",
+      "state": "SA",
+      "latitude": -33.033,
+      "longitude": 137.584,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "sa-port-augusta",
+      "name": "Port Augusta",
+      "state": "SA",
+      "latitude": -32.491,
+      "longitude": 137.765,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "sa-port-pirie",
+      "name": "Port Pirie",
+      "state": "SA",
+      "latitude": -33.176,
+      "longitude": 138.008,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "sa-port-lincoln",
+      "name": "Port Lincoln",
+      "state": "SA",
+      "latitude": -34.726,
+      "longitude": 135.858,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "sa-victor-harbor",
+      "name": "Victor Harbor",
+      "state": "SA",
+      "latitude": -35.552,
+      "longitude": 138.622,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "sa-murray-bridge",
+      "name": "Murray Bridge",
+      "state": "SA",
+      "latitude": -35.12,
+      "longitude": 139.273,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "sa-renmark",
+      "name": "Renmark",
+      "state": "SA",
+      "latitude": -34.173,
+      "longitude": 140.744,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "sa-berri",
+      "name": "Berri",
+      "state": "SA",
+      "latitude": -34.286,
+      "longitude": 140.602,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "sa-coober-pedy",
+      "name": "Coober Pedy",
+      "state": "SA",
+      "latitude": -29.013,
+      "longitude": 134.754,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "sa-ceduna",
+      "name": "Ceduna",
+      "state": "SA",
+      "latitude": -32.126,
+      "longitude": 133.674,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "sa-roxby-downs",
+      "name": "Roxby Downs",
+      "state": "SA",
+      "latitude": -30.563,
+      "longitude": 136.895,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "sa-naracoorte",
+      "name": "Naracoorte",
+      "state": "SA",
+      "latitude": -36.955,
+      "longitude": 140.741,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "tas-launceston",
+      "name": "Launceston",
+      "state": "TAS",
+      "latitude": -41.434,
+      "longitude": 147.138,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "tas-devonport",
+      "name": "Devonport",
+      "state": "TAS",
+      "latitude": -41.177,
+      "longitude": 146.351,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "tas-burnie",
+      "name": "Burnie",
+      "state": "TAS",
+      "latitude": -41.055,
+      "longitude": 145.903,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "tas-ulverstone",
+      "name": "Ulverstone",
+      "state": "TAS",
+      "latitude": -41.158,
+      "longitude": 146.171,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "tas-smithton",
+      "name": "Smithton",
+      "state": "TAS",
+      "latitude": -40.846,
+      "longitude": 145.124,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "tas-queenstown",
+      "name": "Queenstown",
+      "state": "TAS",
+      "latitude": -42.08,
+      "longitude": 145.557,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "tas-strahan",
+      "name": "Strahan",
+      "state": "TAS",
+      "latitude": -42.152,
+      "longitude": 145.327,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "tas-st-helens",
+      "name": "St Helens",
+      "state": "TAS",
+      "latitude": -41.32,
+      "longitude": 148.249,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "tas-bicheno",
+      "name": "Bicheno",
+      "state": "TAS",
+      "latitude": -41.874,
+      "longitude": 148.303,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "tas-swansea",
+      "name": "Swansea",
+      "state": "TAS",
+      "latitude": -42.127,
+      "longitude": 148.076,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "tas-new-norfolk",
+      "name": "New Norfolk",
+      "state": "TAS",
+      "latitude": -42.782,
+      "longitude": 147.063,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "tas-huonville",
+      "name": "Huonville",
+      "state": "TAS",
+      "latitude": -43.031,
+      "longitude": 147.049,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "tas-george-town",
+      "name": "George Town",
+      "state": "TAS",
+      "latitude": -41.106,
+      "longitude": 146.827,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "act-civic",
+      "name": "Civic",
+      "state": "ACT",
+      "latitude": -35.28,
+      "longitude": 149.131,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "act-belconnen",
+      "name": "Belconnen",
+      "state": "ACT",
+      "latitude": -35.238,
+      "longitude": 149.067,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "act-gungahlin",
+      "name": "Gungahlin",
+      "state": "ACT",
+      "latitude": -35.185,
+      "longitude": 149.133,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "act-woden",
+      "name": "Woden",
+      "state": "ACT",
+      "latitude": -35.344,
+      "longitude": 149.087,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "act-tuggeranong",
+      "name": "Tuggeranong",
+      "state": "ACT",
+      "latitude": -35.415,
+      "longitude": 149.065,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "act-weston-creek",
+      "name": "Weston Creek",
+      "state": "ACT",
+      "latitude": -35.341,
+      "longitude": 149.051,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "act-dickson",
+      "name": "Dickson",
+      "state": "ACT",
+      "latitude": -35.251,
+      "longitude": 149.14,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "act-kingston",
+      "name": "Kingston",
+      "state": "ACT",
+      "latitude": -35.315,
+      "longitude": 149.141,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "act-barton",
+      "name": "Barton",
+      "state": "ACT",
+      "latitude": -35.305,
+      "longitude": 149.138,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "act-molonglo-valley",
+      "name": "Molonglo Valley",
+      "state": "ACT",
+      "latitude": -35.299,
+      "longitude": 149.038,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "act-hall",
+      "name": "Hall",
+      "state": "ACT",
+      "latitude": -35.169,
+      "longitude": 149.07,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "act-fyshwick",
+      "name": "Fyshwick",
+      "state": "ACT",
+      "latitude": -35.33,
+      "longitude": 149.17,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "act-kambah",
+      "name": "Kambah",
+      "state": "ACT",
+      "latitude": -35.387,
+      "longitude": 149.071,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nt-palmerston",
+      "name": "Palmerston",
+      "state": "NT",
+      "latitude": -12.486,
+      "longitude": 130.984,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nt-alice-springs",
+      "name": "Alice Springs",
+      "state": "NT",
+      "latitude": -23.698,
+      "longitude": 133.88,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nt-katherine",
+      "name": "Katherine",
+      "state": "NT",
+      "latitude": -14.466,
+      "longitude": 132.265,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nt-tennant-creek",
+      "name": "Tennant Creek",
+      "state": "NT",
+      "latitude": -19.648,
+      "longitude": 134.192,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nt-nhulunbuy",
+      "name": "Nhulunbuy",
+      "state": "NT",
+      "latitude": -12.181,
+      "longitude": 136.782,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nt-jabiru",
+      "name": "Jabiru",
+      "state": "NT",
+      "latitude": -12.67,
+      "longitude": 132.836,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nt-batchelor",
+      "name": "Batchelor",
+      "state": "NT",
+      "latitude": -13.042,
+      "longitude": 131.025,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nt-adelaide-river",
+      "name": "Adelaide River",
+      "state": "NT",
+      "latitude": -13.238,
+      "longitude": 131.106,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nt-humpty-doo",
+      "name": "Humpty Doo",
+      "state": "NT",
+      "latitude": -12.574,
+      "longitude": 131.096,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nt-yulara",
+      "name": "Yulara",
+      "state": "NT",
+      "latitude": -25.24,
+      "longitude": 130.985,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nt-elliott",
+      "name": "Elliott",
+      "state": "NT",
+      "latitude": -17.553,
+      "longitude": 133.538,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nt-borroloola",
+      "name": "Borroloola",
+      "state": "NT",
+      "latitude": -16.07,
+      "longitude": 136.308,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
+    },
+    {
+      "id": "nt-timber-creek",
+      "name": "Timber Creek",
+      "state": "NT",
+      "latitude": -15.649,
+      "longitude": 130.481,
+      "region": "Regional selection",
+      "groups": [
+        "australia_historical"
+      ]
     }
   ]
 }
