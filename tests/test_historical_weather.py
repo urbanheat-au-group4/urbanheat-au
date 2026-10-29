@@ -1,5 +1,4 @@
 """Offline tests for the historical weather importer."""
-import copy
 import json
 import tempfile
 import unittest
