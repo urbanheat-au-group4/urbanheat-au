@@ -12,6 +12,9 @@ const names = {
 let weather = [];
 let monitored = [];
 let background = [];
+let weatherLoaded = false;
+let refreshInFlight = false;
+let lastWeatherUpdate = null;
 
 const THRESHOLD_MIN = -10, THRESHOLD_MAX = 60;
 let activeThreshold = 30;                  // the last valid threshold; matches the starting value in the HTML
@@ -128,7 +131,7 @@ function showWeather() {
     const details = document.createElement('p'); details.textContent = `Feels like ${fmt(item.feels_like_c, ' °C')} · Humidity ${Number.isFinite(item.humidity_pct) ? item.humidity_pct + '%' : 'Unavailable'}`;
     const alert = document.createElement('p');
     alert.className = state === 'above' ? 'warning' : state === 'below' ? 'normal' : 'no-data';
-    alert.textContent = STATE_LABEL[state](threshold);
+    alert.textContent = STATE_LABEL[state](thresholdValid ? threshold : activeThreshold);
     const environment = document.createElement('p');
     const uv = Number.isFinite(item.uv_index) ? item.uv_index.toFixed(1) : 'Unavailable';
     const pm = Number.isFinite(item.pm25_ug_m3) ? item.pm25_ug_m3.toFixed(1) + ' µg/m³' : 'Unavailable';
@@ -274,6 +277,8 @@ async function loadMap() {
 async function loadWeather() {
   const error = document.getElementById('error'); error.textContent = '';
   try {
+    if (refreshInFlight) return;
+    refreshInFlight = true;
     const response = await fetch('/weather_data.json', {cache: 'no-store'});
     if (!response.ok) throw new Error('Saved readings missing. Run python3 weather.py first.');
     const data = await response.json();
@@ -299,26 +304,54 @@ async function loadWeather() {
     const ageHours = (Date.now() - updatedAt.getTime()) / 3600000;
     if (ageHours > 3 || ageHours < -0.25) throw new Error('Weather data is out of date. Run python3 weather.py to refresh it');
     weather = data.locations;
+    weatherLoaded = true;
+    lastWeatherUpdate = updatedAt;
     const previous = suburbSelect.value;
     suburbSelect.replaceChildren(new Option('All suburbs', 'all'));
     for (const row of weather) suburbSelect.add(new Option(row.suburb, row.suburb));
     suburbSelect.value = [...suburbSelect.options].some(opt => opt.value === previous) ? previous : 'all';
     const updatedText = `Last updated: ${updatedAt.toLocaleString('en-AU', {timeZone: 'Australia/Melbourne'})} (Melbourne time)`;
     document.getElementById('updated').textContent = updatedText;
-    document.getElementById('updated-top').textContent = updatedText;
+    const top = document.getElementById('updated-top');
+    if (top) top.textContent = updatedText;
+    const refreshStatus = document.getElementById('refresh-status');
+    if (refreshStatus) refreshStatus.textContent = 'Current weather loaded successfully';
     showWeather();
   } catch (exc) {
+    const refreshStatus = document.getElementById('refresh-status');
+    if (refreshStatus) refreshStatus.textContent = 'Refresh unsuccessful; last validated readings retained where available';
+    if (weatherLoaded) {
+      error.textContent = `Refresh failed: ${exc.message}. Last validated readings are retained; check their timestamp.`;
+      return;
+    }
     weather = []; cards.replaceChildren(); map.replaceChildren();
     for (const id of ['count', 'warmest', 'alerts', 'metric-temp', 'metric-feels', 'metric-humidity', 'metric-uv', 'metric-pm25']) document.getElementById(id).textContent = '—';
     document.getElementById('selected-label').textContent = 'No data available';
     document.getElementById('alert-status').textContent = 'Weather data unavailable.';
     document.querySelector('.status').classList.remove('warning-state');
-    document.getElementById('updated-top').textContent = 'Weather data unavailable';
+    const top = document.getElementById('updated-top');
+    if (top) top.textContent = 'Weather data unavailable';
     document.getElementById('updated').textContent = 'No valid current readings loaded';
     error.textContent = exc.message;
+  } finally {
+    refreshInFlight = false;
   }
+}
+async function pollRefresh() {
+  if (refreshInFlight) return;
+  try {
+    const response = await fetch('/refresh-status', {cache: 'no-store'});
+    if (response.ok) {
+      const status = await response.json();
+      const label = document.getElementById('refresh-status');
+      if (label) label.textContent = status.running ? 'Weather update running…' : status.last_error ? 'Automatic weather update failed; data may be stale' : 'Automatic weather refresh enabled';
+    }
+  } catch (_) { /* A static hosting preview may not provide the status endpoint */ }
+  await loadWeather();
 }
 suburbSelect.addEventListener('change', showWeather);
 thresholdInput.addEventListener('input', showWeather);
 document.getElementById('refresh').addEventListener('click', loadWeather);
 loadMap(); loadWeather();
+// Match the default server interval; polling only reads the saved snapshot.
+if (typeof setInterval === 'function') setInterval(pollRefresh, 60 * 1000);
