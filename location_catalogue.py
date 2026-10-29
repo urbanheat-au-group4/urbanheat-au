@@ -10,6 +10,7 @@ from pathlib import Path
 
 STATES = {"VIC", "NSW", "QLD", "WA", "SA", "TAS", "ACT", "NT"}
 ID_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+GROUP_PATTERN = re.compile(r"^[a-z0-9]+(?:[_-][a-z0-9]+)*$")
 
 
 def validate_catalogue(data):
@@ -35,7 +36,7 @@ def validate_catalogue(data):
         if not isinstance(region, str) or not region.strip():
             raise ValueError("Missing region")
         if not isinstance(groups, list) or not groups or any(
-            not isinstance(g, str) or not ID_PATTERN.fullmatch(g) for g in groups
+            not isinstance(g, str) or not GROUP_PATTERN.fullmatch(g) for g in groups
         ) or len(groups) != len(set(groups)):
             raise ValueError("Missing or invalid location groups")
         if type(lat) not in (int, float) or type(lon) not in (int, float):
