@@ -1,0 +1,40 @@
+{
+  "locations": [
+    {
+      "id": "melbourne-cbd",
+      "name": "Melbourne CBD",
+      "latitude": -37.8136,
+      "longitude": 144.9631
+    },
+    {
+      "id": "melton",
+      "name": "Melton",
+      "latitude": -37.6834,
+      "longitude": 144.5833
+    },
+    {
+      "id": "werribee",
+      "name": "Werribee",
+      "latitude": -37.9,
+      "longitude": 144.66
+    },
+    {
+      "id": "craigieburn",
+      "name": "Craigieburn",
+      "latitude": -37.598,
+      "longitude": 144.941
+    },
+    {
+      "id": "belgrave",
+      "name": "Belgrave",
+      "latitude": -37.91,
+      "longitude": 145.353
+    },
+    {
+      "id": "frankston",
+      "name": "Frankston",
+      "latitude": -38.144,
+      "longitude": 145.122
+    }
+  ]
+}

@@ -48,3 +48,10 @@ Vicmap boundaries → local GeoJSON ──────────────�
 - All updated weather values are saved locally. The server refreshes weather data at startup. Restart the server or run `python3 weather.py` to update it later.
 
 Issue tracking: Jira. Source and tests: GitHub. Sprint assessment: Confluence.
+
+
+## Historical weather (Sprint 3)
+
+Run `python3 historical_weather.py` to download daily ERA5 reanalysis data from Open-Meteo for 2015–2025. The importer uses `locations.json` when the expanded catalogue is available; until then, it uses the six locations in `weather.py`. Output is saved locally as `historical_weather.json`, and is not committed to GitHub.
+
+The importer checks day order, date coverage, units, numeric readings and coordinates. Missing values stay `null`; failed requests do not replace earlier saved data. It retries failed requests at most three times. The historical data is a model estimate, not a weather station measurement. Run offline checks with `python3 -m unittest discover -s tests -p 'test_*.py' -v`.

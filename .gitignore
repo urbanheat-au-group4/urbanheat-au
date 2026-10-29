@@ -33,3 +33,6 @@ static.backup.*/
 
 # Generated weather values must not be committed
 weather_data.json
+
+# Generated historical reanalysis dataset
+historical_weather.json
