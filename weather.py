@@ -22,6 +22,9 @@ SUBURBS = {
     "Frankston": (-38.1440, 145.1220),
 }
 
+# fixed crash on "none" > Now prints n/a
+def show(value, digits=1):
+    return "n/a" if value is None else f"{value:.{digits}f}"
 
 def get_weather():
     """Get current weather for all six suburbs."""
@@ -45,35 +48,40 @@ def validate_weather(payload):
     rows = []
     for (name, (lat, lon)), item in zip(SUBURBS.items(), payload):
         if not isinstance(item, dict):
-            raise ValueError(f"{name}: invalid location response")
+            raise ValueError(f"{name}: invalid API response")
         current = item.get("current")
         units = item.get("current_units")
-        if not isinstance(current, dict) or not isinstance(units, dict):
-            raise ValueError(f"{name}: missing weather data or units")
-        expected_units = {
-            "temperature_2m": "°C",
-            "apparent_temperature": "°C",
-            "relative_humidity_2m": "%",
+        if not isinstance(current, dict):
+            current = {}
+        if not isinstance(units, dict):
+            units = {}
+
+        # For each field: expected unit, lowest and highest believable value.
+        # Missing, non-numeric, out-of-range or wrong-unit values are saved as None (null).
+        expected = {
+            "temperature_2m": ("°C", -50, 60),
+            "apparent_temperature": ("°C", -80, 80),
+            "relative_humidity_2m": ("%", 0, 100),
         }
-        for field, unit in expected_units.items():
+        cleaned = {}
+        for field, (unit, lower, upper) in expected.items():
             value = current.get(field)
-            if type(value) not in (int, float) or not math.isfinite(value):
-                raise ValueError(f"{name}: missing or invalid {field}")
-            if units.get(field) != unit:
-                raise ValueError(f"{name}: unexpected unit for {field}")
-        if not 0 <= current["relative_humidity_2m"] <= 100:
-            raise ValueError(f"{name}: humidity outside 0-100%")
+            ok = (type(value) in (int, float) and math.isfinite(value)
+                  and lower <= value <= upper and units.get(field) == unit)
+            cleaned[field] = value if ok else None
+            if not ok:
+                print(f"Warning: {name}: {field} missing or invalid, saved as null")
+
         for coordinate, lower, upper in (("latitude", -90, 90), ("longitude", -180, 180)):
             value = item.get(coordinate)
             if type(value) not in (int, float) or not math.isfinite(value) or not lower <= value <= upper:
                 raise ValueError(f"{name}: invalid model {coordinate}")
+
         observed_at = current.get("time")
-        if not isinstance(observed_at, str):
-            raise ValueError(f"{name}: missing timestamp")
         try:
             datetime.fromisoformat(observed_at)
-        except ValueError as exc:
-            raise ValueError(f"{name}: invalid timestamp") from exc
+        except (TypeError, ValueError):
+            observed_at = None
 
         rows.append({
             "suburb": name,
@@ -81,9 +89,9 @@ def validate_weather(payload):
             "requested_longitude": lon,
             "model_latitude": item.get("latitude"),
             "model_longitude": item.get("longitude"),
-            "temperature_c": current["temperature_2m"],
-            "feels_like_c": current["apparent_temperature"],
-            "humidity_pct": current["relative_humidity_2m"],
+            "temperature_c": cleaned["temperature_2m"],
+            "feels_like_c": cleaned["apparent_temperature"],
+            "humidity_pct": cleaned["relative_humidity_2m"],
             "observed_at_gmt": observed_at,
             "source": "Open-Meteo Forecast API",
             "data_type": "model_estimate",
@@ -159,11 +167,12 @@ def main():
     }, indent=2) + "\n", encoding="utf-8")
     print(f"{'Suburb':<16} {'Temp °C':>8} {'Feels °C':>9} {'Humidity':>9}")
     for row in rows:
-        print(f"{row['suburb']:<16} {row['temperature_c']:>8.1f} {row['feels_like_c']:>9.1f} {row['humidity_pct']:>8.0f}%")
+        print(f"{row['suburb']:<16} {show(row['temperature_c']):>8} {show(row['feels_like_c']):>9} {show(row['humidity_pct'], 0):>8}%")
     available_uv = sum(r["uv_index"] is not None for r in rows)
     available_pm = sum(r["pm25_ug_m3"] is not None for r in rows)
     print(f"Environmental fields available: UV {available_uv}/{len(rows)}, PM2.5 {available_pm}/{len(rows)}")
-    print(f"\nValidated {len(rows)}/6 locations. Saved to {OUTPUT_FILE}")
+    usable = sum(r["temperature_c"] is not None for r in rows)
+    print(f"\n{usable}/6 locations have a valid temperature. Saved to {OUTPUT_FILE}")
     return 0
 
 

@@ -22,9 +22,10 @@
         <h2>Explore a suburb</h2>
         <label for="suburb">Suburb selection</label>
         <select id="suburb"><option value="all">All suburbs</option></select>
-        <label for="threshold">Heat alert threshold (°C)</label>
-        <input id="threshold" type="number" value="30" min="0" max="55" step="1">
-        <p class="field-help">Demo threshold only, not an official warning.</p>
+        <label for="threshold">Your temperature threshold (°C)</label>
+        <input id="threshold" type="number" value="30" min="-10" max="60" step="any">
+        <p id="threshold-message" class="field-error" role="alert"></p>
+        <p class="field-help">Not an official emergency warning. These indicators use the threshold set by the user.</p>
         <button id="refresh" type="button">Reload saved data</button>
         <div class="control-summary"><span>Locations loaded</span><strong id="count">—</strong><span>Warmest location</span><strong id="warmest">—</strong></div>
       </section>
@@ -32,6 +33,10 @@
         <div class="map-heading"><div><h2>Greater Melbourne map</h2><p>Choose a coloured locality to view its conditions.</p></div><span id="map-status" role="status">Loading boundaries…</span></div>
         <svg id="vector-map" viewBox="0 0 1000 580" role="group" aria-label="Interactive SVG map of six monitored Greater Melbourne localities"></svg>
         <div class="map-legend"><span id="temp-low">Cooler</span><span class="temperature-gradient" aria-hidden="true"></span><span id="temp-high">Warmer</span></div>
+        <div class="threshold-key" aria-label="Map key for your threshold">
+          <span>▲ At or above your threshold</span>
+          <span>No data: grey shape, not counted</span>
+        </div>
         <p class="source-note">Background localities outside the metropolitan study area may be omitted. Temperature colours are relative model estimates at one point per locality, not measurements throughout the suburb.</p>
       </section>
     </div>
@@ -46,8 +51,8 @@
       </div>
     </section>
     <section class="status panel" aria-labelledby="status-title">
-      <div><h2 id="status-title">Heat alert / status</h2><p id="alert-status" role="status" aria-live="polite">Awaiting weather data…</p></div>
-      <div class="status-count"><strong id="alerts">—</strong><span>At or above demo threshold</span></div>
+      <div><h2 id="status-title">Your threshold status</h2><p id="alert-status" role="status" aria-live="polite">Awaiting weather data…</p></div>
+      <div class="status-count"><strong id="alerts">—</strong><span>At or above your threshold</span></div>
     </section>
     <section class="details" aria-labelledby="details-title"><h2 id="details-title">Compare locations</h2><p id="error" class="error" role="alert"></p><div id="cards" class="cards"></div></section>
     <section class="attribution panel" id="about" aria-label="Data source and limitations">
