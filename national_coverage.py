@@ -8,10 +8,12 @@ import argparse
 from collections import Counter
 from datetime import date, timedelta
 import json
+import math
 from pathlib import Path
 
 import historical_weather as hist
 from location_catalogue import load_catalogue
+from national_ingest import signature
 
 FIELDS = hist.FIELDS
 
@@ -57,7 +59,7 @@ def evaluate_year(days, year):
             value = row.get(field)
             if value is None:
                 missing[field] += 1
-            elif type(value) not in (int, float) or not __import__("math").isfinite(value):
+            elif type(value) not in (int, float) or not math.isfinite(value):
                 invalid_values[field] += 1
             elif field == "precipitation_sum" and value < 0:
                 invalid_values[field] += 1
@@ -88,6 +90,8 @@ def assess_location(location, directory):
             data = payload["data"]
             if data.get("id") != location["id"]:
                 errors.append("location_id_mismatch")
+            if payload.get("signature") != signature(location):
+                errors.append("snapshot_signature_mismatch")
             if payload.get("model") != hist.MODEL:
                 errors.append("model_mismatch")
             if payload.get("timezone") != "Australia/Melbourne":
