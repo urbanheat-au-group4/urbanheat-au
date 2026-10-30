@@ -8,9 +8,10 @@ boundary; a per-state local-day policy must be approved before national analysis
 import argparse
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
-import re
+from datetime import timedelta
 import sys
 
 import historical_weather as hist
@@ -39,18 +40,44 @@ def signature(place):
 
 
 def valid_cached(path, place):
+    """Reject truncated, duplicated or poisoned snapshots before reusing them."""
     if not path.is_file():
         return False
     try:
         obj = json.loads(path.read_text(encoding="utf-8"))
         series = obj["data"]
         days = series["days"]
-        return (obj["signature"] == signature(place)
-                and series["id"] == place["id"]
-                and len(days) == (hist.END - hist.START).days + 1
-                and days[0]["date"] == hist.START.isoformat()
-                and days[-1]["date"] == hist.END.isoformat())
-    except (OSError, KeyError, TypeError, ValueError, IndexError):
+        count = (hist.END - hist.START).days + 1
+        if (obj.get("signature") != signature(place)
+                or obj.get("model") != hist.MODEL
+                or obj.get("timezone") != "Australia/Melbourne"
+                or obj.get("start_date") != hist.START.isoformat()
+                or obj.get("end_date") != hist.END.isoformat()
+                or obj.get("units") != dict(zip(hist.FIELDS, hist.UNITS))
+                or series.get("id") != place["id"]
+                or series.get("latitude") != place["latitude"]
+                or series.get("longitude") != place["longitude"]
+                or not isinstance(days, list) or len(days) != count):
+            return False
+        missing = 0
+        for index, row in enumerate(days):
+            if not isinstance(row, dict) or row.get("date") != (
+                hist.START + timedelta(days=index)
+            ).isoformat():
+                return False
+            for field in hist.FIELDS:
+                value = row.get(field)
+                if value is None:
+                    missing += 1
+                elif type(value) not in (int, float) or not math.isfinite(value):
+                    return False
+                elif field == "precipitation_sum" and value < 0:
+                    return False
+            values = [row.get(k) for k in ("temperature_2m_min", "temperature_2m_mean", "temperature_2m_max")]
+            if all(v is not None for v in values) and not values[0] <= values[1] <= values[2]:
+                return False
+        return series.get("missing_values") == missing
+    except (OSError, KeyError, TypeError, ValueError, IndexError, AttributeError):
         return False
 
 
