@@ -50,7 +50,8 @@ class CoverageTests(unittest.TestCase):
     def test_missing_location_and_metadata_mismatch(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            place = {"id": "test", "name": "Test", "state": "VIC"}
+            place = {"id": "test", "name": "Test", "state": "VIC",
+                     "latitude": -37.8, "longitude": 145.0}
             result = cov.assess_location(place, root)
             self.assertEqual(result["errors"], ["snapshot_missing"])
             self.assertEqual(result["status"], "incomplete")
