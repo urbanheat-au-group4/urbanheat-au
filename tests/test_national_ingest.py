@@ -22,9 +22,13 @@ class NationalIngestTests(unittest.TestCase):
 
     def test_successful_run_is_cached_and_repeatable(self):
         days = (ni.hist.END - ni.hist.START).days + 1
-        valid = {"id": self.place["id"], "days": [
-            {"date": (ni.hist.START + ni.hist.timedelta(days=i)).isoformat()}
-            for i in range(days)]}
+        valid = {"id": self.place["id"], "latitude": self.place["latitude"],
+                 "longitude": self.place["longitude"], "missing_values": 0,
+                 "days": [
+                     {"date": (ni.hist.START + ni.hist.timedelta(days=i)).isoformat(),
+                      "temperature_2m_mean": 20, "temperature_2m_max": 25,
+                      "temperature_2m_min": 15, "precipitation_sum": 0}
+                     for i in range(days)]}
         with patch.object(ni.hist, "validate", return_value=valid) as validator:
             manifest = ni.process(self.catalogue, self.out, fetch=lambda _: {"ok": True})
             self.assertEqual(manifest["completed"], 1)
@@ -32,6 +36,27 @@ class NationalIngestTests(unittest.TestCase):
             manifest = ni.process(self.catalogue, self.out, fetch=lambda _: self.fail("must not fetch cached"))
             self.assertEqual(manifest["locations"][0]["status"], "cached")
             validator.assert_called_once()
+
+    def test_bad_internal_date_is_not_cached(self):
+        count = (ni.hist.END - ni.hist.START).days + 1
+        rows = [{"date": (ni.hist.START + ni.hist.timedelta(days=i)).isoformat(),
+                 "temperature_2m_mean": 20, "temperature_2m_min": 15,
+                 "temperature_2m_max": 25, "precipitation_sum": 1}
+                for i in range(count)]
+        rows[3]["date"] = rows[2]["date"]
+        path = self.out / "locations" / "melbourne-cbd.json"
+        path.parent.mkdir(parents=True)
+        path.write_text(json.dumps({
+            "signature": ni.signature(self.place), "model": ni.hist.MODEL,
+            "timezone": "Australia/Melbourne",
+            "start_date": ni.hist.START.isoformat(),
+            "end_date": ni.hist.END.isoformat(),
+            "units": dict(zip(ni.hist.FIELDS, ni.hist.UNITS)),
+            "data": {"id": self.place["id"], "latitude": self.place["latitude"],
+                     "longitude": self.place["longitude"],
+                     "missing_values": 0, "days": rows},
+        }))
+        self.assertFalse(ni.valid_cached(path, self.place))
 
     def test_failed_location_preserves_existing_snapshot(self):
         target = self.out / "locations" / "melbourne-cbd.json"
