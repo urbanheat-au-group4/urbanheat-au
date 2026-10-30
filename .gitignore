@@ -38,3 +38,6 @@ weather_data.json
 historical_weather.json
 
 climate_statistics.json
+
+# National historical snapshots and generated coverage output
+data/national/
