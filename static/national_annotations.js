@@ -107,20 +107,35 @@
     }).filter(Boolean);
   }
 
-  function stateViewBox(locations, state, boundaryPoints = []) {
+  function stateViewBox(locations, state, boundaryPoints = [], focusLocations = false) {
     if (state === 'ALL') return {x:0, y:0, width:1000, height:760};
     const locationsHere = locations.filter(p => p.state === state);
-    const coords = [...boundaryPoints, ...locationsHere.map(p => [p.x, p.y])]
+    const coords = [...(focusLocations ? [] : boundaryPoints), ...locationsHere.map(p => [p.x, p.y])]
       .filter(p => Array.isArray(p) && Number.isFinite(p[0]) && Number.isFinite(p[1]));
     if (!coords.length) return {x:0, y:0, width:1000, height:760};
     const xs = coords.map(p => p[0]), ys = coords.map(p => p[1]);
     const left = Math.min(...xs), right = Math.max(...xs);
     const top = Math.min(...ys), bottom = Math.max(...ys);
-    const width = Math.min(1000, Math.max(190, (right-left)*1.30, (bottom-top)*1.30*1000/760));
+    const minimumWidth = state === 'ACT' || focusLocations ? 36 : 110;
+    const width = Math.min(1000, Math.max(minimumWidth, (right-left)*1.30, (bottom-top)*1.30*1000/760));
     const height = width*760/1000;
     const x = Math.max(0, Math.min(1000-width, (left+right-width)/2));
     const y = Math.max(0, Math.min(760-height, (top+bottom-height)/2));
     return {x,y,width,height};
+  }
+
+  function hasClusteredCoverage(locations, state, boundaryPoints) {
+    if (state === 'ALL' || boundaryPoints.length < 2) return false;
+    const local = locations.filter(p => p.state === state);
+    if (local.length < 2) return false;
+    const bounds = coordinates => {
+      const xs = coordinates.map(p => p[0]), ys = coordinates.map(p => p[1]);
+      return [Math.max(...xs)-Math.min(...xs), Math.max(...ys)-Math.min(...ys)];
+    };
+    const [sampleWidth, sampleHeight] = bounds(local.map(p => [p.x,p.y]));
+    const [stateWidth, stateHeight] = bounds(boundaryPoints);
+    if (stateWidth <= 0 || stateHeight <= 0) return false;
+    return sampleWidth/stateWidth < 0.28 && sampleHeight/stateHeight < 0.28;
   }
 
   function stateCounts(locations) {
@@ -129,7 +144,7 @@
     return counts;
   }
 
-  const helpers = {KEY_LOCATIONS, format, labelLayout, bandSummaries, stateCounts, stateViewBox};
+  const helpers = {KEY_LOCATIONS, format, labelLayout, bandSummaries, stateCounts, stateViewBox, hasClusteredCoverage};
   root.NationalAnnotations = helpers;
   if (typeof module !== 'undefined' && module.exports) module.exports = helpers;
 })(typeof window !== 'undefined' ? window : globalThis);
