@@ -90,19 +90,26 @@ def valid_cached(path, place):
         return False
 
 
-def process(catalogue, directory, group=GROUP_DEFAULT, fetch=None, delay=8.0, sleep=time.sleep):
+def process(catalogue, directory, group=GROUP_DEFAULT, fetch=None, delay=8.0, sleep=time.sleep, max_new=5):
     """Process all locations independently, never discard a good older file."""
     places = load_catalogue(catalogue, group)
     directory = Path(directory)
-    fetch = fetch or (lambda place: hist.fetch_one(place, timezone_name=location_timezone(place)))
+    fetch = fetch or (lambda place: hist.fetch_one(place, timezone_name=location_timezone(place), attempts=1))
     results = []
     last_request = None
+    throttled = False
+    attempted = 0
     for place in places:
         # IDs have been checked by the catalogue validator
         path = directory / "locations" / (place["id"] + ".json")
         status = "cached"
         error = None
-        if not valid_cached(path, place):
+        if not valid_cached(path, place) and throttled:
+            status, error = "deferred", "Provider rate limit detected; resume in a later run"
+        elif not valid_cached(path, place) and attempted >= max_new:
+            status, error = "deferred", "Per-run request cap reached"
+        elif not valid_cached(path, place):
+            attempted += 1
             if last_request is not None and delay > 0:
                 sleep(delay)
             last_request = True
@@ -120,6 +127,9 @@ def process(catalogue, directory, group=GROUP_DEFAULT, fetch=None, delay=8.0, sl
                 })
             except (OSError, ValueError, RuntimeError, TypeError) as exc:
                 status, error = "failed", str(exc)
+                if "429" in str(exc) or "Too Many Requests" in str(exc):
+                    throttled = True
+                    print("HTTP 429: stopping further network requests; saved snapshots retained.", flush=True)
         results.append({"id": place["id"], "state": place["state"],
                         "status": status, "error": error})
         print(f'{place["id"]}: {status}' + (f" ({error})" if error else ""), flush=True)
@@ -127,7 +137,7 @@ def process(catalogue, directory, group=GROUP_DEFAULT, fetch=None, delay=8.0, sl
         "format_version": FORMAT_VERSION, "group": group,
         "model": hist.MODEL, "timezone_policy": "state_local",
         "start_date": hist.START.isoformat(), "end_date": hist.END.isoformat(),
-        "expected": len(results), "completed": sum(
+        "throttled": throttled, "attempted": attempted, "expected": len(results), "completed": sum(
             r["status"] in ("cached", "updated") for r in results),
         "locations": results,
         "limitations": "State capital IANA timezone is used for each locality; location-level timezone overrides and verified coordinates remain future work.",
@@ -143,10 +153,14 @@ def main(argv=None):
     parser.add_argument("--out", type=Path, default=Path("data/national"))
     parser.add_argument("--delay", type=float, default=8.0,
                         help="Minimum pause in seconds between uncached locations (default 8)")
+    parser.add_argument("--max-new", type=int, default=5,
+                        help="Maximum uncached locations attempted per run (default 5)")
     args = parser.parse_args(argv)
+    if args.max_new < 1:
+        parser.error("--max-new must be positive")
     if args.delay < 0:
         parser.error("--delay must be non-negative")
-    manifest = process(args.catalogue, args.out, args.group, delay=args.delay)
+    manifest = process(args.catalogue, args.out, args.group, delay=args.delay, max_new=args.max_new)
     print(f'Validated snapshots: {manifest["completed"]}/{manifest["expected"]}')
     return 0 if manifest["completed"] == manifest["expected"] else 1
 
