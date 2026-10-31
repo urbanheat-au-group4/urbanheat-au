@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 from datetime import timedelta
 import sys
+import time
 
 import historical_weather as hist
 from location_catalogue import load_catalogue
@@ -89,18 +90,22 @@ def valid_cached(path, place):
         return False
 
 
-def process(catalogue, directory, group=GROUP_DEFAULT, fetch=None):
+def process(catalogue, directory, group=GROUP_DEFAULT, fetch=None, delay=8.0, sleep=time.sleep):
     """Process all locations independently, never discard a good older file."""
     places = load_catalogue(catalogue, group)
     directory = Path(directory)
     fetch = fetch or (lambda place: hist.fetch_one(place, timezone_name=location_timezone(place)))
     results = []
+    last_request = None
     for place in places:
         # IDs have been checked by the catalogue validator
         path = directory / "locations" / (place["id"] + ".json")
         status = "cached"
         error = None
         if not valid_cached(path, place):
+            if last_request is not None and delay > 0:
+                sleep(delay)
+            last_request = True
             status = "updated"
             try:
                 validated = hist.validate(fetch(place), place, timezone_name=location_timezone(place))
@@ -136,8 +141,12 @@ def main(argv=None):
     parser.add_argument("--catalogue", type=Path, default=hist.CATALOGUE)
     parser.add_argument("--group", default=GROUP_DEFAULT)
     parser.add_argument("--out", type=Path, default=Path("data/national"))
+    parser.add_argument("--delay", type=float, default=8.0,
+                        help="Minimum pause in seconds between uncached locations (default 8)")
     args = parser.parse_args(argv)
-    manifest = process(args.catalogue, args.out, args.group)
+    if args.delay < 0:
+        parser.error("--delay must be non-negative")
+    manifest = process(args.catalogue, args.out, args.group, delay=args.delay)
     print(f'Validated snapshots: {manifest["completed"]}/{manifest["expected"]}')
     return 0 if manifest["completed"] == manifest["expected"] else 1
 
