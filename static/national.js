@@ -8,6 +8,7 @@ const NS = 'http://www.w3.org/2000/svg';
 const FIELDS = {annual_mean_c:'Average temperature',annual_average_max_c:'Daytime maximum',annual_average_min_c:'Nighttime minimum',average_annual_rainfall_mm:'Annual rainfall',average_days_at_least_35c:'Days ≥35°C per year'};
 let points = [], selected = '';
 let boundaries = [];
+const LABEL_POSITIONS={WA:[315,345],NT:[515,225],SA:[575,475],QLD:[730,295],NSW:[770,550],VIC:[730,625],TAS:[810,705],ACT:[885,575]};
 const STATE_NAMES = {NSW:'New South Wales', VIC:'Victoria', QLD:'Queensland', WA:'Western Australia',SA:'South Australia', TAS:'Tasmania', ACT:'Australian Capital Territory', NT:'Northern Territory'};
 function boundaryState(feature) {
   const p=feature.properties||{};
@@ -80,19 +81,19 @@ function draw(){
       const code=boundaryState(feature),average=averages[code];
       backdrop.append(element('path',{d,class:'boundary','fill-rule':'evenodd',
         fill:average?color(average.value,Math.min(...allValues),Math.max(...allValues)):'#cddfe6',
-        'fill-opacity':average?0.30:1}));
+        'fill-opacity':average?0.48:1}));
     }
   }
   svg.append(backdrop);
   const labels=element('g',{'aria-label':'State sample averages'});
   for(const [code,average] of Object.entries(averages)){
     if(group!=='ALL'&&code!==group)continue;
-    const label=element('text',{x:average.x,y:average.y-22,class:'state-label','text-anchor':'middle'});
-    const name=element('tspan',{x:average.x,dy:0}),value=element('tspan',{x:average.x,dy:19});
+    const [x,y]=LABEL_POSITIONS[code];
+    const label=element('text',{x,y,class:'state-label','text-anchor':'middle'});
+    const name=element('tspan',{x,dy:0}),value=element('tspan',{x,dy:19});
     name.textContent=code;value.textContent=formatted(average.value,metric.value);
     label.append(name,value);labels.append(label);
   }
-  svg.append(labels);
   for(const p of visible){
     const value=p[metric.value],valid=Number.isFinite(value);
     const circle=element('circle',{cx:p.x,cy:p.y,r:p.id===selected?11:8,
@@ -105,6 +106,7 @@ function draw(){
     circle.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();selectPoint(p.id);}});
     svg.append(circle);
   }
+  svg.append(labels);
   document.getElementById('low').textContent=values.length?formatted(low,metric.value):'—';
   document.getElementById('high').textContent=values.length?formatted(high,metric.value):'—';
   document.getElementById('status').textContent=visible.length+' locations';
