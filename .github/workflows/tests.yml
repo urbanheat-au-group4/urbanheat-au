@@ -22,3 +22,41 @@ jobs:
         run: node --check static/app.js
       - name: Test dashboard error handling
         run: node --test tests/test_frontend.cjs
+
+  browser:
+    name: Eight-state browser acceptance
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: test
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install browser test tools
+        run: npm install --no-audit --no-fund
+      - name: Install Chromium
+        run: npx playwright install chromium --with-deps
+      - name: Prepare coordinates without inventing weather
+        run: python3 tests/prepare_national_browser_data.py
+      - name: Fetch authentic state outlines
+        run: python3 fetch_national_boundaries.py
+      - name: Test all states and save screenshots
+        run: |
+          python3 server.py >/tmp/urbanheat-server.log 2>&1 &
+          sleep 2
+          npm run test:browser
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: national-map-browser-evidence
+          path: artifacts/national-map/
+          if-no-files-found: warn
+          retention-days: 14
