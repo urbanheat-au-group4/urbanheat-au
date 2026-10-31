@@ -50,3 +50,6 @@ header .brand-home{font-size:20px;font-weight:750;letter-spacing:-.02em;color:#e
   .state-locations h3{font-size:16px}
   .callout-tag{display:none}
 }
+
+/* Show regional sampling limitations and optional close-up. */
+.map-heading #focus-samples{margin-left:9px;background:#214054;border-color:#7ca5bb}.sample-coverage-note{padding:10px 12px;background:#26333d;border-left:3px solid #e5ba70;border-radius:5px;color:#e8e4d6;font-size:12px}.sample-coverage-note[hidden]{display:none}
