@@ -4,12 +4,14 @@ No weather values are invented. Missing measurements stay null, which also
 lets browser tests check how the UI handles unavailable data.
 """
 import json
+import sys
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 
 from historical_weather import save_atomic
 from national_map import markers
-
-ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / "static" / "national_data.json"
 METRICS = (
     "annual_mean_c", "annual_average_max_c", "annual_average_min_c",
