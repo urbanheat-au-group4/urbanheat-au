@@ -22,6 +22,7 @@ for (const code of ['NSW','VIC','QLD','WA','SA','TAS','ACT','NT']) {
       code+' latitude outside state view: '+p.name);
   }
   const viewLabels=A.labelLayout(points,'annual_mean_c',code,'',view);
-  assert.ok(viewLabels.length>0, code+' has no visible callouts');
+  assert.equal(viewLabels.length,14, code+' expected all fourteen on-map labels');
+  assert.ok(viewLabels.every(x => x.annotation), code+' missing annotation');
 }
 console.log('Passed: all 8 real catalogue state zoom extents and marker IDs');
