@@ -20,6 +20,10 @@ async function checkState(page, code) {
   const count = await page.locator('#national-map circle.marker').count();
   assert.equal(count, 14, code + ': expected 14 markers');
   if (code === 'ACT') {
+    const outlineStyle = await page.locator('.callout-tag .callout-box').first()
+      .evaluate(node => getComputedStyle(node).vectorEffect);
+    assert.equal(outlineStyle, 'non-scaling-stroke',
+      'ACT: callout outlines must not become huge at close zoom');
     const view = (await page.locator('#national-map').getAttribute('viewBox')).split(' ').map(Number);
     assert.ok(view[2] < 100, 'ACT: map close-up is still too far away');
   }
