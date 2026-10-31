@@ -27,44 +27,64 @@
       a.y < b.y + b.height + gap && a.y + a.height + gap > b.y;
   }
 
+  function stateLabelLayout(visible, metric, view) {
+    // Two label columns guarantee that all state locations get a readable tag.
+    // Markers stay at their real positions; lines connect them to the tags.
+    const scale = view.width / 1000;
+    const margin = 16 * scale;
+    const valid = visible.map(p => p[metric]).filter(Number.isFinite).sort((a, b) => a-b);
+    const median = valid.length ? (valid[Math.floor((valid.length-1)/2)] +
+      valid[Math.floor(valid.length/2)]) / 2 : null;
+    const sorted = [...visible].sort((a, b) => a.x-b.x || a.y-b.y);
+    const middle = Math.ceil(sorted.length / 2);
+    const columns = [sorted.slice(0, middle), sorted.slice(middle)];
+    const placed = [];
+
+    columns.forEach((column, side) => {
+      const ordered = [...column].sort((a, b) => a.y-b.y || a.x-b.x);
+      ordered.forEach((point, index) => {
+        const width = Math.max(124, Math.min(215, point.name.length*7.3+28)) * scale;
+        const height = 64 * scale;
+        const x = side === 0 ? view.x+margin : view.x+view.width-margin-width;
+        const y = view.y+margin +
+          (index+0.5)*(view.height-2*margin)/ordered.length - height/2;
+        const value = point[metric];
+        const annotation = !Number.isFinite(value) || median === null ? 'No reading' :
+          value > median ? 'Above state median' :
+          value < median ? 'Below state median' : 'At state median';
+        placed.push({point, x, y, width, height, annotation});
+      });
+    });
+    return placed;
+  }
+
   function labelLayout(locations, metric, state, selected, view = {x:0,y:0,width:1000,height:760}) {
     const scale = view.width / 1000;
     const visible = locations.filter(p => state === 'ALL' || p.state === state);
-    const preferred = visible.filter(p => KEY_LOCATIONS.includes(p.id));
-    let candidates;
-    if (state === 'ALL') {
-      candidates = preferred;
-    } else {
-      // When looking at one state, spread labels over its 14 locations.
-      candidates = [...visible].sort((a, b) => a.y - b.y || a.x - b.x)
-        .filter((_, i) => i % 3 === 0);
-    }
+    if (state !== 'ALL') return stateLabelLayout(visible, metric, view);
+
+    const candidates = visible.filter(p => KEY_LOCATIONS.includes(p.id));
     const chosen = visible.find(p => p.id === selected);
     if (chosen && !candidates.some(p => p.id === chosen.id)) candidates.unshift(chosen);
-    // Always prioritise the selected location if there is one.
-    if (chosen) candidates.sort((a, b) => Number(b.id === selected) - Number(a.id === selected));
-
+    if (chosen) candidates.sort((a,b) => Number(b.id === selected)-Number(a.id === selected));
     const placed = [];
     for (const point of candidates) {
       if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) continue;
-      const width = Math.max(114, Math.min(158, point.name.length * 7.3 + 28)) * scale;
-      const height = 48 * scale;
-      // Try both sides and several heights until the label fits without overlap.
+      const width = Math.max(114, Math.min(158, point.name.length*7.3+28))*scale;
+      const height = 48*scale;
       const offsets = [
-        [20*scale, -62*scale], [-width - 20*scale, -62*scale],
-        [20*scale, 18*scale], [-width - 20*scale, 18*scale],
-        [20*scale, -110*scale], [-width - 20*scale, -110*scale],
-        [20*scale, 65*scale], [-width - 20*scale, 65*scale]
+        [20*scale,-62*scale], [-width-20*scale,-62*scale],
+        [20*scale,18*scale], [-width-20*scale,18*scale],
+        [20*scale,-110*scale],[-width-20*scale,-110*scale],
+        [20*scale,65*scale],[-width-20*scale,65*scale]
       ];
-      let rect = null;
-      for (const [dx, dy] of offsets) {
-        const candidate = {x: point.x + dx, y: point.y + dy, width, height};
-        if (withinBounds(candidate, view) && placed.every(p => !overlaps(p, candidate, 8*scale))) {
-          rect = candidate;
+      for (const [dx,dy] of offsets) {
+        const rect = {point,x:point.x+dx,y:point.y+dy,width,height};
+        if (withinBounds(rect,view) && placed.every(other=>!overlaps(other,rect,8*scale))) {
+          placed.push(rect);
           break;
         }
       }
-      if (rect) placed.push({...rect, point});
     }
     return placed;
   }
