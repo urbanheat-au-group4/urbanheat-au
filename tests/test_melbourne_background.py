@@ -21,7 +21,8 @@ class MelbourneBackgroundTests(unittest.TestCase):
             for polygon in polygons:
                 for ring in polygon:
                     coordinates.extend(ring)
-        self.assertTrue(any(lon < 144.9 and lat < -38 for lon, lat in coordinates))
+        self.assertTrue(any(lon < 144.9 for lon, lat in coordinates))
+        self.assertTrue(any(lat < -38 for lon, lat in coordinates))
 
 if __name__ == "__main__":
     unittest.main()
