@@ -1,152 +1,328 @@
-// Separate from the Melbourne dashboard so the two pages don't interfere.
+// National climate map. The Melbourne dashboard has its own files.
 const svg = document.getElementById('national-map');
 const state = document.getElementById('state');
 const metric = document.getElementById('metric');
 const place = document.getElementById('place');
 const detail = document.getElementById('detail');
+const back = document.getElementById('back-to-australia');
+const heading = document.getElementById('map-title');
 const NS = 'http://www.w3.org/2000/svg';
-const FIELDS = {annual_mean_c:'Average temperature',annual_average_max_c:'Daytime maximum',annual_average_min_c:'Nighttime minimum',average_annual_rainfall_mm:'Annual rainfall',average_days_at_least_35c:'Days ≥35°C per year'};
-let points = [], selected = '';
+const labels = window.NationalAnnotations;
+const FIELDS = {
+  annual_mean_c: 'Average temperature',
+  annual_average_max_c: 'Daytime maximum',
+  annual_average_min_c: 'Nighttime minimum',
+  average_annual_rainfall_mm: 'Annual rainfall',
+  average_days_at_least_35c: 'Days ≥35°C per year'
+};
+const STATES = {
+  NSW: 'New South Wales', VIC: 'Victoria', QLD: 'Queensland', WA: 'Western Australia',
+  SA: 'South Australia', TAS: 'Tasmania', ACT: 'Australian Capital Territory',
+  NT: 'Northern Territory'
+};
+let points = [];
 let boundaries = [];
-const LABEL_POSITIONS={WA:[315,345],NT:[515,225],SA:[575,475],QLD:[730,295],NSW:[770,550],VIC:[730,625],TAS:[810,705],ACT:[885,575]};
-const STATE_NAMES = {NSW:'New South Wales', VIC:'Victoria', QLD:'Queensland', WA:'Western Australia',SA:'South Australia', TAS:'Tasmania', ACT:'Australian Capital Territory', NT:'Northern Territory'};
-function boundaryState(feature) {
-  const p=feature.properties||{};
-  const raw=String(p.shapeName||p.STE_NAME21||p.name||p.NAME_1||p.admin1Name||'').toLowerCase().trim();
-  return Object.keys(STATE_NAMES).find(code=>raw===code.toLowerCase()||raw===STATE_NAMES[code].toLowerCase());
-}
-function unit(key){return key.includes('rainfall')?' mm':key.includes('days')?' days':' °C';}
-function formatted(value,key){return Number.isFinite(value)?value.toFixed(1)+unit(key):'Unavailable';}
-function stateAverages(){
-  const results={};
-  for(const code of Object.keys(STATE_NAMES)){
-    const rows=points.filter(p=>p.state===code&&Number.isFinite(p[metric.value]));
-    if(rows.length)results[code]={
-      value:rows.reduce((total,p)=>total+p[metric.value],0)/rows.length,
-      x:rows.reduce((total,p)=>total+p.x,0)/rows.length,
-      y:rows.reduce((total,p)=>total+p.y,0)/rows.length
-    };
-  }
-  return results;
-}
-function updateHighlights(visible){
-  const panel=document.getElementById('highlights');
-  panel.replaceChildren();
-  const rows=visible.filter(p=>Number.isFinite(p[metric.value])).sort((a,b)=>a[metric.value]-b[metric.value]);
-  if(!rows.length)return;
-  for(const [label,point] of [['Lowest',rows[0]],['Highest',rows[rows.length-1]]]){
-    const card=document.createElement('div'),caption=document.createElement('span'),
-      name=document.createElement('strong'),value=document.createElement('b');
-    caption.textContent=label+' · '+FIELDS[metric.value];
-    name.textContent=point.name+' ('+point.state+')';
-    value.textContent=formatted(point[metric.value],metric.value);
-    card.append(caption,name,value);panel.append(card);
-  }
-}
-function element(tag, attributes={}) {
-  const node = document.createElementNS(NS,tag);
-  for (const [key,value] of Object.entries(attributes)) node.setAttribute(key,String(value));
+let selected = '';
+
+function element(tag, attributes = {}) {
+  const node = document.createElementNS(NS, tag);
+  for (const [key, value] of Object.entries(attributes)) node.setAttribute(key, String(value));
   return node;
 }
-function project(coordinate) {
-  const [lon,lat]=coordinate;
-  return [36+(lon-112)*(1000-72)/(154.5-112),36+(-10-lat)*(760-72)/(-10+44.5)];
+function project([lon, lat]) {
+  return [36 + (lon - 112) * 928 / 42.5, 36 + (-10 - lat) * 688 / 34.5];
+}
+function rings(geometry) {
+  if (!geometry) return [];
+  if (geometry.type === 'Polygon') return geometry.coordinates;
+  if (geometry.type === 'MultiPolygon') return geometry.coordinates.flat();
+  return [];
 }
 function paths(geometry) {
-  if (!geometry) return '';
-  const polygons = geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.type === 'MultiPolygon' ? geometry.coordinates : [];
-  return polygons.flatMap(p=>p.map(r=>r.map((point,i)=>{
-    const [x,y]=project(point);
-    return (i?'L':'M')+x.toFixed(2)+','+y.toFixed(2);
-  }).join(' ')+'Z')).join(' ');
+  return rings(geometry).map(ring => ring.map((point, index) => {
+    const [x, y] = project(point);
+    return (index ? 'L' : 'M') + x.toFixed(2) + ',' + y.toFixed(2);
+  }).join(' ') + 'Z').join(' ');
 }
-function color(value,low,high) {
-  const t=high===low?.5:Math.max(0,Math.min(1,(value-low)/(high-low)));
-  const stops=[[82,163,195],[244,231,178],[221,110,64]];
-  const i=Math.min(1,Math.floor(t*2)),a=t*2-i;
-  return 'rgb('+stops[i].map((v,j)=>Math.round(v+(stops[i+1][j]-v)*a)).join(',')+')';
+function boundaryState(feature) {
+  const p = feature.properties || {};
+  const raw = String(p.shapeName || p.STE_NAME21 || p.name || p.NAME_1 || p.admin1Name || '')
+    .trim().toLowerCase();
+  return Object.keys(STATES).find(code =>
+    raw === code.toLowerCase() || raw === STATES[code].toLowerCase()) || null;
 }
-function selectPoint(id){selected=id;place.value=id;draw();}
-function draw(){
-  svg.replaceChildren();
-  const group=state.value,visible=points.filter(p=>group==='ALL'||p.state===group);
-  const values=visible.map(p=>p[metric.value]).filter(Number.isFinite);
-  const low=Math.min(...values),high=Math.max(...values);
-  const averages=stateAverages();
-  const allValues=points.map(p=>p[metric.value]).filter(Number.isFinite);
-  const backdrop=element('g',{'aria-label':'Australian state outlines'});
-  for(const feature of boundaries){
-    const d=paths(feature.geometry);
-    if(d){
-      const code=boundaryState(feature),average=averages[code];
-      backdrop.append(element('path',{d,class:'boundary','fill-rule':'evenodd',
-        fill:average?color(average.value,Math.min(...allValues),Math.max(...allValues)):'#cddfe6',
-        'fill-opacity':1}));
+function stateBoundaryCorners(code) {
+  const corners = [];
+  for (const feature of boundaries) {
+    if (boundaryState(feature) !== code) continue;
+    let west = Infinity, east = -Infinity, north = Infinity, south = -Infinity;
+    for (const ring of rings(feature.geometry)) {
+      for (const coordinate of ring) {
+        if (!Array.isArray(coordinate) || !Number.isFinite(coordinate[0]) ||
+            !Number.isFinite(coordinate[1])) continue;
+        const [x, y] = project(coordinate);
+        west = Math.min(west, x); east = Math.max(east, x);
+        north = Math.min(north, y); south = Math.max(south, y);
+      }
     }
+    if (Number.isFinite(west)) corners.push([west, north], [east, south]);
   }
-  svg.append(backdrop);
-  // Keep names outside the map so they don't cover borders or each other.
-  const summary=document.getElementById('state-summary');
-  summary.replaceChildren();
-  for(const [code,average] of Object.entries(averages)){
-    if(group!=='ALL'&&code!==group)continue;
-    const item=document.createElement('div');
-    item.className='state-summary-item';
-    const name=document.createElement('strong');name.textContent=code;
-    const value=document.createElement('span');value.textContent=formatted(average.value,metric.value);
-    item.append(name,value);summary.append(item);
+  return corners;
+}
+function color(value, low, high) {
+  const t = low === high ? 0.5 : Math.max(0, Math.min(1, (value-low)/(high-low)));
+  const stops = [[82,163,195], [244,231,178], [221,110,64]];
+  const i = Math.min(1, Math.floor(t*2)), f = t*2-i;
+  return 'rgb(' + stops[i].map((v,j) => Math.round(v+(stops[i+1][j]-v)*f)).join(',') + ')';
+}
+function stateAverages() {
+  const result = {};
+  for (const code of Object.keys(STATES)) {
+    const rows = points.filter(p => p.state === code && Number.isFinite(p[metric.value]));
+    if (rows.length) result[code] = {
+      value: rows.reduce((sum, p) => sum + p[metric.value], 0) / rows.length,
+      count: rows.length
+    };
   }
-  for(const p of visible){
-    const value=p[metric.value],valid=Number.isFinite(value);
-    const circle=element('circle',{cx:p.x,cy:p.y,r:p.id===selected?9:5.5,
-      fill:valid?color(value,low,high):'#9ba9b2',
-      class:'marker'+(p.id===selected?' selected':''),
-      role:'button',tabindex:'0',
-      'aria-label':p.name+', '+p.state+': '+(valid?value:'unavailable')});
-    const title=element('title');title.textContent=p.name+', '+p.state;circle.append(title);
-    circle.addEventListener('click',()=>selectPoint(p.id));
-    circle.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();selectPoint(p.id);}});
-    svg.append(circle);
+  return result;
+}
+function focusState(code) {
+  state.value = code;
+  selected = '';
+  place.value = '';
+  draw();
+}
+function selectPoint(id) {
+  selected = id;
+  place.value = id;
+  draw();
+}
+function drawBoundaries(averages, low, high, view) {
+  const group = element('g', {'aria-label': 'State and territory boundaries'});
+  for (const feature of boundaries) {
+    const d = paths(feature.geometry);
+    if (!d) continue;
+    const code = boundaryState(feature);
+    const avg = averages[code];
+    const active = state.value === 'ALL' || state.value === code;
+    const path = element('path', {
+      d, 'fill-rule': 'evenodd',
+      fill: avg ? color(avg.value, low, high) : '#d5e2e6',
+      class: 'boundary' + (code ? ' selectable-state' : ''),
+      opacity: active ? '0.83' : '0.16',
+      'stroke-width': view.width / 1000 * 1.4
+    });
+    if (code) {
+      path.setAttribute('role', 'button');
+      path.setAttribute('tabindex', '0');
+      path.setAttribute('aria-label', 'Zoom into ' + STATES[code]);
+      const title = element('title'); title.textContent = 'Explore ' + STATES[code];
+      path.append(title);
+      path.addEventListener('click', () => focusState(code));
+      path.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault(); focusState(code); state.focus();
+        }
+      });
+    }
+    group.append(path);
   }
-  document.getElementById('low').textContent=values.length?formatted(low,metric.value):'—';
-  document.getElementById('high').textContent=values.length?formatted(high,metric.value):'—';
-  document.getElementById('status').textContent=visible.length+' locations';
-  updateHighlights(visible);
-  const point=points.find(p=>p.id===selected);
-  if(!point){detail.textContent='Choose a location on the map to see its climate results.';return;}
+  svg.append(group);
+}
+function drawMarkers(visible, low, high, view) {
+  const scale = view.width / 1000;
+  const group = element('g', {'aria-label': 'Climate locations'});
+  for (const p of visible) {
+    const value = p[metric.value];
+    const circle = element('circle', {
+      cx: p.x, cy: p.y, r: (selected === p.id ? 9 : 5.5) * scale,
+      fill: Number.isFinite(value) ? color(value, low, high) : '#9ba9b2',
+      class: 'marker' + (selected === p.id ? ' selected' : ''),
+      'stroke-width': 1.7 * scale,
+      role: 'button', tabindex: '0',
+      'aria-label': p.name + ', ' + p.state + ': ' + labels.format(value, metric.value)
+    });
+    const title = element('title');
+    title.textContent = p.name + ' · ' + labels.format(value, metric.value);
+    circle.append(title);
+    circle.addEventListener('click', () => selectPoint(p.id));
+    circle.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault(); selectPoint(p.id);
+        place.focus();
+      }
+    });
+    group.append(circle);
+  }
+  svg.append(group);
+}
+function drawCallouts(visible, view) {
+  const scale = view.width / 1000;
+  const group = element('g', {'aria-label': 'Labelled climate locations'});
+  for (const rect of labels.labelLayout(visible, metric.value, state.value, selected, view)) {
+    const p = rect.point, x = rect.x, y = rect.y;
+    const nearestX = Math.min(x + rect.width, Math.max(x, p.x));
+    const nearestY = Math.min(y + rect.height, Math.max(y, p.y));
+    group.append(element('line', {
+      x1: p.x, y1: p.y, x2: nearestX, y2: nearestY,
+      class: 'callout-line', 'stroke-width': 1.8 * scale
+    }));
+    group.append(element('rect', {
+      x, y, width: rect.width, height: rect.height,
+      rx: 8 * scale, class: 'callout-box',
+      'stroke-width': (p.id === selected ? 2.7 : 1) * scale
+    }));
+    const label = element('text', {
+      x: x + 10*scale, y: y + 19*scale,
+      class: 'callout-name', 'font-size': 13*scale
+    });
+    label.textContent = p.name;
+    group.append(label);
+    const value = element('text', {
+      x: x + 10*scale, y: y + 37*scale,
+      class: 'callout-value', 'font-size': 15*scale
+    });
+    value.textContent = labels.format(p[metric.value], metric.value);
+    group.append(value);
+  }
+  svg.append(group);
+}
+function updateHighlights(visible) {
+  const panel = document.getElementById('highlights');
+  panel.replaceChildren();
+  const ordered = visible.filter(p => Number.isFinite(p[metric.value]))
+    .sort((a,b) => a[metric.value] - b[metric.value]);
+  if (!ordered.length) return;
+  for (const [label, point] of [['Lowest', ordered[0]], ['Highest', ordered[ordered.length-1]]]) {
+    const card = document.createElement('div');
+    const caption = document.createElement('span');
+    caption.textContent = label + ' · ' + FIELDS[metric.value];
+    const name = document.createElement('strong');
+    name.textContent = point.name + ' (' + point.state + ')';
+    const value = document.createElement('b');
+    value.textContent = labels.format(point[metric.value], metric.value);
+    card.append(caption, name, value);
+    panel.append(card);
+  }
+}
+function updateDetail() {
   detail.replaceChildren();
-  const heading=document.createElement('strong');heading.textContent=point.name+' · '+point.state;
-  detail.append(heading);
-  for(const [key,label] of Object.entries(FIELDS)){
-    const line=document.createElement('div'),value=point[key];
-    line.textContent=label+': ';
-    const span=document.createElement('span');span.className='value';
-    span.textContent=Number.isFinite(value)?value.toFixed(1)+(key.includes('rainfall')?' mm':key.includes('days')?' days':' °C'):'Unavailable';
-    line.append(span);detail.append(line);
+  const point = points.find(p => p.id === selected);
+  if (!point) {
+    detail.textContent = 'Choose any map marker or use the location selector.';
+    return;
+  }
+  const title = document.createElement('strong');
+  title.textContent = point.name + ' · ' + point.state;
+  detail.append(title);
+  for (const [key, name] of Object.entries(FIELDS)) {
+    const row = document.createElement('div');
+    row.textContent = name + ': ';
+    const value = document.createElement('span');
+    value.className = 'value';
+    value.textContent = labels.format(point[key], key);
+    row.append(value); detail.append(row);
   }
 }
-async function load(){
-  try{
-    const response=await fetch('/static/national_data.json',{cache:'no-store'});
-    if(!response.ok)throw new Error('Run python3 national_export.py first');
-    const data=await response.json();
-    if(!Array.isArray(data.locations))throw new Error('Invalid national data');
-    points=data.locations;
-    for(const code of [...new Set(points.map(p=>p.state))].sort()){
-      const option=document.createElement('option');option.value=code;option.textContent=code;state.append(option);
-    }
-    for(const p of [...points].sort((a,b)=>a.name.localeCompare(b.name))){
-      const option=document.createElement('option');option.value=p.id;option.textContent=p.name+' ('+p.state+')';place.append(option);
-    }
-    try{
-      const boundaryResponse=await fetch('/static/australia_states.geojson');
-      if(boundaryResponse.ok){const geo=await boundaryResponse.json();if(geo.type==='FeatureCollection')boundaries=geo.features||[];}
-    }catch(_error){/* Map markers still work without the optional boundary file. */}
-    draw();
-    if(!boundaries.length)document.getElementById('status').textContent+=' · state outlines not installed';
-  }catch(error){document.getElementById('status').textContent=error.message;}
+function updateBands() {
+  const panel = document.getElementById('heat-annotations');
+  panel.replaceChildren();
+  const bands = labels.bandSummaries(points, metric.value, state.value);
+  for (const band of bands) {
+    const card = document.createElement('div');
+    card.className = 'heat-band';
+    const title = document.createElement('span');
+    title.textContent = band.name + ' · ' + band.count + ' places';
+    const value = document.createElement('strong');
+    value.textContent = labels.format(band.value, metric.value);
+    card.append(title, value); panel.append(card);
+  }
 }
-state.addEventListener('change',()=>{selected='';place.value='';draw();});
-metric.addEventListener('change',draw);
-place.addEventListener('change',()=>{selected=place.value;const p=points.find(p=>p.id===selected);if(p)state.value='ALL';draw();});
+function updateStateSummary(averages) {
+  const summary = document.getElementById('state-summary');
+  summary.replaceChildren();
+  for (const [code, average] of Object.entries(averages)) {
+    if (state.value !== 'ALL' && code !== state.value) continue;
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'state-summary-item';
+    card.setAttribute('aria-label', 'Explore ' + STATES[code] + ', sample average ' + labels.format(average.value, metric.value));
+    const name = document.createElement('strong');
+    name.textContent = code;
+    const value = document.createElement('span');
+    value.textContent = labels.format(average.value, metric.value);
+    card.append(name, value);
+    card.addEventListener('click', () => focusState(code));
+    summary.append(card);
+  }
+}
+function draw() {
+  if (!points.length) return;
+  const view = labels.stateViewBox(points, state.value, stateBoundaryCorners(state.value));
+  svg.setAttribute('viewBox', [view.x, view.y, view.width, view.height].join(' '));
+  svg.replaceChildren();
+  const visible = points.filter(p => state.value === 'ALL' || p.state === state.value);
+  const values = points.map(p => p[metric.value]).filter(Number.isFinite);
+  const low = Math.min(...values), high = Math.max(...values);
+  const averages = stateAverages();
+  drawBoundaries(averages, low, high, view);
+  drawMarkers(visible, low, high, view);
+  drawCallouts(visible, view);
+  updateHighlights(visible);
+  updateBands();
+  updateStateSummary(averages);
+  updateDetail();
+  document.getElementById('low').textContent = labels.format(low, metric.value);
+  document.getElementById('high').textContent = labels.format(high, metric.value);
+  document.getElementById('status').textContent = visible.length + ' locations';
+  heading.textContent = state.value === 'ALL' ? 'Australia · National overview' : STATES[state.value] + ' · State view';
+  back.hidden = state.value === 'ALL';
+  svg.setAttribute('aria-label', (state.value === 'ALL' ? 'Australia' : STATES[state.value]) +
+    ' interactive climate map, ' + visible.length + ' locations');
+}
+async function load() {
+  try {
+    const response = await fetch('/static/national_data.json', {cache:'no-store'});
+    if (!response.ok) throw new Error('Run python3 national_export.py first');
+    const data = await response.json();
+    if (!Array.isArray(data.locations) || !data.locations.length) throw new Error('National data missing');
+    points = data.locations;
+    for (const code of Object.keys(STATES)) {
+      const option = document.createElement('option');
+      option.value = code;
+      option.textContent = STATES[code];
+      state.append(option);
+    }
+    for (const p of [...points].sort((a,b) => a.name.localeCompare(b.name))) {
+      const option = document.createElement('option');
+      option.value = p.id;
+      option.textContent = p.name + ' (' + p.state + ')';
+      place.append(option);
+    }
+    try {
+      const geo = await fetch('/static/australia_states.geojson', {cache:'no-store'});
+      if (geo.ok) {
+        const json = await geo.json();
+        if (json.type === 'FeatureCollection' && Array.isArray(json.features)) boundaries = json.features;
+      }
+    } catch (_error) {
+      // The state selector still works if outlines are unavailable.
+    }
+    draw();
+    if (!boundaries.length) {
+      document.getElementById('status').textContent += ' · boundary download needed';
+    }
+  } catch (error) {
+    document.getElementById('status').textContent = error.message;
+  }
+}
+state.addEventListener('change', () => focusState(state.value));
+metric.addEventListener('change', draw);
+place.addEventListener('change', () => {
+  selected = place.value;
+  const found = points.find(p => p.id === selected);
+  if (found) state.value = found.state;
+  draw();
+});
+back.addEventListener('click', () => {focusState('ALL'); state.focus();});
 load();
