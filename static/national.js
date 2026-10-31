@@ -135,6 +135,7 @@ function drawMarkers(visible, low, high, view) {
   for (const p of visible) {
     const value = p[metric.value];
     const circle = element('circle', {
+      'data-location-id': p.id,
       cx: p.x, cy: p.y, r: (selected === p.id ? 9 : 5.5) * scale,
       fill: Number.isFinite(value) ? color(value, low, high) : '#9ba9b2',
       class: 'marker' + (selected === p.id ? ' selected' : ''),
@@ -256,6 +257,30 @@ function updateStateSummary(averages) {
     summary.append(card);
   }
 }
+function renderStateLocations(visible) {
+  const section = document.getElementById('state-locations');
+  const list = document.getElementById('state-location-list');
+  const title = document.getElementById('state-locations-title');
+  const focused = state.value !== 'ALL';
+  section.hidden = !focused;
+  list.replaceChildren();
+  if (!focused) return;
+  title.textContent = STATES[state.value] + ' · ' + visible.length + ' locations';
+  for (const point of [...visible].sort((a,b) => a.name.localeCompare(b.name))) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'state-location-tag' + (point.id === selected ? ' active' : '');
+    button.setAttribute('data-location-id', point.id);
+    button.setAttribute('aria-pressed', point.id === selected ? 'true' : 'false');
+    const name = document.createElement('span');
+    name.textContent = point.name;
+    const value = document.createElement('strong');
+    value.textContent = labels.format(point[metric.value], metric.value);
+    button.append(name, value);
+    button.addEventListener('click', () => selectPoint(point.id));
+    list.append(button);
+  }
+}
 function draw() {
   if (!points.length) return;
   const view = labels.stateViewBox(points, state.value, stateBoundaryCorners(state.value));
@@ -268,6 +293,7 @@ function draw() {
   drawBoundaries(averages, low, high, view);
   drawMarkers(visible, low, high, view);
   drawCallouts(visible, view);
+  renderStateLocations(visible);
   updateHighlights(visible);
   updateBands();
   updateStateSummary(averages);
