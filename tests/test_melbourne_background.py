@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class MelbourneBackgroundTests(unittest.TestCase):
     def test_background_is_not_filtered(self):
         script = (ROOT / "static/app.js").read_text()
-        self.assertIn("background = await getGeoJSON('/static/metro_context.geojson')", script)
+        self.assertIn("const fullBackground = await getGeoJSON('/static/metro_context.geojson')", script)
         self.assertNotIn("withinMelbourneContext", script)
 
     def test_saved_background_has_west_and_south_suburbs(self):
