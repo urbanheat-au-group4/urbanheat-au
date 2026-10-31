@@ -53,12 +53,39 @@ function project(coordinate) {
   return [36+(lon-112)*(1000-72)/(154.5-112),36+(-10-lat)*(760-72)/(-10+44.5)];
 }
 function paths(geometry) {
+  // Draw complete polygons, including holes. Skip invalid and tiny detached shapes.
   if (!geometry) return '';
-  const polygons = geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.type === 'MultiPolygon' ? geometry.coordinates : [];
-  return polygons.flatMap(p=>p.map(r=>r.map((point,i)=>{
-    const [x,y]=project(point);
-    return (i?'L':'M')+x.toFixed(2)+','+y.toFixed(2);
-  }).join(' ')+'Z')).join(' ');
+  const polygons = geometry.type === 'Polygon' ? [geometry.coordinates] :
+    geometry.type === 'MultiPolygon' ? geometry.coordinates : [];
+  const output = [];
+  for (const polygon of polygons) {
+    if (!Array.isArray(polygon) || !polygon.length) continue;
+    const outer = polygon[0];
+    if (!Array.isArray(outer) || outer.length < 4) continue;
+    const projected = outer.map(point => {
+      if (!Array.isArray(point) || point.length < 2 ||
+          !Number.isFinite(point[0]) || !Number.isFinite(point[1]) ||
+          point[0] < 110 || point[0] > 156 || point[1] < -46 || point[1] > -9) return null;
+      return project(point);
+    });
+    if (projected.includes(null)) continue;
+    let area = 0;
+    for (let i = 0; i < projected.length; i++) {
+      const [x1,y1] = projected[i], [x2,y2] = projected[(i+1)%projected.length];
+      area += x1*y2-x2*y1;
+    }
+    // Small offshore islands overwhelm the map at this zoom.
+    if (Math.abs(area)/2 < 6) continue;
+    for (const ring of polygon) {
+      if (!Array.isArray(ring) || ring.length < 4) continue;
+      const points = ring.map(point => project(point));
+      if (points.some(p => !Number.isFinite(p[0]) || !Number.isFinite(p[1]))) continue;
+      output.push(points.map((p,i) =>
+        (i ? 'L' : 'M') + p[0].toFixed(2) + ',' + p[1].toFixed(2)
+      ).join(' ') + 'Z');
+    }
+  }
+  return output.join(' ');
 }
 function color(value,low,high) {
   const t=high===low?.5:Math.max(0,Math.min(1,(value-low)/(high-low)));
