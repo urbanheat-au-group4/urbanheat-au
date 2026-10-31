@@ -1,22 +1,24 @@
 # UrbanHeat AU
 
-CST190 software project: a dashboard comparing **modelled weather and environmental conditions** across six geographically dispersed Greater Melbourne locations: Melbourne CBD, Melton, Werribee, Craigieburn, Belgrave and Frankston.
+CST190 project: an interactive Australia-wide historical climate map comparing **112 locations**, with all eight states and territories available as zoomable views. The original six-suburb Melbourne map is retired from the public navigation. Historical chart work can be integrated into this national view when ready.
 
 ## Running locally
 
-Requires Python 3, internet for downloading updated API data, and a modern browser. No third-party Python packages.
+Requires Python 3 and a modern browser. No third-party Python packages.
 
-From the repository root:
+From the repository root, after the validated national historical data has been downloaded to `data/national`:
 
-```zsh
-python3 fetch_boundaries.py
-python3 fetch_metro_context.py
+```bash
+python3 national_export.py --data-dir data/national
+python3 fetch_national_boundaries.py
 python3 server.py
 ```
 
-Open http://localhost:8000. The first two scripts rebuild local GeoJSON for the revised map. Run them after changing the monitored locations. `weather.py` creates `weather_data.json`, including optional UV and PM2.5 from Open-Meteo's separate Air Quality API. If air quality is unavailable, temperature readings remain usable and the air-quality fields show as unavailable. `server.py` serves the files locally.
+Open **http://localhost:8000/**. The homepage now loads the national map directly; `/static/national.html` remains a direct link to the same view. For static hosting, `/static/index.html` redirects to the national page.
 
-The server attempts to download fresh readings when it starts. If the API is unavailable, the dashboard shows an unavailable-data message instead of old values. The **Reload saved data** button reads the current saved file; run `python3 weather.py` to refresh while the server is running.
+On the map, select a state or territory to focus its 14 locations, then select a marker to see its historical statistics. Use **Back to Australia** to return to the full map. State colours summarise the sampled places, **not** every square kilometre of a state.
+
+The former Melbourne dashboard JavaScript and source datasets are kept in the repository for tests and ongoing historical-chart work, but are no longer loaded by the homepage. They can be retired after the remaining coursework is integrated and verified.
 
 ## Tests
 
