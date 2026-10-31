@@ -78,7 +78,24 @@ const cosLat = Math.cos(37.9 * Math.PI / 180);
 
 // Use the same map area for suburb outlines and background shapes.
 
-const extent = {left: 144.45 * cosLat, right: 145.55 * cosLat, top: 37.45, bottom: 38.30};
+let extent = {left: 144.45 * cosLat, right: 145.55 * cosLat, top: 37.45, bottom: 38.30};
+function fitMapBounds(features) {
+  let left = Infinity, right = -Infinity, top = Infinity, bottom = -Infinity;
+  for (const feature of features) {
+    for (const [lon, lat] of rings(feature.geometry).flat()) {
+      if (!Number.isFinite(lon) || !Number.isFinite(lat)) continue;
+      const x = lon * cosLat, y = -lat;
+      left = Math.min(left, x); right = Math.max(right, x);
+      top = Math.min(top, y); bottom = Math.max(bottom, y);
+    }
+  }
+  if (!Number.isFinite(left)) return;
+  const xPad = Math.max((right - left) * 0.06, 0.01);
+  const yPad = Math.max((bottom - top) * 0.06, 0.01);
+  extent = {left: left - xPad, right: right + xPad, top: top - yPad, bottom: bottom + yPad};
+}
+
+
 function project([lon, lat]) {
   const availableWidth = 900, availableHeight = 480;
   const scale = Math.min(availableWidth / (extent.right - extent.left), availableHeight / (extent.bottom - extent.top));
@@ -243,6 +260,18 @@ async function getGeoJSON(url) {
 // Hide some distant southwest background suburbs that look detached.
 // Keep all six selected suburbs visible.
 
+function fullMetroContext(features) {
+  let west = Infinity, east = -Infinity, south = Infinity, north = -Infinity;
+  for (const feature of features) {
+    for (const [lon, lat] of rings(feature.geometry).flat()) {
+      if (!Number.isFinite(lon) || !Number.isFinite(lat)) continue;
+      west = Math.min(west, lon); east = Math.max(east, lon);
+      south = Math.min(south, lat); north = Math.max(north, lat);
+    }
+  }
+  return west < 144.6 && east > 145.5 && south < -38.2 && north > -37.5;
+}
+
 async function loadMap() {
   const status = document.getElementById('map-status');
   try {
@@ -251,10 +280,13 @@ async function loadMap() {
     if (Object.keys(names).some(name => !present.has(name))) throw new Error('Outdated boundary data. Run python3 fetch_boundaries.py');
   } catch (error) {status.textContent = `Map unavailable: ${error.message}`; return;}
   try {
-    background = await getGeoJSON('/static/metro_context.geojson');
+    const fullBackground = await getGeoJSON('/static/metro_context.geojson');
+    if (!fullMetroContext(fullBackground)) throw new Error('Incomplete map data. Run python3 fetch_metro_context.py');
+    background = fullBackground;
+    fitMapBounds([...background, ...monitored]);
     status.textContent = `${background.length} surrounding localities loaded`;
   } catch (error) {
-    status.textContent = 'Background unavailable; monitored suburbs still shown';
+    status.textContent = `Background unavailable: ${error.message}`;
   }
   drawMap();
 }

@@ -12,7 +12,31 @@ API = ('https://services-ap1.arcgis.com/P744lA0wf4LlBZ84/ArcGIS/rest/'
        'services/Vicmap_Admin/FeatureServer/11/query')
 OUTPUT = Path(__file__).resolve().parent / 'static' / 'metro_context.geojson'
 # This rectangle is just the area we want to show, not Melbourne's actual boundary.
-BBOX = (144.45, -38.30, 145.55, -37.45)
+BBOX = (144.20, -38.65, 146.00, -37.15)
+
+
+def extent(features):
+    """Get the bounds of all returned locality shapes."""
+    west, south, east, north = float('inf'), float('inf'), -float('inf'), -float('inf')
+    for feature in features:
+        geometry = feature.get('geometry', {})
+        kind = geometry.get('type')
+        polygons = [geometry['coordinates']] if kind == 'Polygon' else (
+            geometry['coordinates'] if kind == 'MultiPolygon' else [])
+        for polygon in polygons:
+            for ring in polygon:
+                for lon, lat in ring:
+                    west, south = min(west, lon), min(south, lat)
+                    east, north = max(east, lon), max(north, lat)
+    return west, south, east, north
+
+
+def check_coverage(features):
+    """Reject the cropped background currently shipped in the repo."""
+    west, south, east, north = extent(features)
+    if not (west < 144.6 and east > 145.5 and south < -38.2 and north > -37.5):
+        raise ValueError('Incomplete Melbourne background boundaries')
+    return west, south, east, north
 
 
 def download():
@@ -56,12 +80,14 @@ def download():
     features = list(features.values())
     if not features:
         raise ValueError('No locality boundaries found')
+    west, south, east, north = check_coverage(features)
     payload = {'type': 'FeatureCollection', 'features': features}
     OUTPUT.parent.mkdir(exist_ok=True)
     temporary = OUTPUT.with_suffix('.tmp')
     temporary.write_text(json.dumps(payload, separators=(',', ':')), encoding='utf-8')
     temporary.replace(OUTPUT)
     print(f'Saved {len(features)} surrounding locality outlines to {OUTPUT}')
+    print(f'Extent: {west:.3f}..{east:.3f} E, {south:.3f}..{north:.3f} N')
 
 if __name__ == '__main__':
     try:
