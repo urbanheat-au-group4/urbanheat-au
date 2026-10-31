@@ -27,4 +27,11 @@
 
 /* Single public national homepage */
 header .brand-home{font-size:20px;font-weight:750;letter-spacing:-.02em;color:#eaf1f7;text-decoration:none}header .brand-home:hover,header .brand-home:focus-visible{color:#9cdef2;text-decoration:underline}
-\n.callout-note{font-family:system-ui,sans-serif;font-weight:500;fill:#406275;pointer-events:none}\n
+ 
+.callout-note{font-family:system-ui,sans-serif;font-weight:500;fill:#406275;pointer-events:none}
+
+.callout-tag{cursor:pointer}
+.callout-tag .callout-box{pointer-events:all}
+.callout-tag:hover .callout-box,.callout-tag:focus-visible .callout-box{
+  stroke:#17536b;stroke-width:3;outline:none
+}
