@@ -12,7 +12,7 @@ const LABEL_POSITIONS={WA:[315,345],NT:[515,225],SA:[575,475],QLD:[730,295],NSW:
 const STATE_NAMES = {NSW:'New South Wales', VIC:'Victoria', QLD:'Queensland', WA:'Western Australia',SA:'South Australia', TAS:'Tasmania', ACT:'Australian Capital Territory', NT:'Northern Territory'};
 function boundaryState(feature) {
   const p=feature.properties||{};
-  const raw=String(p.shapeName||p.STE_NAME21||p.name||p.NAME_1||'').toLowerCase().trim();
+  const raw=String(p.shapeName||p.STE_NAME21||p.name||p.NAME_1||p.admin1Name||'').toLowerCase().trim();
   return Object.keys(STATE_NAMES).find(code=>raw===code.toLowerCase()||raw===STATE_NAMES[code].toLowerCase());
 }
 function unit(key){return key.includes('rainfall')?' mm':key.includes('days')?' days':' °C';}
@@ -81,22 +81,24 @@ function draw(){
       const code=boundaryState(feature),average=averages[code];
       backdrop.append(element('path',{d,class:'boundary','fill-rule':'evenodd',
         fill:average?color(average.value,Math.min(...allValues),Math.max(...allValues)):'#cddfe6',
-        'fill-opacity':average?0.48:1}));
+        'fill-opacity':1}));
     }
   }
   svg.append(backdrop);
-  const labels=element('g',{'aria-label':'State sample averages'});
+  // Keep names outside the map so they don't cover borders or each other.
+  const summary=document.getElementById('state-summary');
+  summary.replaceChildren();
   for(const [code,average] of Object.entries(averages)){
     if(group!=='ALL'&&code!==group)continue;
-    const [x,y]=LABEL_POSITIONS[code];
-    const label=element('text',{x,y,class:'state-label','text-anchor':'middle'});
-    const name=element('tspan',{x,dy:0}),value=element('tspan',{x,dy:19});
-    name.textContent=code;value.textContent=formatted(average.value,metric.value);
-    label.append(name,value);labels.append(label);
+    const item=document.createElement('div');
+    item.className='state-summary-item';
+    const name=document.createElement('strong');name.textContent=code;
+    const value=document.createElement('span');value.textContent=formatted(average.value,metric.value);
+    item.append(name,value);summary.append(item);
   }
   for(const p of visible){
     const value=p[metric.value],valid=Number.isFinite(value);
-    const circle=element('circle',{cx:p.x,cy:p.y,r:p.id===selected?11:8,
+    const circle=element('circle',{cx:p.x,cy:p.y,r:p.id===selected?9:5.5,
       fill:valid?color(value,low,high):'#9ba9b2',
       class:'marker'+(p.id===selected?' selected':''),
       role:'button',tabindex:'0',
@@ -106,7 +108,6 @@ function draw(){
     circle.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();selectPoint(p.id);}});
     svg.append(circle);
   }
-  svg.append(labels);
   document.getElementById('low').textContent=values.length?formatted(low,metric.value):'—';
   document.getElementById('high').textContent=values.length?formatted(high,metric.value):'—';
   document.getElementById('status').textContent=visible.length+' locations';
