@@ -31,6 +31,14 @@ def extent(features):
                     east, north = max(east, lon), max(north, lat)
     return west, south, east, north
 
+def check_coverage(features):
+    """Reject a cropped background instead of treating it as the full map."""
+    west, south, east, north = extent(features)
+    if not (west < 144.6 and east > 145.5 and south < -38.2 and north > -37.5):
+        raise ValueError('Incomplete Melbourne background boundaries')
+    return west, south, east, north
+
+
 def download():
     features = []
     for offset in range(0, 10000, 500):
@@ -61,9 +69,7 @@ def download():
         raise ValueError('Pagination limit reached')
     if not features:
         raise ValueError('No locality boundaries found')
-    west, south, east, north = extent(features)
-    if not (west < 144.6 and east > 145.5 and south < -38.2 and north > -37.5):
-        raise ValueError('Incomplete Melbourne background boundaries')
+    west, south, east, north = check_coverage(features)
     payload = {'type': 'FeatureCollection', 'features': features}
     OUTPUT.parent.mkdir(exist_ok=True)
     temporary = OUTPUT.with_suffix('.tmp')
