@@ -8,9 +8,15 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class NationalMapUITests(unittest.TestCase):
-    def test_melbourne_homepage_links_to_national_map(self):
+    def test_homepage_uses_national_map(self):
         homepage = (ROOT / "static/index.html").read_text()
-        self.assertIn('href="/static/national.html"', homepage)
+        national = (ROOT / "static/national.html").read_text()
+        server = (ROOT / "server.py").read_text()
+        self.assertIn('url=/static/national.html', homepage)
+        self.assertIn('self.path = "/static/national.html"', server)
+        self.assertNotIn("Melbourne dashboard", national)
+        self.assertIn('href="/"', national)
+        self.assertNotIn('id="vector-map"', homepage)
 
     def test_national_page_loads_helpers_before_map(self):
         html = (ROOT / "static/national.html").read_text()
