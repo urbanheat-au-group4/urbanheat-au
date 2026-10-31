@@ -78,7 +78,26 @@ const cosLat = Math.cos(37.9 * Math.PI / 180);
 
 // Use the same map area for suburb outlines and background shapes.
 
-const extent = {left: 144.45 * cosLat, right: 145.55 * cosLat, top: 37.45, bottom: 38.30};
+let extent = {left: 144.45 * cosLat, right: 145.55 * cosLat, top: 37.45, bottom: 38.30};
+// Fit all the downloaded locality shapes, not an old fixed rectangle.
+function fitMapBounds(features) {
+  const xs = [], ys = [];
+  for (const feature of features) {
+    for (const [lon, lat] of rings(feature.geometry).flat()) {
+      if (Number.isFinite(lon) && Number.isFinite(lat)) {
+        xs.push(lon * cosLat);
+        ys.push(-lat);
+      }
+    }
+  }
+  if (!xs.length) return;
+  const left = Math.min(...xs), right = Math.max(...xs);
+  const top = Math.min(...ys), bottom = Math.max(...ys);
+  const xPad = Math.max((right - left) * 0.06, 0.01);
+  const yPad = Math.max((bottom - top) * 0.06, 0.01);
+  extent = {left: left - xPad, right: right + xPad, top: top - yPad, bottom: bottom + yPad};
+}
+
 function project([lon, lat]) {
   const availableWidth = 900, availableHeight = 480;
   const scale = Math.min(availableWidth / (extent.right - extent.left), availableHeight / (extent.bottom - extent.top));
@@ -240,25 +259,6 @@ async function getGeoJSON(url) {
   return body.features.filter(f => rings(f.geometry).length);
 }
 
-// Hide some distant southwest background suburbs that look detached.
-// Keep all six selected suburbs visible.
-
-function withinMelbourneContext(feature) {
-  const coordinates = rings(feature.geometry).flat();
-  if (!coordinates.length) return false;
-  let west = Infinity, east = -Infinity, south = Infinity, north = -Infinity;
-  for (const point of coordinates) {
-    const [lon, lat] = point;
-    if (!Number.isFinite(lon) || !Number.isFinite(lat)) return false;
-    west = Math.min(west, lon); east = Math.max(east, lon);
-    south = Math.min(south, lat); north = Math.max(north, lat);
-  }
-
-  // Hide background shapes outside this part of the Melbourne map.
-
-  return !(east < 144.90 && north < -38.00);
-}
-
 async function loadMap() {
   const status = document.getElementById('map-status');
   try {
@@ -267,7 +267,8 @@ async function loadMap() {
     if (Object.keys(names).some(name => !present.has(name))) throw new Error('Outdated boundary data. Run python3 fetch_boundaries.py');
   } catch (error) {status.textContent = `Map unavailable: ${error.message}`; return;}
   try {
-    background = (await getGeoJSON('/static/metro_context.geojson')).filter(withinMelbourneContext);
+    background = await getGeoJSON('/static/metro_context.geojson');
+    fitMapBounds([...background, ...monitored]);
     status.textContent = `${background.length} surrounding localities loaded`;
   } catch (error) {
     status.textContent = 'Background unavailable; monitored suburbs still shown';
