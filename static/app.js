@@ -81,18 +81,16 @@ const cosLat = Math.cos(37.9 * Math.PI / 180);
 let extent = {left: 144.45 * cosLat, right: 145.55 * cosLat, top: 37.45, bottom: 38.30};
 // Fit all the downloaded locality shapes, not an old fixed rectangle.
 function fitMapBounds(features) {
-  const xs = [], ys = [];
+  let left = Infinity, right = -Infinity, top = Infinity, bottom = -Infinity;
   for (const feature of features) {
     for (const [lon, lat] of rings(feature.geometry).flat()) {
-      if (Number.isFinite(lon) && Number.isFinite(lat)) {
-        xs.push(lon * cosLat);
-        ys.push(-lat);
-      }
+      if (!Number.isFinite(lon) || !Number.isFinite(lat)) continue;
+      const x = lon * cosLat, y = -lat;
+      left = Math.min(left, x); right = Math.max(right, x);
+      top = Math.min(top, y); bottom = Math.max(bottom, y);
     }
   }
-  if (!xs.length) return;
-  const left = Math.min(...xs), right = Math.max(...xs);
-  const top = Math.min(...ys), bottom = Math.max(...ys);
+  if (!Number.isFinite(left)) return;
   const xPad = Math.max((right - left) * 0.06, 0.01);
   const yPad = Math.max((bottom - top) * 0.06, 0.01);
   extent = {left: left - xPad, right: right + xPad, top: top - yPad, bottom: bottom + yPad};
