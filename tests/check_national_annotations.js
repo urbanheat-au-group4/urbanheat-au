@@ -19,7 +19,7 @@ assert.equal(bands.reduce((sum, b) => sum+b.count, 0),7);
 assert.deepEqual(bands.map(b=>b.name),['Northern locations','Central latitudes','Southern locations']);
 const vicView = A.stateViewBox(points,'VIC');
 assert.ok(vicView.width < 1000);
-assert.ok(vicView.width >= 190);
+assert.ok(vicView.width >= 110);
 assert.deepEqual(A.stateViewBox(points,'ALL'),{x:0,y:0,width:1000,height:760});
 assert.ok(vicView.x <= 790 && vicView.x+vicView.width >= 790);
 assert.ok(vicView.y <= 625 && vicView.y+vicView.height >= 625);

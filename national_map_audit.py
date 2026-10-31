@@ -16,6 +16,33 @@ METRICS = (
 STATES = ("NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT")
 
 
+def geographic_warnings(catalogue):
+    """Flag narrow sampling in a large state, without inventing measurements.
+
+    This does not validate the underlying coordinates or certify state coverage.
+    Small jurisdictions such as ACT are intentionally excluded.
+    """
+    warnings = []
+    for state in ("NSW", "VIC", "QLD", "WA", "SA", "TAS", "NT"):
+        places = [p for p in catalogue["locations"]
+                  if p.get("state") == state and
+                  "australia_historical" in p.get("groups", [])]
+        if len(places) < 2:
+            continue
+        latitudes = [p["latitude"] for p in places]
+        longitudes = [p["longitude"] for p in places]
+        lat_span = max(latitudes) - min(latitudes)
+        lon_span = max(longitudes) - min(longitudes)
+        if lat_span < 1.5 and lon_span < 1.5:
+            warnings.append({
+                "state": state,
+                "latitude_span_degrees": round(lat_span, 3),
+                "longitude_span_degrees": round(lon_span, 3),
+                "warning": "Locations are geographically clustered; this is not a statewide sample.",
+            })
+    return warnings
+
+
 def audit(catalogue, exported):
     reference = {p["id"]: p for p in catalogue["locations"]
                  if "australia_historical" in p["groups"]}
@@ -64,6 +91,7 @@ def audit(catalogue, exported):
         "exported": len(records),
         "counts_by_state": {code: counts[code] for code in STATES},
         "missing_ids": missing,
+        "coverage_warnings": geographic_warnings(catalogue),
         "problems": problems,
         "scope": "Data completeness and projected marker consistency. Not a browser or independent geocoding check.",
     }
@@ -84,6 +112,8 @@ def main():
           ("PASS" if result["pass"] else "FAIL"))
     for problem in result["problems"]:
         print(" -", problem)
+    for warning in result["coverage_warnings"]:
+        print(" !", warning["state"], warning["warning"])
     print(f"Report: {args.output}")
     return 0 if result["pass"] else 1
 

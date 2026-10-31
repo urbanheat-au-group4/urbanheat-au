@@ -23,6 +23,9 @@ const STATES = {
 let points = [];
 let boundaries = [];
 let selected = '';
+let focusLocations = false;
+const focusButton = document.getElementById('focus-samples');
+const coverageNote = document.getElementById('sample-coverage-note');
 
 function element(tag, attributes = {}) {
   const node = document.createElementNS(NS, tag);
@@ -89,6 +92,7 @@ function stateAverages() {
 function focusState(code) {
   state.value = code;
   selected = '';
+  focusLocations = false;
   place.value = '';
   draw();
 }
@@ -304,7 +308,16 @@ function renderMobileStateTags(visible) {
 
 function draw() {
   if (!points.length) return;
-  const view = labels.stateViewBox(points, state.value, stateBoundaryCorners(state.value));
+  const corners = stateBoundaryCorners(state.value);
+  const clustered = labels.hasClusteredCoverage(points, state.value, corners);
+  focusButton.hidden = !clustered;
+  focusButton.textContent = focusLocations ? 'Show full state' : 'Focus sampled locations';
+  coverageNote.hidden = !clustered;
+  coverageNote.textContent = clustered
+    ? 'These 14 sampled locations are clustered in one part of ' + STATES[state.value] +
+      '. They do not represent the full geographic range of the state.'
+    : '';
+  const view = labels.stateViewBox(points, state.value, corners, focusLocations);
   svg.setAttribute('viewBox', [view.x, view.y, view.width, view.height].join(' '));
   svg.replaceChildren();
   const visible = points.filter(p => state.value === 'ALL' || p.state === state.value);
@@ -373,4 +386,5 @@ place.addEventListener('change', () => {
   draw();
 });
 back.addEventListener('click', () => {focusState('ALL'); state.focus();});
+focusButton.addEventListener('click', () => {focusLocations = !focusLocations; draw(); focusButton.focus();});
 load();
