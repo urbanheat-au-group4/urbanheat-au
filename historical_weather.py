@@ -4,6 +4,8 @@ import math
 import os
 import tempfile
 import time
+import random
+from email.utils import parsedate_to_datetime
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -59,9 +61,26 @@ def fetch_one(location, opener=urlopen, attempts=3, timezone_name="Australia/Mel
             with opener(url, timeout=30) as response:
                 return json.load(response)
         except (HTTPError, URLError, TimeoutError, OSError, ValueError) as exc:
+            if isinstance(exc, HTTPError) and exc.code not in (429, 500, 502, 503, 504):
+                raise RuntimeError(f"{location['name']}: non-retryable HTTP {exc.code}") from exc
             if attempt == attempts - 1:
                 raise RuntimeError(f"{location['name']}: API failed after {attempts} attempts: {exc}") from exc
-            time.sleep(min(2 ** attempt, 4))
+            if isinstance(exc, HTTPError) and exc.code == 429:
+                # The provider may impose a longer block than a per-second limit.
+                wait = min(300.0, 60.0 * (2 ** attempt))
+                header = exc.headers.get("Retry-After") if exc.headers else None
+                if header:
+                    try:
+                        wait = max(wait, float(header))
+                    except (TypeError, ValueError):
+                        try:
+                            wait = max(wait, (parsedate_to_datetime(header).timestamp() - time.time()))
+                        except (TypeError, ValueError, OverflowError):
+                            pass
+                wait = min(3600.0, wait)
+            else:
+                wait = min(60.0, 5.0 * 2 ** attempt)
+            time.sleep(wait + random.uniform(0, 1))
 
 
 def validate(payload, location, timezone_name="Australia/Melbourne"):
