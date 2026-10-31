@@ -278,6 +278,30 @@ function updateStateSummary(averages) {
     summary.append(card);
   }
 }
+function renderMobileStateTags(visible) {
+  const section = document.getElementById('state-locations');
+  const list = document.getElementById('state-location-list');
+  section.hidden = state.value === 'ALL';
+  list.replaceChildren();
+  if (state.value === 'ALL') return;
+  document.getElementById('state-locations-title').textContent =
+    STATES[state.value] + ' · ' + visible.length + ' locations';
+  for (const p of [...visible].sort((a,b) => a.name.localeCompare(b.name))) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'state-location-tag' + (p.id === selected ? ' active' : '');
+    button.setAttribute('data-location-id', p.id);
+    button.setAttribute('aria-pressed', p.id === selected ? 'true' : 'false');
+    const name = document.createElement('span');
+    name.textContent = p.name;
+    const value = document.createElement('strong');
+    value.textContent = labels.format(p[metric.value], metric.value);
+    button.append(name, value);
+    button.addEventListener('click', () => selectPoint(p.id));
+    list.append(button);
+  }
+}
+
 function draw() {
   if (!points.length) return;
   const view = labels.stateViewBox(points, state.value, stateBoundaryCorners(state.value));
@@ -290,6 +314,7 @@ function draw() {
   drawBoundaries(averages, low, high, view);
   drawCallouts(visible, view);
   drawMarkers(visible, low, high, view);
+  renderMobileStateTags(visible);
   updateHighlights(visible);
   updateBands();
   updateStateSummary(averages);
