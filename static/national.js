@@ -312,8 +312,8 @@ function draw() {
   const low = Math.min(...values), high = Math.max(...values);
   const averages = stateAverages();
   drawBoundaries(averages, low, high, view);
-  drawCallouts(visible, view);
   drawMarkers(visible, low, high, view);
+  drawCallouts(visible, view);
   renderMobileStateTags(visible);
   updateHighlights(visible);
   updateBands();
