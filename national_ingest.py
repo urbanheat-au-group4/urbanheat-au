@@ -2,8 +2,8 @@
 
 Run: python3 national_ingest.py --group australia_historical --out data/national
 Default behaviour preserves verified snapshots and retries only missing/invalid ones.
-Uses the existing Open-Meteo historical validator and its Melbourne-aligned day
-boundary; a per-state local-day policy must be approved before national analysis.
+Uses the existing Open-Meteo historical validator with jurisdiction-local
+IANA timezone boundaries, leaving the six-location legacy importer unchanged.
 """
 import argparse
 import hashlib
