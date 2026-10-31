@@ -37,6 +37,18 @@ class NationalIngestTests(unittest.TestCase):
             self.assertEqual(manifest["locations"][0]["status"], "cached")
             validator.assert_called_once()
 
+    def test_national_timezones_and_cache_signature(self):
+        zones = {"VIC": "Australia/Melbourne", "NSW": "Australia/Sydney",
+                 "ACT": "Australia/Sydney", "QLD": "Australia/Brisbane",
+                 "WA": "Australia/Perth", "SA": "Australia/Adelaide",
+                 "TAS": "Australia/Hobart", "NT": "Australia/Darwin"}
+        for state, tz in zones.items():
+            with self.subTest(state=state):
+                place = {**self.place, "state": state}
+                self.assertEqual(ni.location_timezone(place), tz)
+                if state != "VIC":
+                    self.assertNotEqual(ni.signature(place), ni.signature(self.place))
+
     def test_bad_internal_date_is_not_cached(self):
         count = (ni.hist.END - ni.hist.START).days + 1
         rows = [{"date": (ni.hist.START + ni.hist.timedelta(days=i)).isoformat(),

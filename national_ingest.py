@@ -2,8 +2,8 @@
 
 Run: python3 national_ingest.py --group australia_historical --out data/national
 Default behaviour preserves verified snapshots and retries only missing/invalid ones.
-Uses the existing Open-Meteo historical validator and its Melbourne-aligned day
-boundary; a per-state local-day policy must be approved before national analysis.
+Uses the existing Open-Meteo historical validator with jurisdiction-local
+IANA timezone boundaries, leaving the six-location legacy importer unchanged.
 """
 import argparse
 import hashlib
@@ -17,7 +17,15 @@ import sys
 import historical_weather as hist
 from location_catalogue import load_catalogue
 
-FORMAT_VERSION = 1
+FORMAT_VERSION = 2
+STATE_TIMEZONES = {"VIC": "Australia/Melbourne", "NSW": "Australia/Sydney",
+                   "ACT": "Australia/Sydney", "QLD": "Australia/Brisbane",
+                   "WA": "Australia/Perth", "SA": "Australia/Adelaide",
+                   "TAS": "Australia/Hobart", "NT": "Australia/Darwin"}
+
+
+def location_timezone(place):
+    return STATE_TIMEZONES[place["state"]]
 GROUP_DEFAULT = "australia_historical"
 
 
@@ -33,7 +41,7 @@ def signature(place):
         "id": place["id"], "latitude": place["latitude"],
         "longitude": place["longitude"], "start": hist.START.isoformat(),
         "end": hist.END.isoformat(), "model": hist.MODEL,
-        "fields": hist.FIELDS, "timezone": "Australia/Melbourne",
+        "fields": hist.FIELDS, "timezone": location_timezone(place),
         "version": FORMAT_VERSION,
     }
     return hashlib.sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest()
@@ -50,7 +58,7 @@ def valid_cached(path, place):
         count = (hist.END - hist.START).days + 1
         if (obj.get("signature") != signature(place)
                 or obj.get("model") != hist.MODEL
-                or obj.get("timezone") != "Australia/Melbourne"
+                or obj.get("timezone") != location_timezone(place)
                 or obj.get("start_date") != hist.START.isoformat()
                 or obj.get("end_date") != hist.END.isoformat()
                 or obj.get("units") != dict(zip(hist.FIELDS, hist.UNITS))
@@ -85,7 +93,7 @@ def process(catalogue, directory, group=GROUP_DEFAULT, fetch=None):
     """Process all locations independently, never discard a good older file."""
     places = load_catalogue(catalogue, group)
     directory = Path(directory)
-    fetch = fetch or hist.fetch_one
+    fetch = fetch or (lambda place: hist.fetch_one(place, timezone_name=location_timezone(place)))
     results = []
     for place in places:
         # IDs have been checked by the catalogue validator
@@ -95,11 +103,11 @@ def process(catalogue, directory, group=GROUP_DEFAULT, fetch=None):
         if not valid_cached(path, place):
             status = "updated"
             try:
-                validated = hist.validate(fetch(place), place)
+                validated = hist.validate(fetch(place), place, timezone_name=location_timezone(place))
                 atomic_json(path, {
                     "signature": signature(place),
                     "source": "Open-Meteo Historical Weather API",
-                    "model": hist.MODEL, "timezone": "Australia/Melbourne",
+                    "model": hist.MODEL, "timezone": location_timezone(place),
                     "start_date": hist.START.isoformat(),
                     "end_date": hist.END.isoformat(),
                     "units": dict(zip(hist.FIELDS, hist.UNITS)),
@@ -112,12 +120,12 @@ def process(catalogue, directory, group=GROUP_DEFAULT, fetch=None):
         print(f'{place["id"]}: {status}' + (f" ({error})" if error else ""), flush=True)
     manifest = {
         "format_version": FORMAT_VERSION, "group": group,
-        "model": hist.MODEL, "timezone": "Australia/Melbourne",
+        "model": hist.MODEL, "timezone_policy": "state_local",
         "start_date": hist.START.isoformat(), "end_date": hist.END.isoformat(),
         "expected": len(results), "completed": sum(
             r["status"] in ("cached", "updated") for r in results),
         "locations": results,
-        "limitations": "Shared Melbourne-day timezone; do not infer local-calendar-day statistics across all Australian jurisdictions.",
+        "limitations": "State capital IANA timezone is used for each locality; location-level timezone overrides and verified coordinates remain future work.",
     }
     atomic_json(directory / "manifest.json", manifest)
     return manifest
