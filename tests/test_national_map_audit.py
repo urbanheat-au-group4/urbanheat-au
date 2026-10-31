@@ -2,7 +2,7 @@
 import copy
 import unittest
 
-from national_map_audit import audit, METRICS
+from national_map_audit import audit, METRICS, geographic_warnings
 
 
 class MapAuditTests(unittest.TestCase):
@@ -28,6 +28,14 @@ class MapAuditTests(unittest.TestCase):
                 row.update({metric: 15.0 for metric in METRICS})
                 self.export["locations"].append(row)
         self.export["count"] = 112
+
+    def test_real_catalogue_flags_melbourne_cluster(self):
+        import json
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[1]
+        catalogue = json.loads((root / "locations.json").read_text())
+        warnings = geographic_warnings(catalogue)
+        self.assertIn("VIC", [item["state"] for item in warnings])
 
     def test_complete_export(self):
         result = audit(self.catalogue, self.export)
