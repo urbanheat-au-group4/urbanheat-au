@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>National climate map | UrbanHeat AU</title>
+<link rel="stylesheet" href="/static/national.css">
+<script src="/static/national.js" defer></script>
+</head>
+<body>
+<header><a href="/">← Melbourne dashboard</a><strong>UrbanHeat AU</strong><span>2015–2025 historical climate</span></header>
+<main>
+<section class="intro"><p class="eyebrow">AUSTRALIA · CLIMATE EXPLORER</p>
+<h1>Compare climate across Australia</h1>
+<p>Explore modelled historical weather for 112 locations. These are location readings, not temperatures across entire states.</p></section>
+<section class="layout">
+<aside class="panel">
+<label for="state">State or territory</label>
+<select id="state"><option value="ALL">All Australia</option></select>
+<label for="metric">Climate measure</label>
+<select id="metric">
+<option value="annual_mean_c">Average temperature (°C)</option>
+<option value="annual_average_max_c">Average daytime maximum (°C)</option>
+<option value="annual_average_min_c">Average nighttime minimum (°C)</option>
+<option value="average_annual_rainfall_mm">Annual rainfall (mm)</option>
+<option value="average_days_at_least_35c">Days ≥35°C per year</option>
+</select>
+<label for="place">Find a location</label>
+<select id="place"><option value="">Select a location</option></select>
+<div id="detail" class="detail" aria-live="polite">Choose a location on the map to see its climate results.</div>
+</aside>
+<section class="panel map-panel">
+<div class="map-heading"><h2>National overview</h2><span id="status" role="status">Loading…</span></div>
+<svg id="national-map" viewBox="0 0 1000 760" role="group" aria-label="Interactive map of Australian climate locations"></svg>
+<div class="legend"><span id="low">Cooler</span><span class="gradient"></span><span id="high">Warmer</span></div>
+<p class="note">Dots show modelled values at individual locations. Colours are relative to the displayed selection. State outlines are background geography only, not coloured climate regions.</p>
+</section></section>
+<section class="panel footnote"><strong>Source:</strong> Open-Meteo historical weather model, 2015–2025. Map boundaries: Australian Bureau of Statistics ASGS 2021 (CC BY 4.0), where the optional boundary file is available. Coordinates are subject to independent verification. This is not a live heat warning.</section>
+</main></body></html>
