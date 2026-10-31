@@ -35,3 +35,18 @@ header .brand-home{font-size:20px;font-weight:750;letter-spacing:-.02em;color:#e
 .callout-tag:hover .callout-box,.callout-tag:focus-visible .callout-box{
   stroke:#17536b;stroke-width:3;outline:none
 }
+
+/* State tags are available on narrow screens where SVG callouts are tiny. */
+.state-locations{display:none}
+.state-locations[hidden]{display:none}
+.state-location-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.state-location-tag{font:inherit;text-align:left;display:flex;flex-direction:column;gap:6px;min-width:0;padding:10px;background:#102b3b;color:#eaf1f7;border:1px solid #506b7b;border-radius:8px;cursor:pointer}
+.state-location-tag span{font-size:12px;overflow-wrap:anywhere}
+.state-location-tag strong{color:#a5e3f4;font-size:15px}
+.state-location-tag.active{background:#21516c;border:2px solid #a5e3f4}
+.state-location-tag:hover,.state-location-tag:focus-visible{outline:2px solid #9cdef2;outline-offset:2px}
+@media(max-width:740px){
+  .state-locations:not([hidden]){display:block;margin-top:14px}
+  .state-locations h3{font-size:16px}
+  .callout-tag{display:none}
+}
