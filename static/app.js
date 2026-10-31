@@ -257,6 +257,18 @@ async function getGeoJSON(url) {
   return body.features.filter(f => rings(f.geometry).length);
 }
 
+function fullMetroContext(features) {
+  let west = Infinity, east = -Infinity, south = Infinity, north = -Infinity;
+  for (const feature of features) {
+    for (const [lon, lat] of rings(feature.geometry).flat()) {
+      if (!Number.isFinite(lon) || !Number.isFinite(lat)) continue;
+      west = Math.min(west, lon); east = Math.max(east, lon);
+      south = Math.min(south, lat); north = Math.max(north, lat);
+    }
+  }
+  return west < 144.6 && east > 145.5 && south < -38.2 && north > -37.5;
+}
+
 async function loadMap() {
   const status = document.getElementById('map-status');
   try {
@@ -265,11 +277,13 @@ async function loadMap() {
     if (Object.keys(names).some(name => !present.has(name))) throw new Error('Outdated boundary data. Run python3 fetch_boundaries.py');
   } catch (error) {status.textContent = `Map unavailable: ${error.message}`; return;}
   try {
-    background = await getGeoJSON('/static/metro_context.geojson');
+    const fullBackground = await getGeoJSON('/static/metro_context.geojson');
+    if (!fullMetroContext(fullBackground)) throw new Error('Map file is incomplete. Run python3 fetch_metro_context.py');
+    background = fullBackground;
     fitMapBounds([...background, ...monitored]);
     status.textContent = `${background.length} surrounding localities loaded`;
   } catch (error) {
-    status.textContent = 'Background unavailable; monitored suburbs still shown';
+    status.textContent = `Background unavailable: ${error.message}`;
   }
   drawMap();
 }
