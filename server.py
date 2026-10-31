@@ -1,4 +1,4 @@
-"""Serve weather and refresh it safely at a configurable interval."""
+"""Serve the national climate dashboard and provide optional weather refresh."""
 
 import json
 import os
@@ -78,7 +78,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             self.wfile.write(encoded)
             return
         if route == "/":
-            self.path = "/static/index.html"
+            self.path = "/static/national.html"
         super().do_GET()
 
     def end_headers(self):
