@@ -82,6 +82,7 @@ async function main() {
     for (const code of ['ACT','VIC','NSW']) {
       await page.locator('#state').selectOption(code);
       assert.equal(await page.locator('#national-map .callout-tag').count(),14);
+      assert.equal(await page.locator('#state-location-list button:visible').count(),14);
       const overflow = await page.evaluate(() =>
         document.documentElement.scrollWidth - document.documentElement.clientWidth);
       assert.ok(overflow <= 2, code + ': mobile has ' + overflow + 'px horizontal overflow');
