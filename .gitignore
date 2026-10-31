@@ -41,3 +41,10 @@ climate_statistics.json
 
 # National historical snapshots and generated coverage output
 data/national/
+
+# Local national map output and browser test artefacts
+static/national_data.json
+static/australia_states.geojson
+artifacts/
+playwright-report/
+test-results/
