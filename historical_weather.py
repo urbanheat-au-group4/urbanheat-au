@@ -40,7 +40,7 @@ def locations(group=None):
             for name, (lat, lon) in weather.SUBURBS.items()]
 
 
-def fetch_one(location, opener=urlopen, attempts=3):
+def fetch_one(location, opener=urlopen, attempts=3, timezone_name="Australia/Melbourne"):
     """Retry transient failures a limited number of times."""
     params = {
         "latitude": location["latitude"],
@@ -48,7 +48,7 @@ def fetch_one(location, opener=urlopen, attempts=3):
         "start_date": START.isoformat(),
         "end_date": END.isoformat(),
         "daily": ",".join(FIELDS),
-        "timezone": "Australia/Melbourne",
+        "timezone": timezone_name,
         "models": MODEL,
         "temperature_unit": "celsius",
         "precipitation_unit": "mm",
@@ -64,11 +64,11 @@ def fetch_one(location, opener=urlopen, attempts=3):
             time.sleep(min(2 ** attempt, 4))
 
 
-def validate(payload, location):
+def validate(payload, location, timezone_name="Australia/Melbourne"):
     """Reject incorrect dates and units; mark missing daily readings as null."""
     if not isinstance(payload, dict) or payload.get("error"):
         raise ValueError(f"{location['name']}: API error or invalid response")
-    if payload.get("timezone") != "Australia/Melbourne":
+    if payload.get("timezone") != timezone_name:
         raise ValueError(f"{location['name']}: incorrect timezone")
     daily, units = payload.get("daily"), payload.get("daily_units")
     if not isinstance(daily, dict) or not isinstance(units, dict):
