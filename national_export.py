@@ -16,8 +16,11 @@ def export(catalogue=CATALOGUE, data_dir=Path("data/national"), output=Path("sta
                      ("id", "name", "state", "annual_mean_c", "annual_average_max_c",
                       "annual_average_min_c", "average_annual_rainfall_mm",
                       "average_days_at_least_35c")})
-        rows[-1].update({"x": point["x"], "y": point["y"]})
-    result = {"locations": rows, "count": len(rows),
+        rows[-1].update({"x": point["x"], "y": point["y"],
+                         "latitude": point["latitude"], "longitude": point["longitude"]})
+    counts = {code: sum(p["state"] == code for p in rows) for code in
+              ("NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT")}
+    result = {"locations": rows, "count": len(rows), "state_counts": counts,
               "source": climate["source"], "start_date": climate["start_date"],
               "end_date": climate["end_date"], "skipped": climate["skipped_locations"]}
     save_atomic(output, result)

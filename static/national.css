@@ -5,3 +5,22 @@
 
 /* Keep the map itself clear. State figures sit below it. */
 .state-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:14px}.state-summary-item{display:flex;flex-direction:column;gap:4px;border-radius:7px;background:#101b29;border:1px solid #344556;padding:9px}.state-summary-item strong{font-size:12px;color:#c4d7e3}.state-summary-item span{font-size:16px;font-weight:700;color:#fff}.boundary{stroke:#f6fafc;stroke-width:1.4;stroke-linejoin:round}.marker{stroke:#17384a;stroke-width:1.6}@media(max-width:650px){.state-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* National annotations and state focus */
+.map-heading h2{margin:0 0 6px}
+.map-heading button{background:#225b75;color:#fff;border:1px solid #8ab5c8;border-radius:6px;padding:8px 12px;cursor:pointer;font:600 13px system-ui}
+.map-heading button[hidden]{display:none}
+.map-hint{font-size:12px;margin:2px 0 12px}
+.heat-annotations{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0 14px}
+.heat-band{display:flex;flex-direction:column;gap:4px;padding:10px 12px;border:1px solid #476177;border-radius:8px;background:#102b3b}
+.heat-band span{font-size:11px;color:#c1d4e0}
+.heat-band strong{font-size:18px;color:#f0f8fc}
+.selectable-state{cursor:pointer;stroke:#fff;stroke-linejoin:round}
+.selectable-state:hover,.selectable-state:focus-visible{stroke:#163549;stroke-width:3;outline:none}
+.callout-line{stroke:#24475b;pointer-events:none}
+.callout-box{fill:#f7fbfd;stroke:#557384;pointer-events:none}
+.callout-name{font-family:system-ui,sans-serif;font-weight:700;fill:#17384b;pointer-events:none}
+.callout-value{font-family:system-ui,sans-serif;font-weight:650;fill:#9e442c;pointer-events:none}
+.state-summary-item{color:#eaf1f7;text-align:left;font-family:inherit;cursor:pointer}
+.state-summary-item:hover,.state-summary-item:focus-visible{border-color:#9cdef2;outline:2px solid #9cdef2;outline-offset:2px}
+@media(max-width:650px){.heat-annotations{grid-template-columns:1fr}.heat-band{flex-direction:row;justify-content:space-between;align-items:center}.heat-band strong{font-size:15px}}
