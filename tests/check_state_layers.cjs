@@ -25,4 +25,12 @@ for (const code of ['NSW','VIC','QLD','WA','SA','TAS','ACT','NT']) {
   assert.equal(viewLabels.length,14, code+' expected all fourteen on-map labels');
   assert.ok(viewLabels.every(x => x.annotation), code+' missing annotation');
 }
-console.log('Passed: all 8 real catalogue state zoom extents and marker IDs');
+const actView = A.stateViewBox(points, 'ACT');
+assert.ok(actView.width < 100, 'ACT should have a readable close-up, not an entire-country viewport');
+const vic = points.filter(p=>p.state==='VIC');
+const fullVictoria = A.stateViewBox(points,'VIC',[[700,520],[850,660]]);
+const focusVictoria = A.stateViewBox(points,'VIC',[[700,520],[850,660]],true);
+assert.ok(A.hasClusteredCoverage(points,'VIC',[[700,520],[850,660]]));
+assert.ok(focusVictoria.width < fullVictoria.width, 'Victoria sampled-location focus should zoom in');
+assert.ok(vic.every(p=>p.x>=focusVictoria.x && p.x<=focusVictoria.x+focusVictoria.width));
+console.log('Passed: eight state views, ACT close-up, and clustered sample zoom');
