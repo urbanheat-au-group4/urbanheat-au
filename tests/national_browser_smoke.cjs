@@ -16,31 +16,32 @@ async function check(condition, message) {
 
 async function checkState(page, code) {
   await page.locator('#state').selectOption(code);
-  await page.waitForFunction(() => document.querySelectorAll('#state-location-list button').length === 14);
+  await page.waitForFunction(() => document.querySelectorAll('.callout-tag').length === 14);
   const count = await page.locator('#national-map circle.marker').count();
   assert.equal(count, 14, code + ': expected 14 markers');
-  const tags = page.locator('#state-location-list button');
+  const tags = page.locator('#national-map .callout-tag');
   assert.equal(await tags.count(), 14, code + ': expected 14 labelled readings');
   const ids = await tags.evaluateAll(nodes => nodes.map(node => node.dataset.locationId));
   assert.equal(new Set(ids).size, 14, code + ': duplicate IDs');
   const markerIds = await page.locator('circle.marker').evaluateAll(nodes => nodes.map(node => node.dataset.locationId));
   assert.deepEqual(new Set(ids), new Set(markerIds), code + ': marker IDs must match tags');
-  assert.equal(await page.locator('#state-locations').isVisible(), true);
+  assert.equal(await page.locator('#national-map .callout-note').count(), 14, code + ': missing climate annotations');
   await check((await page.locator('#map-title').innerText()).includes('State view'), code + ': no state heading');
   await check((await page.locator('#national-map').getAttribute('viewBox')) !== '0 0 1000 760',
     code + ': map did not zoom');
   const first = tags.first();
-  const name = await first.locator('span').innerText();
+  const name = await first.locator('.callout-name').textContent();
+  const firstId = await first.getAttribute('data-location-id');
   await first.click();
-  assert.equal(await first.getAttribute('aria-pressed'), 'true', code + ': tag not selected');
+  assert.equal(await page.locator('#place').inputValue(), firstId, code + ': callout did not select its location');
   await check((await page.locator('#detail').innerText()).includes(name),
     code + ': tag did not update detail');
   const secondId = markerIds[1];
   await page.locator('circle.marker').nth(1).click();
   assert.equal(await page.locator('#place').inputValue(), secondId,
     code + ': marker selection not synchronised');
-  const title = await page.locator('#state-locations-title').innerText();
-  await check(title.includes('14 locations'), code + ': title is not showing 14 places');
+  const title = await page.locator('#status').innerText();
+  await check(title.includes('14 locations'), code + ': status does not show all 14 places');
   await page.screenshot({path: path.join(artifacts, code.toLowerCase() + '-desktop.png'), fullPage: true});
 }
 
@@ -54,9 +55,9 @@ async function main() {
     const response = await page.goto(url, {waitUntil:'domcontentloaded'});
     assert.equal(response.status(), 200);
     await page.waitForFunction(() =>
-      document.querySelector('#status')?.textContent?.includes('112 locations'), {timeout:20000});
+      document.querySelector('#status')?.textContent?.includes('112 locations'), null, {timeout:20000});
     assert.equal(await page.locator('circle.marker').count(), 112);
-    assert.equal(await page.locator('#state-locations').isVisible(), false);
+    assert.equal(await page.locator('#national-map .callout-tag').count() < 14, true);
     assert.ok(await page.locator('path.selectable-state').count() >= 8,
       'Official state boundary layer was not loaded');
     await page.screenshot({path:path.join(artifacts,'australia-desktop.png'),fullPage:true});
@@ -66,7 +67,7 @@ async function main() {
     await outline.focus();
     await outline.press('Enter');
     assert.equal(await page.locator('#state').inputValue(), 'NSW');
-    assert.equal(await page.locator('#state-location-list button').count(), 14);
+    assert.equal(await page.locator('#national-map .callout-tag').count(), 14);
     await page.locator('#back-to-australia').click();
     assert.equal(await page.locator('#state').inputValue(), 'ALL');
     assert.equal(await page.locator('circle.marker').count(), 112);
@@ -74,13 +75,13 @@ async function main() {
     for (const code of STATES) await checkState(page, code);
     await page.locator('#back-to-australia').click();
     assert.equal(await page.locator('circle.marker').count(), 112);
-    assert.equal(await page.locator('#state-locations').isVisible(), false);
+    assert.equal(await page.locator('#national-map .callout-tag').count() < 14, true);
 
     // Mobile must show all 14 readable tags with no horizontal page overflow.
     await page.setViewportSize({width:390,height:844});
     for (const code of ['ACT','VIC','NSW']) {
       await page.locator('#state').selectOption(code);
-      assert.equal(await page.locator('#state-location-list button:visible').count(),14);
+      assert.equal(await page.locator('#national-map .callout-tag').count(),14);
       const overflow = await page.evaluate(() =>
         document.documentElement.scrollWidth - document.documentElement.clientWidth);
       assert.ok(overflow <= 2, code + ': mobile has ' + overflow + 'px horizontal overflow');
