@@ -184,6 +184,14 @@ function drawCallouts(visible, view) {
     });
     value.textContent = labels.format(p[metric.value], metric.value);
     group.append(value);
+    if (rect.annotation) {
+      const note = element('text', {
+        x: x + 10*scale, y: y + 54*scale,
+        class: 'callout-note', 'font-size': 10.5*scale
+      });
+      note.textContent = rect.annotation;
+      group.append(note);
+    }
   }
   svg.append(group);
 }
@@ -266,15 +274,16 @@ function draw() {
   const low = Math.min(...values), high = Math.max(...values);
   const averages = stateAverages();
   drawBoundaries(averages, low, high, view);
-  drawMarkers(visible, low, high, view);
   drawCallouts(visible, view);
+  drawMarkers(visible, low, high, view);
   updateHighlights(visible);
   updateBands();
   updateStateSummary(averages);
   updateDetail();
   document.getElementById('low').textContent = labels.format(low, metric.value);
   document.getElementById('high').textContent = labels.format(high, metric.value);
-  document.getElementById('status').textContent = visible.length + ' locations';
+  document.getElementById('status').textContent = state.value === 'ALL' ?
+    visible.length + ' locations' : visible.length + ' locations · all labels shown';
   heading.textContent = state.value === 'ALL' ? 'Australia · National overview' : STATES[state.value] + ' · State view';
   back.hidden = state.value === 'ALL';
   svg.setAttribute('aria-label', (state.value === 'ALL' ? 'Australia' : STATES[state.value]) +
