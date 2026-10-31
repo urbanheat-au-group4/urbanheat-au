@@ -243,22 +243,6 @@ async function getGeoJSON(url) {
 // Hide some distant southwest background suburbs that look detached.
 // Keep all six selected suburbs visible.
 
-function withinMelbourneContext(feature) {
-  const coordinates = rings(feature.geometry).flat();
-  if (!coordinates.length) return false;
-  let west = Infinity, east = -Infinity, south = Infinity, north = -Infinity;
-  for (const point of coordinates) {
-    const [lon, lat] = point;
-    if (!Number.isFinite(lon) || !Number.isFinite(lat)) return false;
-    west = Math.min(west, lon); east = Math.max(east, lon);
-    south = Math.min(south, lat); north = Math.max(north, lat);
-  }
-
-  // Hide background shapes outside this part of the Melbourne map.
-
-  return !(east < 144.90 && north < -38.00);
-}
-
 async function loadMap() {
   const status = document.getElementById('map-status');
   try {
@@ -267,7 +251,7 @@ async function loadMap() {
     if (Object.keys(names).some(name => !present.has(name))) throw new Error('Outdated boundary data. Run python3 fetch_boundaries.py');
   } catch (error) {status.textContent = `Map unavailable: ${error.message}`; return;}
   try {
-    background = (await getGeoJSON('/static/metro_context.geojson')).filter(withinMelbourneContext);
+    background = await getGeoJSON('/static/metro_context.geojson');
     status.textContent = `${background.length} surrounding localities loaded`;
   } catch (error) {
     status.textContent = 'Background unavailable; monitored suburbs still shown';
