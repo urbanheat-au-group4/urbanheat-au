@@ -1,0 +1,112 @@
+// Browser acceptance tests for all eight national map layers.
+// Uses the actual location catalogue, with unavailable readings instead
+// of invented weather numbers. Boundary shapes come from geoBoundaries.
+const {chromium} = require('@playwright/test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+
+const url = process.env.URBANHEAT_URL || 'http://127.0.0.1:8000/';
+const artifacts = path.join(__dirname, '..', 'artifacts', 'national-map');
+const STATES = ['NSW','VIC','QLD','WA','SA','TAS','ACT','NT'];
+
+async function check(condition, message) {
+  if (!condition) throw new Error(message);
+}
+
+async function checkState(page, code) {
+  await page.locator('#state').selectOption(code);
+  await page.waitForFunction(() => document.querySelectorAll('.callout-tag').length === 14);
+  const count = await page.locator('#national-map circle.marker').count();
+  assert.equal(count, 14, code + ': expected 14 markers');
+  const tags = page.locator('#national-map .callout-tag');
+  assert.equal(await tags.count(), 14, code + ': expected 14 labelled readings');
+  const ids = await tags.evaluateAll(nodes => nodes.map(node => node.dataset.locationId));
+  assert.equal(new Set(ids).size, 14, code + ': duplicate IDs');
+  const markerIds = await page.locator('circle.marker').evaluateAll(nodes => nodes.map(node => node.dataset.locationId));
+  assert.deepEqual(new Set(ids), new Set(markerIds), code + ': marker IDs must match tags');
+  assert.equal(await page.locator('#national-map .callout-note').count(), 14, code + ': missing climate annotations');
+  await check((await page.locator('#map-title').innerText()).includes('State view'), code + ': no state heading');
+  await check((await page.locator('#national-map').getAttribute('viewBox')) !== '0 0 1000 760',
+    code + ': map did not zoom');
+  const first = tags.first();
+  const name = await first.locator('.callout-name').textContent();
+  const firstId = await first.getAttribute('data-location-id');
+  await first.locator('rect.callout-box').click();
+  assert.equal(await page.locator('#place').inputValue(), firstId, code + ': callout did not select its location');
+  await page.locator('.callout-tag[data-location-id="' + firstId + '"]').focus();
+  await page.locator('.callout-tag[data-location-id="' + firstId + '"]').press('Enter');
+  assert.equal(await page.locator('#place').inputValue(), firstId, code + ': keyboard label selection failed');
+  await check((await page.locator('#detail').innerText()).includes(name),
+    code + ': tag did not update detail');
+  // Dense Canberra markers overlap. Every labelled location must remain mouse-selectable.
+  for (const id of ids) {
+    await page.locator('.callout-tag[data-location-id="' + id + '"] rect.callout-box').click();
+    assert.equal(await page.locator('#place').inputValue(), id,
+      code + ': labelled location not mouse-selectable: ' + id);
+  }
+  // Every corresponding map marker must also work from the keyboard.
+  for (const id of markerIds) {
+    const marker = page.locator('circle.marker[data-location-id="' + id + '"]');
+    await marker.focus();
+    await marker.press('Enter');
+    assert.equal(await page.locator('#place').inputValue(), id,
+      code + ': marker keyboard selection failed: ' + id);
+  }
+  const title = await page.locator('#status').innerText();
+  await check(title.includes('14 locations'), code + ': status does not show all 14 places');
+  await page.screenshot({path: path.join(artifacts, code.toLowerCase() + '-desktop.png'), fullPage: true});
+}
+
+async function main() {
+  fs.mkdirSync(artifacts, {recursive:true});
+  const browser = await chromium.launch({headless:true});
+  const errors = [];
+  try {
+    const page = await browser.newPage({viewport:{width:1440,height:900},deviceScaleFactor:1});
+    page.on('pageerror', error => errors.push(error.message));
+    const response = await page.goto(url, {waitUntil:'domcontentloaded'});
+    assert.equal(response.status(), 200);
+    await page.waitForFunction(() =>
+      document.querySelector('#status')?.textContent?.includes('112 locations'), null, {timeout:20000});
+    assert.equal(await page.locator('circle.marker').count(), 112);
+    assert.equal(await page.locator('#national-map .callout-tag').count() < 14, true);
+    assert.ok(await page.locator('path.selectable-state').count() >= 8,
+      'Official state boundary layer was not loaded');
+    await page.screenshot({path:path.join(artifacts,'australia-desktop.png'),fullPage:true});
+
+    // Clicking a real state outline must focus that state's local map.
+    const outline = page.locator('path[aria-label="Zoom into New South Wales"]').first();
+    await outline.focus();
+    await outline.press('Enter');
+    assert.equal(await page.locator('#state').inputValue(), 'NSW');
+    assert.equal(await page.locator('#national-map .callout-tag').count(), 14);
+    await page.locator('#back-to-australia').click();
+    assert.equal(await page.locator('#state').inputValue(), 'ALL');
+    assert.equal(await page.locator('circle.marker').count(), 112);
+
+    for (const code of STATES) await checkState(page, code);
+    await page.locator('#back-to-australia').click();
+    assert.equal(await page.locator('circle.marker').count(), 112);
+    assert.equal(await page.locator('#national-map .callout-tag').count() < 14, true);
+
+    // Mobile must show all 14 readable tags with no horizontal page overflow.
+    await page.setViewportSize({width:390,height:844});
+    for (const code of ['ACT','VIC','NSW']) {
+      await page.locator('#state').selectOption(code);
+      assert.equal(await page.locator('#national-map .callout-tag').count(),14);
+      assert.equal(await page.locator('#state-location-list button:visible').count(),14);
+      const overflow = await page.evaluate(() =>
+        document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      assert.ok(overflow <= 2, code + ': mobile has ' + overflow + 'px horizontal overflow');
+      await page.screenshot({path:path.join(artifacts, code.toLowerCase() + '-mobile.png'),fullPage:true});
+    }
+    assert.deepEqual(errors, [], 'Browser JavaScript errors');
+    console.log('Passed: 112 national markers, eight state views, 14 tags each, keyboard, selection and mobile');
+    console.log('Screenshots: ' + artifacts);
+  } finally {
+    await browser.close();
+  }
+}
+
+main().catch(error => {console.error(error); process.exitCode = 1;});

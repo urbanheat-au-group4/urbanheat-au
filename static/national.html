@@ -32,9 +32,10 @@
 </aside>
 <section class="panel map-panel">
 <div class="map-heading"><div><h2 id="map-title">Australia · National overview</h2><button id="back-to-australia" type="button" hidden>← Back to Australia</button></div><span id="status" role="status">Loading…</span></div>
-<p class="map-hint">Select a state to zoom in, or select any location marker to see its climate readings.</p>
+<p class="map-hint">Select a state to zoom in. Use the labelled location boxes to choose places, especially where nearby markers overlap.</p>
 <div id="heat-annotations" class="heat-annotations" aria-label="Climate comparisons by latitude"></div>
 <svg id="national-map" viewBox="0 0 1000 760" role="group" aria-label="Interactive map of Australian climate locations"></svg>
+<section id="state-locations" class="state-locations" hidden aria-label="Selected state locations"><h3 id="state-locations-title">All locations</h3><div id="state-location-list" class="state-location-list"></div></section>
 <div id="state-summary" class="state-summary" aria-label="State sample averages"></div>
 <div class="legend"><span id="low">Cooler</span><span class="gradient"></span><span id="high">Warmer</span></div>
 <p class="note">Location labels and climate bands use modelled 2015–2025 data. State shading is the average of 14 sampled locations, not an official statewide estimate. Colours use the same scale across Australia.</p>

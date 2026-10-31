@@ -23,7 +23,7 @@ class NationalMapUITests(unittest.TestCase):
         self.assertLess(html.index('/static/national_annotations.js'),
                         html.index('/static/national.js'))
         for element_id in ('back-to-australia', 'heat-annotations', 'national-map',
-                           'map-title', 'state-summary'):
+                           'map-title', 'state-summary', 'state-locations', 'state-location-list'):
             self.assertIn('id="' + element_id + '"', html)
 
     def test_eight_jurisdictions_have_fourteen_locations_each(self):
@@ -38,9 +38,10 @@ class NationalMapUITests(unittest.TestCase):
             result = subprocess.run(["node", "--check", str(ROOT / "static" / path)],
                                     capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
-        result = subprocess.run(["node", str(ROOT / "tests/check_national_annotations.js")],
-                                capture_output=True, text=True)
-        self.assertEqual(result.returncode, 0, result.stderr)
+        for script in ('check_national_annotations.js','check_state_layers.cjs'):
+            result = subprocess.run(['node', str(ROOT / 'tests' / script)],
+                                    capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
 
 
 if __name__ == '__main__':

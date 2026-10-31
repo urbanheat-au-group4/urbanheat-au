@@ -135,6 +135,7 @@ function drawMarkers(visible, low, high, view) {
   for (const p of visible) {
     const value = p[metric.value];
     const circle = element('circle', {
+      'data-location-id': p.id,
       cx: p.x, cy: p.y, r: (selected === p.id ? 9 : 5.5) * scale,
       fill: Number.isFinite(value) ? color(value, low, high) : '#9ba9b2',
       class: 'marker' + (selected === p.id ? ' selected' : ''),
@@ -161,37 +162,50 @@ function drawCallouts(visible, view) {
   const group = element('g', {'aria-label': 'Labelled climate locations'});
   for (const rect of labels.labelLayout(visible, metric.value, state.value, selected, view)) {
     const p = rect.point, x = rect.x, y = rect.y;
+    const tag = element('g', {
+      class: 'callout-tag', role: 'button', tabindex: '0',
+      'data-location-id': p.id,
+      'aria-label': 'Show ' + p.name + ': ' + labels.format(p[metric.value], metric.value)
+    });
     const nearestX = Math.min(x + rect.width, Math.max(x, p.x));
     const nearestY = Math.min(y + rect.height, Math.max(y, p.y));
-    group.append(element('line', {
+    tag.append(element('line', {
       x1: p.x, y1: p.y, x2: nearestX, y2: nearestY,
       class: 'callout-line', 'stroke-width': 1.8 * scale
     }));
-    group.append(element('rect', {
+    tag.append(element('rect', {
       x, y, width: rect.width, height: rect.height,
       rx: 8 * scale, class: 'callout-box',
       'stroke-width': (p.id === selected ? 2.7 : 1) * scale
     }));
-    const label = element('text', {
+    const name = element('text', {
       x: x + 10*scale, y: y + 19*scale,
       class: 'callout-name', 'font-size': 13*scale
     });
-    label.textContent = p.name;
-    group.append(label);
+    name.textContent = p.name;
+    tag.append(name);
     const value = element('text', {
       x: x + 10*scale, y: y + 37*scale,
       class: 'callout-value', 'font-size': 15*scale
     });
     value.textContent = labels.format(p[metric.value], metric.value);
-    group.append(value);
+    tag.append(value);
     if (rect.annotation) {
       const note = element('text', {
         x: x + 10*scale, y: y + 54*scale,
         class: 'callout-note', 'font-size': 10.5*scale
       });
       note.textContent = rect.annotation;
-      group.append(note);
+      tag.append(note);
     }
+    tag.addEventListener('click', () => selectPoint(p.id));
+    tag.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault(); selectPoint(p.id);
+        place.focus();
+      }
+    });
+    group.append(tag);
   }
   svg.append(group);
 }
@@ -264,6 +278,30 @@ function updateStateSummary(averages) {
     summary.append(card);
   }
 }
+function renderMobileStateTags(visible) {
+  const section = document.getElementById('state-locations');
+  const list = document.getElementById('state-location-list');
+  section.hidden = state.value === 'ALL';
+  list.replaceChildren();
+  if (state.value === 'ALL') return;
+  document.getElementById('state-locations-title').textContent =
+    STATES[state.value] + ' · ' + visible.length + ' locations';
+  for (const p of [...visible].sort((a,b) => a.name.localeCompare(b.name))) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'state-location-tag' + (p.id === selected ? ' active' : '');
+    button.setAttribute('data-location-id', p.id);
+    button.setAttribute('aria-pressed', p.id === selected ? 'true' : 'false');
+    const name = document.createElement('span');
+    name.textContent = p.name;
+    const value = document.createElement('strong');
+    value.textContent = labels.format(p[metric.value], metric.value);
+    button.append(name, value);
+    button.addEventListener('click', () => selectPoint(p.id));
+    list.append(button);
+  }
+}
+
 function draw() {
   if (!points.length) return;
   const view = labels.stateViewBox(points, state.value, stateBoundaryCorners(state.value));
@@ -274,8 +312,9 @@ function draw() {
   const low = Math.min(...values), high = Math.max(...values);
   const averages = stateAverages();
   drawBoundaries(averages, low, high, view);
-  drawCallouts(visible, view);
   drawMarkers(visible, low, high, view);
+  drawCallouts(visible, view);
+  renderMobileStateTags(visible);
   updateHighlights(visible);
   updateBands();
   updateStateSummary(averages);

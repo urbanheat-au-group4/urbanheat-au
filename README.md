@@ -27,7 +27,23 @@ The map data is generated locally in `static/national_data.json`. If a location 
 python3 -m unittest discover -s tests -p 'test_*.py' -v
 ```
 
-Most tests are offline. Node.js is used for the JavaScript layout tests when available. Automated checks do not replace browser checks for desktop and mobile layouts.
+Most tests are offline. Node.js is used for the JavaScript layout tests when available.
+
+### Browser acceptance checks
+
+GitHub CI runs the eight-state Chromium test, including desktop and mobile screenshots, and uploads them as the `national-map-browser-evidence` artifact. The CI test takes location names and coordinates from the real catalogue, but sets weather measurements to unavailable. It never invents temperatures.
+
+To check your **actual downloaded climate values** locally:
+
+```bash
+python3 national_export.py --data-dir data/national
+python3 fetch_national_boundaries.py
+npm install
+npx playwright install chromium
+python3 server.py
+```
+
+In another terminal run `npm run test:browser`. The screenshots are saved under `artifacts/national-map/`. Check the screenshots visually as well: automated tests alone cannot certify that every label is comfortably readable.
 
 ## Data and limitations
 
