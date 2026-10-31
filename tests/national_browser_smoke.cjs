@@ -19,6 +19,22 @@ async function checkState(page, code) {
   await page.waitForFunction(() => document.querySelectorAll('.callout-tag').length === 14);
   const count = await page.locator('#national-map circle.marker').count();
   assert.equal(count, 14, code + ': expected 14 markers');
+  if (code === 'ACT') {
+    const view = (await page.locator('#national-map').getAttribute('viewBox')).split(' ').map(Number);
+    assert.ok(view[2] < 100, 'ACT: map close-up is still too far away');
+  }
+  if (code === 'VIC') {
+    await check(await page.locator('#sample-coverage-note').isVisible(),
+      'VIC: missing clustered sampling warning');
+    await check(await page.locator('#focus-samples').isVisible(),
+      'VIC: missing sample area focus control');
+    const initial = (await page.locator('#national-map').getAttribute('viewBox')).split(' ').map(Number);
+    await page.locator('#focus-samples').click();
+    const focused = (await page.locator('#national-map').getAttribute('viewBox')).split(' ').map(Number);
+    assert.ok(focused[2] < initial[2], 'VIC: focus did not zoom in');
+    await page.screenshot({path:path.join(artifacts,'vic-samples-focus-desktop.png'),fullPage:true});
+    await page.locator('#focus-samples').click();
+  }
   const tags = page.locator('#national-map .callout-tag');
   assert.equal(await tags.count(), 14, code + ': expected 14 labelled readings');
   const ids = await tags.evaluateAll(nodes => nodes.map(node => node.dataset.locationId));
