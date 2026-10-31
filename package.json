@@ -1,0 +1,11 @@
+{
+  "name": "urbanheat-au-ui-checks",
+  "private": true,
+  "description": "Browser acceptance tests for the national map",
+  "scripts": {
+    "test:browser": "node tests/national_browser_smoke.cjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1"
+  }
+}
