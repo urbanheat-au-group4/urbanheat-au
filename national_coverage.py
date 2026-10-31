@@ -13,7 +13,7 @@ from pathlib import Path
 
 import historical_weather as hist
 from location_catalogue import load_catalogue
-from national_ingest import signature
+from national_ingest import signature, location_timezone
 
 FIELDS = hist.FIELDS
 
@@ -94,7 +94,7 @@ def assess_location(location, directory):
                 errors.append("snapshot_signature_mismatch")
             if payload.get("model") != hist.MODEL:
                 errors.append("model_mismatch")
-            if payload.get("timezone") != "Australia/Melbourne":
+            if payload.get("timezone") != location_timezone(location):
                 errors.append("timezone_mismatch")
             if payload.get("start_date") != hist.START.isoformat() or payload.get("end_date") != hist.END.isoformat():
                 errors.append("period_mismatch")
@@ -120,13 +120,13 @@ def build_report(catalogue, directory, group="australia_historical"):
     totals = Counter(x["status"] for x in assessed)
     return {
         "source": "Open-Meteo Historical Weather API",
-        "model": hist.MODEL, "timezone": "Australia/Melbourne",
+        "model": hist.MODEL, "timezone_policy": "state_local",
         "start_date": hist.START.isoformat(), "end_date": hist.END.isoformat(),
         "group": group, "expected_locations": len(locations),
         "complete_locations": totals["complete"],
         "incomplete_locations": totals["incomplete"],
         "coverage_status": "complete" if totals["complete"] == len(locations) else "incomplete",
-        "limitations": "Missing, invalid or incomplete daily data are reported, never imputed. Shared Melbourne day-boundary is not jurisdiction-local.",
+        "limitations": "Missing, invalid or incomplete daily data are reported, never imputed. National days follow the jurisdiction IANA timezone.",
         "locations": assessed,
     }
 
