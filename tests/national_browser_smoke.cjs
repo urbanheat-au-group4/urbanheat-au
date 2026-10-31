@@ -39,10 +39,20 @@ async function checkState(page, code) {
   assert.equal(await page.locator('#place').inputValue(), firstId, code + ': keyboard label selection failed');
   await check((await page.locator('#detail').innerText()).includes(name),
     code + ': tag did not update detail');
-  const secondId = markerIds[1];
-  await page.locator('circle.marker').nth(1).click();
-  assert.equal(await page.locator('#place').inputValue(), secondId,
-    code + ': marker selection not synchronised');
+  // Dense Canberra markers overlap. Every labelled location must remain mouse-selectable.
+  for (const id of ids) {
+    await page.locator('.callout-tag[data-location-id="' + id + '"] rect.callout-box').click();
+    assert.equal(await page.locator('#place').inputValue(), id,
+      code + ': labelled location not mouse-selectable: ' + id);
+  }
+  // Every corresponding map marker must also work from the keyboard.
+  for (const id of markerIds) {
+    const marker = page.locator('circle.marker[data-location-id="' + id + '"]');
+    await marker.focus();
+    await marker.press('Enter');
+    assert.equal(await page.locator('#place').inputValue(), id,
+      code + ': marker keyboard selection failed: ' + id);
+  }
   const title = await page.locator('#status').innerText();
   await check(title.includes('14 locations'), code + ': status does not show all 14 places');
   await page.screenshot({path: path.join(artifacts, code.toLowerCase() + '-desktop.png'), fullPage: true});
