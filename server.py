@@ -87,13 +87,16 @@ class DashboardHandler(SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    print(f"Refresh interval: {REFRESH_SECONDS}s (URBANHEAT_REFRESH_SECONDS)", flush=True)
-    refresh_weather()
+    # National views use saved historical data; no automatic forecast calls.
+    # The old refresh is opt-in for work still using legacy forecast data.
+    legacy_refresh = os.getenv("URBANHEAT_LEGACY_REFRESH", "0") == "1"
     stop = threading.Event()
-    worker = threading.Thread(target=schedule_refresh, args=(stop,), daemon=True)
-    worker.start()
+    if legacy_refresh:
+        refresh_weather()
+        worker = threading.Thread(target=schedule_refresh, args=(stop,), daemon=True)
+        worker.start()
     try:
-        print("Dashboard: http://localhost:8000", flush=True)
+        print("National map: http://localhost:8000", flush=True)
         ThreadingHTTPServer(("127.0.0.1", 8000), DashboardHandler).serve_forever()
     finally:
         stop.set()
