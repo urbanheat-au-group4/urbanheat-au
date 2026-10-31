@@ -97,12 +97,15 @@ def process(catalogue, directory, group=GROUP_DEFAULT, fetch=None, delay=8.0, sl
     fetch = fetch or (lambda place: hist.fetch_one(place, timezone_name=location_timezone(place)))
     results = []
     last_request = None
+    throttled = False
     for place in places:
         # IDs have been checked by the catalogue validator
         path = directory / "locations" / (place["id"] + ".json")
         status = "cached"
         error = None
-        if not valid_cached(path, place):
+        if not valid_cached(path, place) and throttled:
+            status, error = "deferred", "Provider rate limit detected; resume in a later run"
+        elif not valid_cached(path, place):
             if last_request is not None and delay > 0:
                 sleep(delay)
             last_request = True
@@ -120,6 +123,9 @@ def process(catalogue, directory, group=GROUP_DEFAULT, fetch=None, delay=8.0, sl
                 })
             except (OSError, ValueError, RuntimeError, TypeError) as exc:
                 status, error = "failed", str(exc)
+                if "429" in str(exc) or "Too Many Requests" in str(exc):
+                    throttled = True
+                    print("HTTP 429: stopping further network requests; saved snapshots retained.", flush=True)
         results.append({"id": place["id"], "state": place["state"],
                         "status": status, "error": error})
         print(f'{place["id"]}: {status}' + (f" ({error})" if error else ""), flush=True)
@@ -127,7 +133,7 @@ def process(catalogue, directory, group=GROUP_DEFAULT, fetch=None, delay=8.0, sl
         "format_version": FORMAT_VERSION, "group": group,
         "model": hist.MODEL, "timezone_policy": "state_local",
         "start_date": hist.START.isoformat(), "end_date": hist.END.isoformat(),
-        "expected": len(results), "completed": sum(
+        "throttled": throttled, "expected": len(results), "completed": sum(
             r["status"] in ("cached", "updated") for r in results),
         "locations": results,
         "limitations": "State capital IANA timezone is used for each locality; location-level timezone overrides and verified coordinates remain future work.",
