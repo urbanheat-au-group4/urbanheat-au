@@ -32,8 +32,11 @@ async function checkState(page, code) {
   const first = tags.first();
   const name = await first.locator('.callout-name').textContent();
   const firstId = await first.getAttribute('data-location-id');
-  await first.click();
+  await first.locator('rect.callout-box').click();
   assert.equal(await page.locator('#place').inputValue(), firstId, code + ': callout did not select its location');
+  await page.locator('.callout-tag[data-location-id="' + firstId + '"]').focus();
+  await page.locator('.callout-tag[data-location-id="' + firstId + '"]').press('Enter');
+  assert.equal(await page.locator('#place').inputValue(), firstId, code + ': keyboard label selection failed');
   await check((await page.locator('#detail').innerText()).includes(name),
     code + ': tag did not update detail');
   const secondId = markerIds[1];
