@@ -3,7 +3,8 @@
   "private": true,
   "description": "Browser acceptance tests for the national map",
   "scripts": {
-    "test:browser": "node tests/national_browser_smoke.cjs"
+    "test:browser": "node tests/national_browser_smoke.cjs",
+    "test:regression": "node tests/national_browser_regression.cjs"
   },
   "devDependencies": {
     "@playwright/test": "1.64.1"

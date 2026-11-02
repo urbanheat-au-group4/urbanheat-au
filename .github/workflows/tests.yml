@@ -51,6 +51,7 @@ jobs:
           python3 server.py >/tmp/urbanheat-server.log 2>&1 &
           sleep 2
           npm run test:browser
+          npm run test:regression
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
