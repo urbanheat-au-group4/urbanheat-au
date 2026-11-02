@@ -26,11 +26,11 @@ def point_rings(geometry):
 
 def label_offsets():
     code = (ROOT / "static" / "app.js").read_text(encoding="utf-8")
-    match = re.search(r"const labelOffsets\\s*=\\s*\\{(.*?)\\};", code, re.S)
+    match = re.search(r"const labelOffsets\s*=\s*\{(.*?)\};", code, re.S)
     assert match, "Dashboard label positions missing"
     offsets = {}
     for label, bare, dx, dy in re.findall(
-        r"(?:'([^']+)'|([A-Za-z]+))\\s*:\\s*\\[(-?\\d+),\\s*(-?\\d+)\\]",
+        r"(?:'([^']+)'|([A-Za-z]+))\s*:\s*\[(-?\d+),\s*(-?\d+)\]",
         match.group(1),
     ):
         offsets[label or bare] = (int(dx), int(dy))
