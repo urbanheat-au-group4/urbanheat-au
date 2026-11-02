@@ -29,9 +29,10 @@ class MetroContextTests(unittest.TestCase):
         self.assertEqual(metro.check_coverage(full),
                          (144.35, -38.48, 145.85, -37.35))
 
-    def test_browser_fits_to_downloaded_boundaries(self):
+    def test_browser_fits_to_monitored_locations_not_distant_background(self):
         javascript = (Path(__file__).resolve().parents[1] / "static" / "app.js").read_text()
-        self.assertIn("fitMapBounds([...background, ...monitored])", javascript)
+        self.assertIn("fitMapBounds(monitored)", javascript)
+        self.assertNotIn("fitMapBounds([...background, ...monitored])", javascript)
         self.assertNotIn("withinMelbourneContext", javascript)
 
 
