@@ -187,8 +187,8 @@ function chooseSuburb(name) { suburbSelect.value = name; showWeather(); }
 // Set label positions and connect them to their suburbs.
 
 const labelOffsets = {
-  'Melbourne CBD': [80, 45], Melton: [85, -30], Werribee: [-80, 38],
-  Craigieburn: [85, -20], Belgrave: [-78, -35], Frankston: [-75, -35]
+  'Melbourne CBD': [-55, -40], Melton: [-85, -40], Werribee: [-90, 45],
+  Craigieburn: [90, -30], Belgrave: [85, -40], Frankston: [65, 40]
 };
 function drawMap() {
   map.replaceChildren();
@@ -283,7 +283,7 @@ async function loadMap() {
     const fullBackground = await getGeoJSON('/static/metro_context.geojson');
     if (!fullMetroContext(fullBackground)) throw new Error('Incomplete map data. Run python3 fetch_metro_context.py');
     background = fullBackground;
-    fitMapBounds([...background, ...monitored]);
+    fitMapBounds(monitored);
     status.textContent = `${background.length} surrounding localities loaded`;
   } catch (error) {
     status.textContent = `Background unavailable: ${error.message}`;
