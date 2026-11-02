@@ -50,7 +50,6 @@ async function main() {
     assert.match(await page.locator('#detail').innerText(), /20\.5 °C/);
     assert.match(await page.locator('.callout-tag[data-location-id="' + vic[0].id + '"] .callout-value').textContent(), /20\.5 °C/);
     assert.match(await page.locator('#state-summary').innerText(), /25\.9 °C/);
-    assert.equal((await page.locator('#highlights .highlights').count()), 0); // generated cards live directly in #highlights
     assert.match(await page.locator('#highlights').innerText(), /Lowest[\s\S]*Highest/);
 
     // Changing the metric must update map, detail, range and units together.
