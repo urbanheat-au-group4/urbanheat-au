@@ -66,16 +66,16 @@ async function main() {
         const averageText = mean(i).toFixed(1) + ' ' + units;
         assert.ok((await page.locator('#detail').innerText()).includes(firstText),
           code + '/' + metric + ': wrong selected-location detail');
-        assert.ok((await page.locator('.callout-tag[data-location-id="' + first.id + '"] .callout-value').innerText()).includes(firstText),
+        assert.ok((await page.locator('.callout-tag[data-location-id="' + first.id + '"] .callout-value').textContent()).includes(firstText),
           code + '/' + metric + ': wrong map tag');
-        assert.ok((await page.locator('.callout-tag[data-location-id="' + second.id + '"] .callout-value').innerText()).includes(secondText),
+        assert.ok((await page.locator('.callout-tag[data-location-id="' + second.id + '"] .callout-value').textContent()).includes(secondText),
           code + '/' + metric + ': wrong second map tag');
         assert.ok((await page.locator('#state-summary').innerText()).includes(averageText),
           code + '/' + metric + ': wrong state sample average');
         const highlights = await page.locator('#highlights').innerText();
         assert.ok(highlights.includes(firstText) && highlights.includes(secondText),
           code + '/' + metric + ': low/high comparison out of sync');
-        assert.ok((await page.locator('.callout-tag[data-location-id="' + missing.id + '"] .callout-value').innerText()).includes('No data'),
+        assert.ok((await page.locator('.callout-tag[data-location-id="' + missing.id + '"] .callout-value').textContent()).includes('No data'),
           code + '/' + metric + ': missing value presented as a numeric reading');
       }
 
