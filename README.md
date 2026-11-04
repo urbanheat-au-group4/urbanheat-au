@@ -11,6 +11,8 @@ The validated historical snapshots must already be available under `data/nationa
 ```bash
 python3 national_coverage.py --data-dir data/national
 python3 national_export.py --data-dir data/national
+python3 history_export.py --data-dir data/national
+python3 seasonal_export.py --data-dir data/national
 python3 fetch_national_boundaries.py
 python3 server.py
 ```
@@ -19,7 +21,7 @@ Open **http://localhost:8000/**. The same map can be opened at `/static/national
 
 The **Back to Australia** button returns from any state or territory to the national view. Use the state selector or click a state outline to zoom in. State and location filters, labels, and the selected climate measurement all update together.
 
-The map data is generated locally in `static/national_data.json`. If a location fails coverage checks it is excluded rather than assigned a fictional measurement. Regenerate the export when validated historical files change. The state boundary download needs internet access.
+The map data is generated locally in `static/national_data.json`. If a location fails coverage checks it is excluded rather than assigned a fictional measurement. Regenerate the export when validated historical files change. The Historical Trends and Seasonal Climate Comparison sections read `static/national_history.json` and `static/national_seasons.json`, so run `history_export.py` and `seasonal_export.py` again whenever the downloaded data changes. The state boundary download needs internet access.
 
 ## Test
 
@@ -67,10 +69,10 @@ geoBoundaries state outlines → static/national.js → National homepage
 
 ## Previous Melbourne dashboard
 
-The previous six-suburb Greater Melbourne map is no longer part of the public site. Its source files and current-weather importer remain in the repository for regression tests and Dale's unfinished historical-chart work. The national homepage does not load them.
+The previous six-suburb Greater Melbourne map is no longer part of the public site. Its source files and current-weather importer remain in the repository for regression tests. The national homepage does not load them.
 
 The server no longer starts live forecast refreshes by default. For legacy testing only, set `URBANHEAT_LEGACY_REFRESH=1` before starting `server.py`.
 
-Historical chart work can be added to the single national experience once ready.
+The Historical Trends chart (UHA-61) and Seasonal Climate Comparison (UHA-62) are part of the national page, below the map.
 
 Project tracking: Jira. Code and tests: GitHub. Sprint reports: Confluence.
