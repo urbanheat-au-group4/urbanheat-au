@@ -4,8 +4,10 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>National climate map | UrbanHeat AU</title>
 <link rel="stylesheet" href="/static/national.css">
+<link rel="stylesheet" href="/static/history.css">
 <script src="/static/national_annotations.js" defer></script>
 <script src="/static/national.js" defer></script>
+<script src="/static/history.js" defer></script>
 </head>
 <body>
 <header><a class="brand-home" href="/">UrbanHeat AU · Australia</a><span>2015–2025 historical climate</span></header>
@@ -41,5 +43,26 @@
 <div class="legend"><span id="low">Cooler</span><span class="gradient"></span><span id="high">Warmer</span></div>
 <p class="note">Location labels and climate bands use modelled 2015–2025 data. State shading is the average of 14 sampled locations, not an official statewide estimate. Colours use the same scale across Australia.</p>
 </section></section>
+
+<section class="panel history" id="history" aria-labelledby="history-title">   <!-- ADD from here -->
+<h2 id="history-title">Historical Trends</h2>
+<p class="history-intro">See how yearly temperatures have varied at one location. Values are modelled estimates, not weather station readings.</p>
+<div class="history-controls">
+<div><label for="history-place">Location</label><select id="history-place"></select></div>
+<div><label for="history-metric">Temperature measure</label>
+<select id="history-metric">
+<option value="both">Compare both measures</option>
+<option value="annual_mean_c">Annual mean temperature</option>
+<option value="average_max_c">Average daily maximum</option>
+</select></div>
+</div>
+<p id="history-summary" class="history-summary" role="status" aria-live="polite">Loading historical data…</p>
+<svg id="history-chart" viewBox="0 0 800 420" role="img" aria-label="Line chart of yearly temperatures"></svg>
+<div id="history-legend" class="history-legend"></div>
+<p id="history-limits" class="history-limits"></p>
+<details class="history-table"><summary>View the data as a table</summary><div id="history-table"></div></details>
+<p id="history-source" class="history-source">Source: Open-Meteo Historical Weather API. Modelled estimates.</p>
+</section>
+
 <section class="panel footnote"><strong>Source:</strong> Open-Meteo historical weather model, 2015–2025. Map boundaries: geoBoundaries gbOpen (where downloaded). Coordinates are subject to independent verification. This is not a live heat warning.</section>
 </main></body></html>
