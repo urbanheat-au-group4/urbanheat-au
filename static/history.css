@@ -1,0 +1,35 @@
+/* Historical Trends section. Colours match national.css. */
+.history{margin-top:20px}
+.history h2{font-size:18px;margin:0 0 6px}
+.history-intro{font-size:13px;margin:0 0 6px}
+.history-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:10px}
+.history select:focus-visible{outline:2px solid #9cdef2;outline-offset:2px}
+.history-summary{font-size:14px;color:#dbe8f2;margin:12px 0 10px}
+#history-chart{display:block;width:100%;height:auto;min-height:260px}
+
+/* Legend: line style and marker shape, so it never relies on colour alone */
+.history-legend{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:12px;color:#c2d2df;margin:12px 0}
+.history-legend-item{display:inline-flex;align-items:center;gap:6px}
+.history-legend svg{width:40px;height:14px;background:none;border:0;border-radius:0;flex:none}
+
+/* Notes about incomplete or missing years */
+.history-limits{font-size:13px;line-height:1.5;padding:10px 12px;background:#26333d;border-left:3px solid #e5ba70;border-radius:5px;color:#e8e4d6}
+
+/* Data table (for screen readers and exact values) */
+.history-table{margin-top:14px}
+.history-table summary{cursor:pointer;color:#9cdef2;font-size:14px;padding:6px 0}
+.history-table summary:focus-visible{outline:2px solid #9cdef2;outline-offset:2px}
+#history-table{overflow-x:auto}
+#history-table table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+#history-table caption{text-align:left;color:#b9cadd;font-size:12px;padding-bottom:6px}
+#history-table th,#history-table td{border:1px solid #344556;padding:7px 9px;text-align:left}
+#history-table thead th{background:#101b29;color:#eaf1f7}
+#history-table tbody th{font-weight:600;color:#eaf1f7}
+#history-table td{color:#c8d6e2}
+.history-source{font-size:12px;margin:14px 0 0}
+
+/* Phone-size screens */
+@media(max-width:650px){
+  .history-controls{grid-template-columns:1fr}
+  #history-table table{min-width:460px}
+}
