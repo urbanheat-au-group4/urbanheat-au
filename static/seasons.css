@@ -1,0 +1,93 @@
+.seasons { margin-top: 20px; }
+.seasons h2 { font-size: 18px; margin: 0 0 6px; }
+.seasons-intro { font-size: 13px; margin: 0 0 6px; }
+
+.seasons-controls {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  max-width: 420px;
+  margin: 12px 0;
+}
+.seasons-controls select {
+  width: 100%;
+  font: inherit;
+  padding: 8px;
+}
+
+#seasons-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 8px;
+  color: #14232e;
+}
+#seasons-chart text { fill: currentColor; font-family: inherit; }
+
+.seasons-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 8px 0;
+}
+.seasons-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.seasons-legend i {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+}
+
+.seasons-limits {
+  border-left: 4px solid #d99a00;
+  padding: 8px 12px;
+  margin: 12px 0;
+}
+.seasons-limits:empty { display: none; }
+
+#seasons-table,
+#seasons-years { overflow-x: auto; }
+.seasons table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+}
+.seasons caption {
+  text-align: left;
+  font-weight: 600;
+  padding: 4px 0 8px;
+}
+.seasons th,
+.seasons td {
+  padding: 8px 10px;
+  text-align: right;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.4);
+  vertical-align: top;
+}
+.seasons th:first-child,
+.seasons td:first-child { text-align: left; }
+.seasons-na { font-style: italic; }
+.seasons-excluded { opacity: 0.75; }
+
+.seasons-years summary {
+  cursor: pointer;
+  padding: 8px 0;
+  font-weight: 600;
+}
+.seasons-years h3 { margin: 16px 0 4px; font-size: 1rem; }
+.seasons-source { font-size: 0.9rem; opacity: 0.85; }
+
+.seasons select:focus-visible,
+.seasons summary:focus-visible {
+  outline: 3px solid #1b5f7c;
+  outline-offset: 2px;
+}
+
+@media (max-width: 520px) {
+  .seasons th,
+  .seasons td { padding: 6px 4px; font-size: 0.9rem; }
+}
