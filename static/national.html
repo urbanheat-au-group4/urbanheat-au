@@ -5,9 +5,11 @@
 <title>National climate map | UrbanHeat AU</title>
 <link rel="stylesheet" href="/static/national.css">
 <link rel="stylesheet" href="/static/history.css">
+<link rel="stylesheet" href="/static/seasons.css">
 <script src="/static/national_annotations.js" defer></script>
 <script src="/static/national.js" defer></script>
 <script src="/static/history.js" defer></script>
+<script src="/static/seasons.js" defer></script>
 </head>
 <body>
 <header><a class="brand-home" href="/">UrbanHeat AU · Australia</a><span>2015–2025 historical climate</span></header>
@@ -62,6 +64,24 @@
 <p id="history-limits" class="history-limits"></p>
 <details class="history-table"><summary>View the data as a table</summary><div id="history-table"></div></details>
 <p id="history-source" class="history-source">Source: Open-Meteo Historical Weather API. Modelled estimates.</p>
+</section>
+<section class="panel seasons" id="seasons" aria-labelledby="seasons-title">
+  <h2 id="seasons-title">Seasonal Climate Comparison</h2>
+  <p class="seasons-intro">Typical weather in each Australian season, from modelled historical estimates (not weather station readings). Summer is December to February, autumn March to May, winter June to August and spring September to November.</p>
+  <div class="seasons-controls">
+    <label for="seasons-place">Location</label>
+    <select id="seasons-place"></select>
+  </div>
+  <p id="seasons-summary" role="status" aria-live="polite">Loading seasonal data…</p>
+  <svg id="seasons-chart" viewBox="0 0 800 380" role="img" aria-label="Bar chart of typical seasonal temperatures"></svg>
+  <div id="seasons-legend" class="seasons-legend"></div>
+  <p id="seasons-limits" class="seasons-limits"></p>
+  <div id="seasons-table"></div>
+  <details class="seasons-years">
+    <summary>Which years are included</summary>
+    <div id="seasons-years"></div>
+  </details>
+  <p id="seasons-source" class="seasons-source"></p>
 </section>
 
 <section class="panel footnote"><strong>Source:</strong> Open-Meteo historical weather model, 2015–2025. Map boundaries: geoBoundaries gbOpen (where downloaded). Coordinates are subject to independent verification. This is not a live heat warning.</section>
