@@ -22,7 +22,11 @@ function fixture() {
   vic[0].average_annual_rainfall_mm = 500;
   vic[1].annual_mean_c = 31.25;
   vic[1].average_annual_rainfall_mm = 800;
-  return { data: { ...base, locations: rows }, vic };
+  return { data: {
+    ...base, source: 'Open-Meteo Historical Weather API',
+    model: 'era5', start_date: '2015-01-01', end_date: '2025-12-31',
+    locations: rows
+  }, vic };
 }
 
 async function main() {
@@ -43,6 +47,11 @@ async function main() {
     assert.equal((await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' })).status(), 200);
     await page.waitForFunction(() => document.querySelector('#status')?.textContent?.includes('112 locations'));
     assert.equal(await page.locator('circle.marker').count(), 112);
+    assert.match(await page.locator('#dataset-info').innerText(),
+      /Open-Meteo Historical Weather API.*ERA5.*2015-01-01 to 2025-12-31/);
+    assert.match(await page.locator('#source-period').innerText(),
+      /ERA5.*2015-01-01 to 2025-12-31/);
+
 
     // Location selection must present the reading belonging to that ID.
     await page.locator('#place').selectOption(vic[0].id);
