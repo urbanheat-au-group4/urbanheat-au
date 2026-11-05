@@ -53,7 +53,7 @@ async function checkState(page, code) {
   const line = tags.first().locator('.callout-line');
   assert.equal(await line.evaluate(node => getComputedStyle(node).opacity), '0',
     code + ': unused connector should be hidden');
-  await tags.first().hover();
+  await tags.first().locator('rect.callout-box').hover();
   assert.equal(await line.evaluate(node => getComputedStyle(node).opacity), '1',
     code + ': hovering over a label should show its line');
   await page.locator('#map-title').hover();
