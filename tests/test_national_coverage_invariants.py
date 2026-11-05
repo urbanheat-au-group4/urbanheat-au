@@ -1,9 +1,4 @@
-"""UHA-86: national coverage checks for corrupted temperature order.
-
-Two known failing contract checks stay marked expectedFailure until UHA-86 is
-fixed. They RUN on every CI build and will become unexpected successes if the
-underlying bug is fixed but these markers are not removed.
-"""
+"""Check that damaged temperatures are not accepted as complete data."""
 import unittest
 from datetime import date, timedelta
 
@@ -39,14 +34,12 @@ class CoverageTemperatureOrderRegression(unittest.TestCase):
         self.assertEqual(result["status"], "incomplete")
         self.assertEqual(result["invalid_values"]["precipitation_sum"], 1)
 
-    @unittest.expectedFailure  # UHA-86: currently accepts min > mean
     def test_minimum_greater_than_mean_is_rejected(self):
         rows = valid_year()
         rows[0]["temperature_2m_min"] = 30.0
         result = coverage.evaluate_year(rows, 2015)
         self.assertEqual(result["status"], "incomplete")
 
-    @unittest.expectedFailure  # UHA-86: currently accepts mean > max
     def test_mean_greater_than_maximum_is_rejected(self):
         rows = valid_year()
         rows[0]["temperature_2m_mean"] = 31.0
