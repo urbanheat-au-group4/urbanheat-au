@@ -26,6 +26,20 @@ class NationalMapUITests(unittest.TestCase):
                            'map-title', 'state-summary', 'state-locations', 'state-location-list'):
             self.assertIn('id="' + element_id + '"', html)
 
+    def test_data_sources_are_linked_and_read_from_export(self):
+        page = (ROOT / "static/national.html").read_text()
+        script = (ROOT / "static/national.js").read_text()
+        self.assertIn('id="dataset-info"', page)
+        self.assertIn('id="source-period"', page)
+        self.assertIn('href="https://open-meteo.com/en/docs/historical-weather-api"', page)
+        self.assertIn('href="https://www.geoboundaries.org/"', page)
+        self.assertIn('href="https://creativecommons.org/licenses/by/4.0/"', page)
+        self.assertIn('showSource(data)', script)
+        self.assertIn('data.model', script)
+        self.assertIn('data.start_date', script)
+        self.assertIn('data.end_date', script)
+        self.assertNotIn('2015–2025 historical climate</span>', page)
+
     def test_eight_jurisdictions_have_fourteen_locations_each(self):
         import json
         places = json.loads((ROOT / "locations.json").read_text())["locations"]
@@ -38,7 +52,8 @@ class NationalMapUITests(unittest.TestCase):
             result = subprocess.run(["node", "--check", str(ROOT / "static" / path)],
                                     capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
-        for script in ('check_national_annotations.js','check_state_layers.cjs'):
+        for script in ('check_national_annotations.js', 'check_state_layers.cjs',
+                       'check_state_heat_annotations.cjs'):
             result = subprocess.run(['node', str(ROOT / 'tests' / script)],
                                     capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)

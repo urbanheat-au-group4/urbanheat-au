@@ -22,7 +22,11 @@ function fixture() {
   vic[0].average_annual_rainfall_mm = 500;
   vic[1].annual_mean_c = 31.25;
   vic[1].average_annual_rainfall_mm = 800;
-  return { data: { ...base, locations: rows }, vic };
+  return { data: {
+    ...base, source: 'Open-Meteo Historical Weather API',
+    model: 'era5', start_date: '2015-01-01', end_date: '2025-12-31',
+    locations: rows
+  }, vic };
 }
 
 async function main() {
@@ -43,6 +47,16 @@ async function main() {
     assert.equal((await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' })).status(), 200);
     await page.waitForFunction(() => document.querySelector('#status')?.textContent?.includes('112 locations'));
     assert.equal(await page.locator('circle.marker').count(), 112);
+    assert.match(await page.locator('#dataset-info').innerText(),
+      /Open-Meteo Historical Weather API.*ERA5.*2015-01-01 to 2025-12-31/);
+    assert.match(await page.locator('#source-period').innerText(),
+      /ERA5.*2015-01-01 to 2025-12-31/);
+
+
+    // Quick comparison should explain when a measure has no readings.
+    await page.locator('#metric').selectOption('annual_average_min_c');
+    assert.match(await page.locator('#highlights').innerText(), /No climate measurements/);
+    await page.locator('#metric').selectOption('annual_mean_c');
 
     // Location selection must present the reading belonging to that ID.
     await page.locator('#place').selectOption(vic[0].id);
@@ -50,6 +64,7 @@ async function main() {
     assert.match(await page.locator('#detail').innerText(), /20\.5 °C/);
     assert.match(await page.locator('.callout-tag[data-location-id="' + vic[0].id + '"] .callout-value').textContent(), /20\.5 °C/);
     assert.match(await page.locator('#state-summary').innerText(), /25\.9 °C/);
+    assert.doesNotMatch(await page.locator('#highlights').innerText(), /No climate measurements/);
     assert.match(await page.locator('#highlights').innerText(), /Lowest[\s\S]*Highest/);
 
     // Changing the metric must update map, detail, range and units together.
@@ -78,9 +93,29 @@ async function main() {
       route.fulfill({ status: 503, body: 'Unavailable' }));
     await unavailable.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
     await unavailable.waitForFunction(() =>
-      document.querySelector('#status')?.textContent?.includes('Run python3 national_export.py first'));
+      document.querySelector('#status')?.textContent?.includes('temporarily unavailable'));
     assert.equal(await unavailable.locator('circle.marker').count(), 0);
     await unavailable.close();
+    // A missing file and a network error need their own messages.
+    const missing = await browser.newPage();
+    await missing.route('**/static/national_data.json', route =>
+      route.fulfill({ status: 404, body: 'Not Found' }));
+    await missing.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
+    await missing.waitForFunction(() =>
+      document.querySelector('#status')?.textContent?.includes('has not been added yet'));
+    assert.equal(await missing.locator('circle.marker').count(), 0);
+    await missing.close();
+
+    const offline = await browser.newPage();
+    await offline.route('**/static/national_data.json', route => route.abort('failed'));
+    await offline.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
+    await offline.waitForFunction(() =>
+      document.querySelector('#status')?.textContent?.includes('Could not connect'));
+    assert.equal(await offline.locator('circle.marker').count(), 0);
+    await offline.close();
+
+
+
 
     const empty = await browser.newPage();
     empty.on('pageerror', error => uncaught.push(error.message));
@@ -93,7 +128,7 @@ async function main() {
     await empty.close();
 
     assert.deepEqual(uncaught, [], 'No browser JavaScript exceptions expected');
-    console.log('PASS UHA-44: synthetic values, location selection, units, no-data, HTTP 503 and empty export');
+    console.log('PASS combined: metadata, location values, no-data, HTTP and network errors');
   } finally {
     await browser.close();
   }

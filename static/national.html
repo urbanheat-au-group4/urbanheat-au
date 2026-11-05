@@ -12,7 +12,7 @@
 <script src="/static/seasons.js" defer></script>
 </head>
 <body>
-<header><a class="brand-home" href="/">UrbanHeat AU · Australia</a><span>2015–2025 historical climate</span></header>
+<header><a class="brand-home" href="/">UrbanHeat AU · Australia</a><span id="dataset-info">Loading source details…</span></header>
 <main>
 <section class="intro"><p class="eyebrow">AUSTRALIA · CLIMATE EXPLORER</p>
 <h1>Compare climate across Australia</h1>
@@ -43,7 +43,7 @@
 <section id="state-locations" class="state-locations" hidden aria-label="Selected state locations"><h3 id="state-locations-title">All locations</h3><div id="state-location-list" class="state-location-list"></div></section>
 <div id="state-summary" class="state-summary" aria-label="State sample averages"></div>
 <div class="legend"><span id="low">Cooler</span><span class="gradient"></span><span id="high">Warmer</span></div>
-<p class="note">Location labels and climate bands use modelled 2015–2025 data. State shading is the average of 14 sampled locations, not an official statewide estimate. Colours use the same scale across Australia.</p>
+<p class="note">Location labels and climate bands use modelled data for the period shown below. State shading is the average of 14 sampled locations, not an official statewide estimate. Colours use the same scale across Australia.</p>
 </section></section>
 
 <section class="panel history" id="history" aria-labelledby="history-title">   <!-- ADD from here -->
@@ -84,5 +84,16 @@
   <p id="seasons-source" class="seasons-source"></p>
 </section>
 
-<section class="panel footnote"><strong>Source:</strong> Open-Meteo historical weather model, 2015–2025. Map boundaries: geoBoundaries gbOpen (where downloaded). Coordinates are subject to independent verification. This is not a live heat warning.</section>
+<section class="panel footnote" aria-label="Data sources and limitations">
+<h2>Data sources and limitations</h2>
+<p id="source-period">Loading source details…</p>
+<p>Weather data from <a href="https://open-meteo.com/en/docs/historical-weather-api">Open-Meteo</a>.
+Historical temperatures are modelled estimates, not readings from weather stations in each suburb.</p>
+<p>State outlines from <a href="https://www.geoboundaries.org/">geoBoundaries gbOpen</a> (Australia, ADM1).
+Map outlines are simplified for display. They are not measured temperature surfaces.</p>
+<p>Both datasets are credited under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.
+We calculate summaries from the weather data and display simplified map boundaries.</p>
+<p>State colours are averages from the sampled locations, not a temperature reading for the entire state.
+Location coordinates still need independent checking. The heat indicators are our own comparisons, not official weather warnings.</p>
+</section>
 </main></body></html>

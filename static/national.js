@@ -167,7 +167,7 @@ function drawCallouts(visible, view) {
   for (const rect of labels.labelLayout(visible, metric.value, state.value, selected, view)) {
     const p = rect.point, x = rect.x, y = rect.y;
     const tag = element('g', {
-      class: 'callout-tag', role: 'button', tabindex: '0',
+      class: 'callout-tag' + (p.id === selected ? ' active' : ''), role: 'button', tabindex: '0',
       'data-location-id': p.id,
       'aria-label': 'Show ' + p.name + ': ' + labels.format(p[metric.value], metric.value)
     });
@@ -218,7 +218,13 @@ function updateHighlights(visible) {
   panel.replaceChildren();
   const ordered = visible.filter(p => Number.isFinite(p[metric.value]))
     .sort((a,b) => a[metric.value] - b[metric.value]);
-  if (!ordered.length) return;
+  if (!ordered.length) {
+    const message = document.createElement('p');
+    message.setAttribute('role', 'status');
+    message.textContent = 'No climate measurements are available for these locations and this measure.';
+    panel.append(message);
+    return;
+  }
   for (const [label, point] of [['Lowest', ordered[0]], ['Highest', ordered[ordered.length-1]]]) {
     const card = document.createElement('div');
     const caption = document.createElement('span');
@@ -341,12 +347,28 @@ function draw() {
   svg.setAttribute('aria-label', (state.value === 'ALL' ? 'Australia' : STATES[state.value]) +
     ' interactive climate map, ' + visible.length + ' locations');
 }
+function showSource(data) {
+  // The page should describe the file we actually loaded.
+  const start = /^\d{4}-\d{2}-\d{2}$/.test(data.start_date || '') ? data.start_date : null;
+  const end = /^\d{4}-\d{2}-\d{2}$/.test(data.end_date || '') ? data.end_date : null;
+  const dates = start && end && start <= end ? start + ' to ' + end : 'Dates not listed';
+  const model = typeof data.model === 'string' && data.model.trim() ? data.model.toUpperCase() : 'Model not listed';
+  const source = typeof data.source === 'string' && data.source.trim() ? data.source : 'Source not listed';
+  const info = source + ' · ' + model + ' · ' + dates;
+  document.getElementById('dataset-info').textContent = info;
+  document.getElementById('source-period').textContent = info;
+}
+
 async function load() {
   try {
     const response = await fetch('/static/national_data.json', {cache:'no-store'});
-    if (!response.ok) throw new Error('Run python3 national_export.py first');
+    if (!response.ok) {
+      if (response.status === 404) throw new Error('Climate data has not been added yet.');
+      throw new Error('Climate data is temporarily unavailable. Please try again later.');
+    }
     const data = await response.json();
     if (!Array.isArray(data.locations) || !data.locations.length) throw new Error('National data missing');
+    showSource(data);
     points = data.locations;
     for (const code of Object.keys(STATES)) {
       const option = document.createElement('option');
@@ -374,7 +396,8 @@ async function load() {
       document.getElementById('status').textContent += ' · boundary download needed';
     }
   } catch (error) {
-    document.getElementById('status').textContent = error.message;
+    document.getElementById('status').textContent =
+      error instanceof TypeError ? 'Could not connect to climate data. Check your connection and try again.' : error.message;
   }
 }
 state.addEventListener('change', () => focusState(state.value));

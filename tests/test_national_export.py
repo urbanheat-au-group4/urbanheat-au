@@ -8,7 +8,7 @@ import national_export
 
 class NationalExportTests(unittest.TestCase):
     def test_export_joins_climate_with_map_points(self):
-        climate = {"source": "test", "start_date": "2015-01-01", "end_date": "2025-12-31",
+        climate = {"source": "test", "model": "era5", "start_date": "2015-01-01", "end_date": "2025-12-31",
                    "skipped_locations": [], "locations": [
                        {"id": "melbourne", "name": "Melbourne", "state": "VIC",
                         "annual_mean_c": 18, "annual_average_max_c": 23,
@@ -22,6 +22,8 @@ class NationalExportTests(unittest.TestCase):
                  patch.object(national_export, "markers", return_value=points):
                 result = national_export.export(Path("ignored"), Path("ignored"), target)
             self.assertEqual(result["count"], 1)
+            self.assertEqual(result["model"], "era5")
+            self.assertEqual(json.loads(target.read_text())["model"], "era5")
             item = json.loads(target.read_text())["locations"][0]
             self.assertEqual((item["x"], item["y"]), (700, 550))
             self.assertEqual(item["annual_mean_c"], 18)
