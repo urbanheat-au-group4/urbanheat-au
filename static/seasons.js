@@ -249,7 +249,7 @@
       placeSelect.value = preferred ? 'melbourne-cbd' : data.locations[0].id;
       render();
     }).catch(function () {
-      showMessage('Seasonal data could not be loaded. Run py seasonal_export.py --data-dir data/national, then refresh.');
+      showMessage('Seasonal data is unavailable right now. Please try again later.');
     });
   }
 
