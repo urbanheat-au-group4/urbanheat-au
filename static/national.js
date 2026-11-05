@@ -218,7 +218,13 @@ function updateHighlights(visible) {
   panel.replaceChildren();
   const ordered = visible.filter(p => Number.isFinite(p[metric.value]))
     .sort((a,b) => a[metric.value] - b[metric.value]);
-  if (!ordered.length) return;
+  if (!ordered.length) {
+    const message = document.createElement('p');
+    message.setAttribute('role', 'status');
+    message.textContent = 'No climate measurements are available for these locations and this measure.';
+    panel.append(message);
+    return;
+  }
   for (const [label, point] of [['Lowest', ordered[0]], ['Highest', ordered[ordered.length-1]]]) {
     const card = document.createElement('div');
     const caption = document.createElement('span');
@@ -344,7 +350,10 @@ function draw() {
 async function load() {
   try {
     const response = await fetch('/static/national_data.json', {cache:'no-store'});
-    if (!response.ok) throw new Error('Run python3 national_export.py first');
+    if (!response.ok) {
+      if (response.status === 404) throw new Error('Climate data has not been added yet.');
+      throw new Error('Climate data is temporarily unavailable. Please try again later.');
+    }
     const data = await response.json();
     if (!Array.isArray(data.locations) || !data.locations.length) throw new Error('National data missing');
     points = data.locations;
@@ -374,7 +383,8 @@ async function load() {
       document.getElementById('status').textContent += ' · boundary download needed';
     }
   } catch (error) {
-    document.getElementById('status').textContent = error.message;
+    document.getElementById('status').textContent =
+      error instanceof TypeError ? 'Could not connect to climate data. Check your connection and try again.' : error.message;
   }
 }
 state.addEventListener('change', () => focusState(state.value));
