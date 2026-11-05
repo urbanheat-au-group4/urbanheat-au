@@ -49,11 +49,24 @@ async function checkState(page, code) {
   await check((await page.locator('#map-title').innerText()).includes('State view'), code + ': no state heading');
   await check((await page.locator('#national-map').getAttribute('viewBox')) !== '0 0 1000 760',
     code + ': map did not zoom');
+  // Keep the map clear until a location is highlighted.
+  const line = tags.first().locator('.callout-line');
+  assert.equal(await line.evaluate(node => getComputedStyle(node).opacity), '0',
+    code + ': unused connector should be hidden');
+  await tags.first().hover();
+  assert.equal(await line.evaluate(node => getComputedStyle(node).opacity), '1',
+    code + ': hovering over a label should show its line');
+  await page.locator('#map-title').hover();
+  assert.equal(await line.evaluate(node => getComputedStyle(node).opacity), '0',
+    code + ': connector should hide when hover ends');
   const first = tags.first();
   const name = await first.locator('.callout-name').textContent();
   const firstId = await first.getAttribute('data-location-id');
   await first.locator('rect.callout-box').click();
   assert.equal(await page.locator('#place').inputValue(), firstId, code + ': callout did not select its location');
+  assert.equal(await page.locator('.callout-tag[data-location-id="' + firstId + '"] .callout-line')
+    .evaluate(node => getComputedStyle(node).opacity), '1',
+    code + ': selected location should keep its line');
   await page.locator('.callout-tag[data-location-id="' + firstId + '"]').focus();
   await page.locator('.callout-tag[data-location-id="' + firstId + '"]').press('Enter');
   assert.equal(await page.locator('#place').inputValue(), firstId, code + ': keyboard label selection failed');
