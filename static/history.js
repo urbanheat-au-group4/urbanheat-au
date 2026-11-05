@@ -258,7 +258,7 @@
       }
       trends = data;
     } catch (error) {
-      showMessage('Historical data is unavailable. Run: py history_export.py --data-dir data/national');
+      showMessage('Historical data is unavailable right now. Please try again later.');
       return;
     }
     placeSelect.replaceChildren();
