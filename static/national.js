@@ -167,7 +167,7 @@ function drawCallouts(visible, view) {
   for (const rect of labels.labelLayout(visible, metric.value, state.value, selected, view)) {
     const p = rect.point, x = rect.x, y = rect.y;
     const tag = element('g', {
-      class: 'callout-tag', role: 'button', tabindex: '0',
+      class: 'callout-tag' + (p.id === selected ? ' active' : ''), role: 'button', tabindex: '0',
       'data-location-id': p.id,
       'aria-label': 'Show ' + p.name + ': ' + labels.format(p[metric.value], metric.value)
     });
