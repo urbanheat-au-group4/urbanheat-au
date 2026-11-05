@@ -38,7 +38,8 @@ class NationalMapUITests(unittest.TestCase):
             result = subprocess.run(["node", "--check", str(ROOT / "static" / path)],
                                     capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
-        for script in ('check_national_annotations.js','check_state_layers.cjs'):
+        for script in ('check_national_annotations.js', 'check_state_layers.cjs',
+                       'check_state_heat_annotations.cjs'):
             result = subprocess.run(['node', str(ROOT / 'tests' / script)],
                                     capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
