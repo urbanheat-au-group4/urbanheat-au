@@ -343,8 +343,8 @@ function draw() {
 }
 function showSource(data) {
   // The page should describe the file we actually loaded.
-  const start = /^\\d{4}-\\d{2}-\\d{2}$/.test(data.start_date || '') ? data.start_date : null;
-  const end = /^\\d{4}-\\d{2}-\\d{2}$/.test(data.end_date || '') ? data.end_date : null;
+  const start = /^\d{4}-\d{2}-\d{2}$/.test(data.start_date || '') ? data.start_date : null;
+  const end = /^\d{4}-\d{2}-\d{2}$/.test(data.end_date || '') ? data.end_date : null;
   const dates = start && end && start <= end ? start + ' to ' + end : 'Dates not listed';
   const model = typeof data.model === 'string' && data.model.trim() ? data.model.toUpperCase() : 'Model not listed';
   const source = typeof data.source === 'string' && data.source.trim() ? data.source : 'Source not listed';
