@@ -81,6 +81,7 @@ async function main() {
     assert.match(await page.locator('#history-chart').getAttribute('aria-label'), /degrees|°C/);
     assert.ok(await page.locator('#history-chart path').count() >= 2);
     assert.match(await page.locator('#history-limits').innerText(), /2021.*left blank/);
+    await page.locator('details.history-table summary').click();
     assert.match(await page.locator('#history-table').innerText(), /No data/);
     assert.match(await page.locator('#history-table').innerText(), /300 of 365 days/);
     assert.match(await page.locator('#history-source').innerText(), /era5/);
