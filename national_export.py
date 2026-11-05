@@ -21,7 +21,8 @@ def export(catalogue=CATALOGUE, data_dir=Path("data/national"), output=Path("sta
     counts = {code: sum(p["state"] == code for p in rows) for code in
               ("NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT")}
     result = {"locations": rows, "count": len(rows), "state_counts": counts,
-              "source": climate["source"], "start_date": climate["start_date"],
+              "source": climate["source"], "model": climate["model"],
+              "start_date": climate["start_date"],
               "end_date": climate["end_date"], "skipped": climate["skipped_locations"]}
     save_atomic(output, result)
     return result
