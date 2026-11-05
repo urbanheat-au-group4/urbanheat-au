@@ -51,13 +51,15 @@
     columns.forEach((column, side) => {
       const ordered = [...column].sort((a, b) => a.y-b.y || a.x-b.x);
       ordered.forEach((point, index) => {
-        const width = Math.max(124, Math.min(215, point.name.length*7.3+28)) * scale;
+        const value = point[metric];
+        const annotation = medianAnnotation(value, median, metric);
+        // Leave room for both lines of text inside the label.
+        const textLength = Math.max(point.name.length * 7.3, annotation.length * 6.5);
+        const width = Math.max(124, textLength + 28) * scale;
         const height = 64 * scale;
         const x = side === 0 ? view.x+margin : view.x+view.width-margin-width;
         const y = view.y+margin +
           (index+0.5)*(view.height-2*margin)/ordered.length - height/2;
-        const value = point[metric];
-        const annotation = medianAnnotation(value, median, metric);
         placed.push({point, x, y, width, height, annotation});
       });
     });
