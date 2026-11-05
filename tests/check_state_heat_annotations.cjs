@@ -34,6 +34,9 @@ for (const code of ['NSW','VIC','QLD','WA','SA','TAS','ACT','NT']) {
   assert.ok(tags.some(t => t.annotation === '+5.0 °C vs state median'), code + ': hotter annotation');
   assert.equal(tags.filter(t => t.annotation === 'No reading').length, 12, code + ': missing data labelled');
   for (const tag of tags) {
+    // The comparison needs to fit, even for short location names.
+    assert.ok(tag.width >= (tag.annotation.length * 6.5 + 28) * view.width / 1000,
+      code + ': comparison text is wider than its label');
     assert.ok(tag.x >= view.x && tag.y >= view.y, code + ': label starts inside viewport');
     assert.ok(tag.x + tag.width <= view.x + view.width + 0.01, code + ': label width clips');
     assert.ok(tag.y + tag.height <= view.y + view.height + 0.01, code + ': label height clips');
@@ -44,6 +47,16 @@ for (const code of ['NSW','VIC','QLD','WA','SA','TAS','ACT','NT']) {
         code + ': labels must not overlap');
     }
   }
+  // Rainfall uses longer text, so check that layout too.
+  rows[0].average_annual_rainfall_mm = 100;
+  rows[1].average_annual_rainfall_mm = 1800;
+  for (const tag of A.labelLayout(points, 'average_annual_rainfall_mm', code, '', view)) {
+    assert.ok(tag.width >= (tag.annotation.length * 6.5 + 28) * view.width / 1000,
+      code + ': rainfall text is wider than its label');
+    assert.ok(tag.x + tag.width <= view.x + view.width + 0.01);
+  }
+  rows[0].average_annual_rainfall_mm = null;
+  rows[1].average_annual_rainfall_mm = null;
   rows[0].annual_mean_c = null;
   rows[1].annual_mean_c = null;
 }
