@@ -341,12 +341,25 @@ function draw() {
   svg.setAttribute('aria-label', (state.value === 'ALL' ? 'Australia' : STATES[state.value]) +
     ' interactive climate map, ' + visible.length + ' locations');
 }
+function showSource(data) {
+  // The page should describe the file we actually loaded.
+  const start = /^\\d{4}-\\d{2}-\\d{2}$/.test(data.start_date || '') ? data.start_date : null;
+  const end = /^\\d{4}-\\d{2}-\\d{2}$/.test(data.end_date || '') ? data.end_date : null;
+  const dates = start && end && start <= end ? start + ' to ' + end : 'Dates not listed';
+  const model = typeof data.model === 'string' && data.model.trim() ? data.model.toUpperCase() : 'Model not listed';
+  const source = typeof data.source === 'string' && data.source.trim() ? data.source : 'Source not listed';
+  const info = source + ' · ' + model + ' · ' + dates;
+  document.getElementById('dataset-info').textContent = info;
+  document.getElementById('source-period').textContent = info;
+}
+
 async function load() {
   try {
     const response = await fetch('/static/national_data.json', {cache:'no-store'});
     if (!response.ok) throw new Error('Run python3 national_export.py first');
     const data = await response.json();
     if (!Array.isArray(data.locations) || !data.locations.length) throw new Error('National data missing');
+    showSource(data);
     points = data.locations;
     for (const code of Object.keys(STATES)) {
       const option = document.createElement('option');
