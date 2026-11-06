@@ -104,6 +104,12 @@ async function main() {
 
     // Check both charts still fit on a phone and the selects work by keyboard.
     await page.setViewportSize({width: 390, height: 844});
+    // A real chart must use the phone width, not an 800px fallback.
+    await page.waitForFunction(() => {
+      const chart = document.querySelector('#history-chart');
+      return chart && Number(chart.getAttribute('viewBox')?.split(' ')[2]) < 520;
+    });
+    assert.ok(Number((await page.locator('#seasons-chart').getAttribute('viewBox')).split(' ')[2]) < 520);
     const overflow = await page.evaluate(() =>
       document.documentElement.scrollWidth - document.documentElement.clientWidth);
     assert.ok(overflow <= 2, 'Charts overflow the mobile screen by ' + overflow + 'px');
