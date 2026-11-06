@@ -40,6 +40,12 @@ class NationalMapUITests(unittest.TestCase):
         self.assertIn('data.end_date', script)
         self.assertNotIn('2015–2025 historical climate</span>', page)
 
+    def test_legacy_boundary_source_is_recorded(self):
+        readme = (ROOT / "README.md").read_text()
+        for text in ("Vicmap Admin", "LOCALITY_POLYGON", "Creative Commons Attribution 4.0",
+                     "geoBoundaries", "https://discover.data.vic.gov.au/dataset/"):
+            self.assertIn(text, readme)
+
     def test_eight_jurisdictions_have_fourteen_locations_each(self):
         import json
         places = json.loads((ROOT / "locations.json").read_text())["locations"]
