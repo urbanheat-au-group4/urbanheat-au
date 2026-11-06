@@ -53,12 +53,14 @@
     summary.textContent = text;
     chart.setAttribute('aria-label', text);
     chart.replaceChildren();
+    chart.setAttribute('hidden', '');
     legend.replaceChildren();
     limits.textContent = '';
     tableBox.replaceChildren();
   }
 
   function drawChart(place, keys) {
+    chart.removeAttribute('hidden');
     chart.replaceChildren();
     const rows = place.years;
     const width = Math.max(300, Math.min(chart.getBoundingClientRect().width || 800, 1100));

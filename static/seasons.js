@@ -54,6 +54,7 @@
   function showMessage(text) {
     summary.textContent = text;
     chart.innerHTML = '';
+    chart.setAttribute('hidden', '');
     legend.innerHTML = '';
     limits.textContent = '';
     table.innerHTML = '';
@@ -68,6 +69,7 @@
   }
 
   function drawChart(place) {
+    chart.removeAttribute('hidden');
     var width = Math.max(300, Math.round(chart.getBoundingClientRect().width) || 800);
     var small = width < 520;
     var height = small ? 340 : 380;
