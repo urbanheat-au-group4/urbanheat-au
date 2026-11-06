@@ -80,6 +80,7 @@ async function main() {
     assert.match(await page.locator('#history-summary').innerText(), /2015–2025/);
     assert.match(await page.locator('#history-chart').getAttribute('aria-label'), /degrees|°C/);
     assert.ok(await page.locator('#history-chart path').count() >= 2);
+    assert.equal(await page.locator('#history-chart').evaluate(node => getComputedStyle(node).display), 'block');
     assert.match(await page.locator('#history-limits').innerText(), /2021.*left blank/);
     await page.locator('details.history-table summary').click();
     assert.match(await page.locator('#history-table').innerText(), /No data/);
@@ -94,6 +95,7 @@ async function main() {
 
     // The seasonal view should show the four seasons and missing measurements.
     assert.equal(await page.locator('#seasons-chart rect').count(), 4);
+    assert.notEqual(await page.locator('#seasons-chart').evaluate(node => getComputedStyle(node).display), 'none');
     assert.match(await page.locator('#seasons-table').innerText(), /Not enough data/);
     assert.match(await page.locator('#seasons-limits').innerText(), /cannot be compared/);
     assert.match(await page.locator('#seasons-source').innerText(), /era5/);
@@ -117,6 +119,10 @@ async function main() {
     await failed.waitForFunction(() =>
       document.querySelector('#history-summary')?.textContent?.includes('unavailable right now') &&
       document.querySelector('#seasons-summary')?.textContent?.includes('unavailable right now'));
+    // Empty charts should not leave huge blank panels on the screen.
+    for (const chart of ['#history-chart', '#seasons-chart']) {
+      assert.equal(await failed.locator(chart).evaluate(node => getComputedStyle(node).display), 'none');
+    }
     assert.doesNotMatch(await failed.locator('#history-summary').innerText(), /python|export\.py/i);
     assert.doesNotMatch(await failed.locator('#seasons-summary').innerText(), /python|export\.py/i);
     await failed.close();
