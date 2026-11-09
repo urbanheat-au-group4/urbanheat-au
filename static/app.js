@@ -291,10 +291,10 @@ async function loadMap() {
   drawMap();
 }
 async function loadWeather() {
+  if (refreshInFlight) return;
+  refreshInFlight = true;
   const error = document.getElementById('error'); error.textContent = '';
   try {
-    if (refreshInFlight) return;
-    refreshInFlight = true;
     const response = await fetch('/weather_data.json', {cache: 'no-store'});
     if (!response.ok) throw new Error('Saved readings missing. Run python3 weather.py first.');
     const data = await response.json();
@@ -355,15 +355,18 @@ async function loadWeather() {
 }
 async function pollRefresh() {
   if (refreshInFlight) return;
+  let refreshMessage = null;
   try {
     const response = await fetch('/refresh-status', {cache: 'no-store'});
     if (response.ok) {
       const status = await response.json();
-      const label = document.getElementById('refresh-status');
-      if (label) label.textContent = status.running ? 'Weather update running…' : status.last_error ? 'Automatic weather update failed; data may be stale' : 'Automatic weather refresh enabled';
+      if (status.running) refreshMessage = 'Weather update running…; showing saved readings';
+      else if (status.last_error) refreshMessage = 'Automatic weather update failed; showing saved readings that may be stale';
     }
   } catch (_) { /* A static hosting preview may not provide the status endpoint */ }
   await loadWeather();
+  const label = document.getElementById('refresh-status');
+  if (label && refreshMessage) label.textContent = refreshMessage;
 }
 suburbSelect.addEventListener('change', showWeather);
 thresholdInput.addEventListener('input', showWeather);
