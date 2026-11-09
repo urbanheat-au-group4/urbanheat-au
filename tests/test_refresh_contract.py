@@ -60,6 +60,19 @@ class WeatherRefreshContractTests(unittest.TestCase):
             self.assertIsNotNone(server.refresh_state["last_error"])
             self.assertFalse(server.refresh_state["running"])
 
+    def test_failure_logs_and_next_success_recovers(self):
+        failed = subprocess.CompletedProcess(["weather.py"], 1, "", "Provider unavailable")
+        success = subprocess.CompletedProcess(["weather.py"], 0, "ok", "")
+        with patch.object(server.subprocess, "run", side_effect=[failed, success]), patch("builtins.print") as log:
+            self.assertFalse(server.refresh_weather())
+            self.assertEqual(server.refresh_state["last_error"], "Provider unavailable")
+            log.assert_called_with("Weather refresh failed: Provider unavailable", flush=True)
+            self.assertTrue(server.refresh_weather())
+            log.assert_called_with("Weather refresh succeeded", flush=True)
+        self.assertIsNone(server.refresh_state["last_error"])
+        self.assertIsNotNone(server.refresh_state["last_success_utc"])
+        self.assertFalse(server.refresh_state["running"])
+
     def test_overlapping_refresh_does_not_spawn_second_process(self):
         started, release = threading.Event(), threading.Event()
         results = []
