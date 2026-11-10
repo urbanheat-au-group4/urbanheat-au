@@ -70,6 +70,15 @@ class StartupTests(unittest.TestCase):
             self.assertEqual(command.call_args_list[-1].args[0],
                              "fetch_national_boundaries.py")
 
+    def test_broken_boundary_json_is_downloaded_again(self):
+        self.save_files()
+        self.boundaries.write_text("[]")
+        with patch.object(run, "check_boundaries", side_effect=AttributeError("bad format")):
+            with patch.object(run, "run_script", return_value=True) as command:
+                self.assertTrue(run.prepare())
+                self.assertEqual(command.call_args_list[-1].args[0],
+                                 "fetch_national_boundaries.py")
+
     def test_boundary_download_failure_stops_startup(self):
         self.save_files()
         self.boundaries.unlink()
