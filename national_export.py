@@ -16,6 +16,10 @@ def export(catalogue=CATALOGUE, data_dir=Path("data/national"), output=Path("sta
                      ("id", "name", "state", "annual_mean_c", "annual_average_max_c",
                       "annual_average_min_c", "average_annual_rainfall_mm",
                       "average_days_at_least_35c")})
+        for key in ("hottest_day_c", "hottest_day_date",
+                    "hottest_10_percent_mean_c", "hottest_25_percent_mean_c",
+                    "hottest_50_percent_mean_c", "monthly_average_max_c"):
+            rows[-1][key] = record.get(key)
         rows[-1].update({"x": point["x"], "y": point["y"],
                          "latitude": point["latitude"], "longitude": point["longitude"]})
     counts = {code: sum(p["state"] == code for p in rows) for code in
