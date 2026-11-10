@@ -71,7 +71,7 @@ async function main() {
     assert.equal(await page.locator('#state').inputValue(), 'VIC');
     assert.match(await page.locator('#detail').innerText(), /20\.5 °C/);
     assert.match(await page.locator('.callout-tag[data-location-id="' + vic[0].id + '"] .callout-value').textContent(), /20\.5 °C/);
-    assert.match(await page.locator('#detail').innerText(), /Hottest modelled day: 44\.5 °C/);
+    assert.match(await page.locator('#detail').innerText(), /Hottest modelled day: 44\.5 °C \(2020-01-04\)/);
     assert.match(await page.locator('#detail').innerText(), /hottest 10% of days: 38\.5 °C/);
     assert.equal(await page.locator('#monthly-heat-chart circle').count(), 12);
     assert.match(await page.locator('#monthly-heat-values').innerText(), /32\.0 °C/);
