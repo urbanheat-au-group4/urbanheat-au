@@ -76,7 +76,7 @@ def prepare():
     try:
         with BOUNDARIES.open(encoding="utf-8") as file:
             check_boundaries(json.load(file))
-    except (OSError, ValueError, TypeError, KeyError):
+    except (OSError, ValueError, TypeError, KeyError, AttributeError):
         print("State boundaries are missing or invalid. Downloading them now...")
         if not run_script("fetch_national_boundaries.py"):
             print("Check your internet connection and try again.", file=sys.stderr)
