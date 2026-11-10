@@ -344,7 +344,7 @@ function updateDetail() {
     value.textContent = Number.isFinite(point[key]) ?
       point[key].toFixed(1) + ' °C' : 'No data';
     if (key === 'hottest_day_c' && Number.isFinite(point[key]) &&
-        /^\\d{4}-\\d{2}-\\d{2}$/.test(point.hottest_day_date || '')) {
+        /^\d{4}-\d{2}-\d{2}$/.test(point.hottest_day_date || '')) {
       value.textContent += ' (' + point.hottest_day_date + ')';
     }
     row.append(value);
