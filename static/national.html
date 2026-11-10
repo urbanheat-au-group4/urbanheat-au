@@ -46,6 +46,14 @@
 <p class="note">Location labels and climate bands use modelled data for the period shown below. State shading is the average of 14 sampled locations, not an official statewide estimate. Colours use the same scale across Australia.</p>
 </section></section>
 
+<section class="panel monthly-heat" aria-labelledby="monthly-heat-title">
+<h2 id="monthly-heat-title">Typical daytime highs through the year</h2>
+<p>Average daily maximum temperature for each month across the selected 2015–2025 period. Select a location above to see how its daytime highs change through the year.</p>
+<p id="monthly-heat-status" role="status" aria-live="polite">Choose a location above to see its monthly temperatures.</p>
+<svg id="monthly-heat-chart" viewBox="0 0 720 250" role="img" aria-label="Average daily maximum temperature by month" hidden></svg>
+<details class="monthly-heat-table"><summary>View the 12 monthly values</summary><div id="monthly-heat-values"></div></details>
+</section>
+
 <section class="panel history" id="history" aria-labelledby="history-title">   <!-- ADD from here -->
 <h2 id="history-title">Historical Trends</h2>
 <p class="history-intro">See how yearly temperatures have varied at one location. Values are modelled estimates, not weather station readings.</p>
