@@ -11,6 +11,10 @@ const labels = window.NationalAnnotations;
 const FIELDS = {
   annual_mean_c: 'Average temperature',
   annual_average_max_c: 'Daytime maximum',
+  hottest_day_c: 'Hottest modelled day',
+  hottest_10_percent_mean_c: 'Average of hottest 10% of days',
+  hottest_25_percent_mean_c: 'Average of hottest 25% of days',
+  hottest_50_percent_mean_c: 'Average of hottest 50% of days',
   annual_average_min_c: 'Nighttime minimum',
   average_annual_rainfall_mm: 'Annual rainfall',
   average_days_at_least_35c: 'Days ≥35°C per year'
@@ -247,12 +251,15 @@ function updateMonthlyHeat() {
   valuesPanel.replaceChildren();
   const point = points.find(p => p.id === selected);
   const months = point && point.monthly_average_max_c;
+  const hasHeatData = points.some(p => Array.isArray(p.monthly_average_max_c));
   if (!Array.isArray(months) || months.length !== 12 ||
       months.some(value => !Number.isFinite(value))) {
     chart.hidden = true;
-    status.textContent = point
-      ? 'Monthly maximum temperatures are not available for this location.'
-      : 'Choose a location above to see its monthly temperatures.';
+    status.textContent = !hasHeatData
+      ? 'The saved climate data is out of date. Run python3 run.py to rebuild it.'
+      : (point
+        ? 'Monthly maximum temperatures are not available for this location.'
+        : 'Choose a location above to see its monthly temperatures.');
     return;
   }
   chart.hidden = false;
@@ -352,6 +359,7 @@ function updateDetail() {
   }
   detail.append(extremes);
   for (const [key, name] of Object.entries(FIELDS)) {
+    if (key === 'hottest_day_c' || key.startsWith('hottest_')) continue;
     const row = document.createElement('div');
     row.textContent = name + ': ';
     const value = document.createElement('span');
@@ -475,6 +483,12 @@ async function load() {
     if (!Array.isArray(data.locations) || !data.locations.length) throw new Error('National data missing');
     showSource(data);
     points = data.locations;
+    const outdated = !points.some(p => Array.isArray(p.monthly_average_max_c));
+    const warning = document.getElementById('heat-data-warning');
+    warning.hidden = !outdated;
+    warning.textContent = outdated
+      ? 'The saved climate data is out of date. Stop the server and run python3 run.py to rebuild it.'
+      : '';
     for (const code of Object.keys(STATES)) {
       const option = document.createElement('option');
       option.value = code;
