@@ -25,10 +25,16 @@
 <select id="metric">
 <option value="annual_mean_c">Average temperature (°C)</option>
 <option value="annual_average_max_c">Average daytime maximum (°C)</option>
+<option value="hottest_day_c">Hottest modelled day (°C)</option>
+<option value="hottest_10_percent_mean_c">Hottest 10% of days (°C)</option>
+<option value="hottest_25_percent_mean_c">Hottest 25% of days (°C)</option>
+<option value="hottest_50_percent_mean_c">Hottest 50% of days (°C)</option>
 <option value="annual_average_min_c">Average nighttime minimum (°C)</option>
 <option value="average_annual_rainfall_mm">Annual rainfall (mm)</option>
 <option value="average_days_at_least_35c">Days ≥35°C per year</option>
 </select>
+<p class="heat-helper">To see how hot it really gets, choose a heat measure above and select a location. <a href="#monthly-heat-title">See the monthly daytime highs chart</a>.</p>
+<p id="heat-data-warning" class="heat-warning" role="status" hidden></p>
 <label for="place">Find a location</label>
 <select id="place"><option value="">Select a location</option></select>
 <h2 class="highlights-title">Quick comparison</h2><div id="highlights" class="highlights" aria-live="polite"></div>

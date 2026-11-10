@@ -36,6 +36,17 @@ If data is missing or incorrect, the command stops and tells you what to check. 
 
 You can still use `python3 server.py` to open the website using already prepared files. It does not check or rebuild those files.
 
+### After pulling new heat-feature code
+
+If the new heat figures do not appear, your existing `static/national_data.json` may be from an older export. Stop the website and run:
+
+```bash
+git pull
+python3 run.py
+```
+
+The new `run.py` rebuilds the saved map and chart data from your existing historical files, then starts the website. Choose one of the hottest-day measures in the **Climate measure** dropdown and select a location. The monthly chart is further down the page, with a link next to the controls. If the historical files are missing or incomplete, `run.py` will explain the problem instead of showing made-up data.
+
 ## Hot weather and monthly daytime highs
 
 Select a location on the national map to see its hottest modelled day (with the date), and the average temperature of its hottest 10%, 25% and 50% of days.
