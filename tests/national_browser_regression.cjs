@@ -80,6 +80,18 @@ async function main() {
     assert.doesNotMatch(await page.locator('#highlights').innerText(), /No climate measurements/);
     assert.match(await page.locator('#highlights').innerText(), /Lowest[\s\S]*Highest/);
 
+    // New extreme heat measures must be available on the actual map.
+    await page.locator('#metric').selectOption('hottest_day_c');
+    assert.match(await page.locator('#detail').innerText(), /Hottest modelled day: 44\.5 °C/);
+    assert.match(await page.locator('.callout-tag[data-location-id="' + vic[0].id + '"] .callout-value').textContent(), /44\.5 °C/);
+    await page.locator('#metric').selectOption('hottest_10_percent_mean_c');
+    assert.match(await page.locator('.callout-tag[data-location-id="' + vic[0].id + '"] .callout-value').textContent(), /38\.5 °C/);
+    await page.locator('#metric').selectOption('hottest_25_percent_mean_c');
+    assert.match(await page.locator('.callout-tag[data-location-id="' + vic[0].id + '"] .callout-value').textContent(), /34\.5 °C/);
+    await page.locator('#metric').selectOption('hottest_50_percent_mean_c');
+    assert.match(await page.locator('.callout-tag[data-location-id="' + vic[0].id + '"] .callout-value').textContent(), /29\.5 °C/);
+    assert.equal(await page.locator('a[href="#monthly-heat-title"]').count(), 1);
+
     // Changing the metric must update map, detail, range and units together.
     await page.locator('#metric').selectOption('average_annual_rainfall_mm');
     assert.match(await page.locator('#detail').innerText(), /500\.0 mm/);
@@ -101,6 +113,19 @@ async function main() {
     assert.equal(await page.locator('#state').inputValue(), 'ALL');
     assert.equal(await page.locator('circle.marker').count(), 112);
     await page.close();
+
+    // Old generated climate exports must tell the user how to rebuild them.
+    const stale = await browser.newPage();
+    stale.on('pageerror', error => uncaught.push(error.message));
+    const outdated = JSON.parse(fs.readFileSync(DATASET, 'utf8'));
+    await stale.route('**/static/national_data.json', route =>
+      route.fulfill({status:200, contentType:'application/json', body:JSON.stringify(outdated)}));
+    await stale.goto(BASE_URL, {waitUntil:'domcontentloaded'});
+    await stale.waitForFunction(() => document.querySelector('#status')?.textContent?.includes('112 locations'));
+    assert.match(await stale.locator('#heat-data-warning').innerText(), /python3 run\.py/);
+    await stale.locator('#place').selectOption(outdated.locations[0].id);
+    assert.match(await stale.locator('#monthly-heat-status').innerText(), /out of date/);
+    await stale.close();
 
     // Failure to fetch data must be visible rather than producing a blank,
     // apparently successful chart.
