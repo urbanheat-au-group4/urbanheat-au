@@ -36,6 +36,14 @@ If data is missing or incorrect, the command stops and tells you what to check. 
 
 You can still use `python3 server.py` to open the website using already prepared files. It does not check or rebuild those files.
 
+## Hot weather and monthly daytime highs
+
+Select a location on the national map to see its hottest modelled day (with the date), and the average temperature of its hottest 10%, 25% and 50% of days.
+
+The **Typical daytime highs through the year** chart shows January to December. Each month is the average of the daily maximum temperatures for that month across 2015–2025, using the same saved historical data. This is not the highest temperature recorded in the month.
+
+The hottest-day groups sort all valid daily maximum temperatures from hottest to coolest. For example, the hottest 10% averages the hottest tenth of days; this is different from the temperature cutoff for the 90th percentile. These modelled estimates are not official temperature records.
+
 The **Back to Australia** button returns from any state or territory to the national view. Use the state selector or click a state outline to zoom in. State and location filters, labels, and the selected climate measurement all update together.
 
 The map data is generated locally in `static/national_data.json`. If a location fails coverage checks it is excluded rather than assigned a fictional measurement. Regenerate the export when validated historical files change. The Historical Trends and Seasonal Climate Comparison sections read `static/national_history.json` and `static/national_seasons.json`, so run `history_export.py` and `seasonal_export.py` again whenever the downloaded data changes. The state boundary download needs internet access.
