@@ -4,20 +4,37 @@ CST190 project: an Australia-wide historical climate explorer for **112 location
 
 ## Run locally
 
-Requires Python 3 and a browser. No extra Python packages.
+Use Python 3. The dashboard reads saved historical weather data.
 
-The validated historical snapshots must already be available under `data/national/locations/`. From the project root:
+### First time setup
+
+If `data/national/locations/` is empty, download the historical files first:
 
 ```bash
-python3 national_coverage.py --data-dir data/national
-python3 national_export.py --data-dir data/national
-python3 history_export.py --data-dir data/national
-python3 seasonal_export.py --data-dir data/national
-python3 fetch_national_boundaries.py
-python3 server.py
+python3 national_ingest.py --group australia_historical --out data/national
 ```
 
-Open **http://localhost:8000/**. The same map can be opened at `/static/national.html`.
+The downloader saves up to five new locations per run. **Run it again** until all 112 are saved. It reuses the valid files you already have. Internet access is needed for the downloads.
+
+### Start the app
+
+```bash
+python3 run.py
+```
+
+Open **http://localhost:8000/**.
+
+`run.py` checks the saved readings, makes the map and chart JSON files, checks the state boundaries and starts `server.py`. It downloads state boundaries if they are missing or broken. It **does not** download historical weather again every time the app starts.
+
+To prepare and check the files without starting the server:
+
+```bash
+python3 run.py --check
+```
+
+If data is missing or incorrect, the command stops and tells you what to check. The server will not start with incomplete national data.
+
+You can still use `python3 server.py` to open the website using already prepared files. It does not check or rebuild those files.
 
 The **Back to Australia** button returns from any state or territory to the national view. Use the state selector or click a state outline to zoom in. State and location filters, labels, and the selected climate measurement all update together.
 
