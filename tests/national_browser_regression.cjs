@@ -74,6 +74,7 @@ async function main() {
     assert.match(await page.locator('#detail').innerText(), /Hottest modelled day: 44\.5 °C \(2020-01-04\)/);
     assert.match(await page.locator('#detail').innerText(), /hottest 10% of days: 38\.5 °C/);
     assert.equal(await page.locator('#monthly-heat-chart circle').count(), 12);
+    await page.locator('.monthly-heat-table summary').click();
     assert.match(await page.locator('#monthly-heat-values').innerText(), /32\.0 °C/);
     assert.match(await page.locator('#state-summary').innerText(), /25\.9 °C/);
     assert.doesNotMatch(await page.locator('#highlights').innerText(), /No climate measurements/);
