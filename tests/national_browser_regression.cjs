@@ -18,6 +18,14 @@ function fixture() {
 
   // Only two locations receive artificial measurements; the other 110
   // deliberately stay unavailable to exercise missing-data rendering.
+  // These numbers are browser test fixtures, not actual weather readings.
+  vic[0].hottest_day_c = 44.5;
+  vic[0].hottest_day_date = '2020-01-04';
+  vic[0].hottest_10_percent_mean_c = 38.5;
+  vic[0].hottest_25_percent_mean_c = 34.5;
+  vic[0].hottest_50_percent_mean_c = 29.5;
+  vic[0].monthly_average_max_c = [32,31,29,24,19,15,14,16,20,24,28,30];
+  vic[1].monthly_average_max_c = [33,32,30,25,20,16,15,17,21,25,29,31];
   vic[0].annual_mean_c = 20.5;
   vic[0].average_annual_rainfall_mm = 500;
   vic[1].annual_mean_c = 31.25;
@@ -63,6 +71,10 @@ async function main() {
     assert.equal(await page.locator('#state').inputValue(), 'VIC');
     assert.match(await page.locator('#detail').innerText(), /20\.5 °C/);
     assert.match(await page.locator('.callout-tag[data-location-id="' + vic[0].id + '"] .callout-value').textContent(), /20\.5 °C/);
+    assert.match(await page.locator('#detail').innerText(), /Hottest modelled day: 44\\.5 °C/);
+    assert.match(await page.locator('#detail').innerText(), /hottest 10% of days: 38\\.5 °C/);
+    assert.equal(await page.locator('#monthly-heat-chart circle').count(), 12);
+    assert.match(await page.locator('#monthly-heat-values').innerText(), /32\\.0 °C/);
     assert.match(await page.locator('#state-summary').innerText(), /25\.9 °C/);
     assert.doesNotMatch(await page.locator('#highlights').innerText(), /No climate measurements/);
     assert.match(await page.locator('#highlights').innerText(), /Lowest[\s\S]*Highest/);
@@ -75,7 +87,11 @@ async function main() {
     assert.match(await page.locator('.callout-tag[data-location-id="' + vic[0].id + '"] .callout-value').textContent(), /500\.0 mm/);
 
     // Unavailable data cannot be shown as numeric zero or a plausible reading.
+    await page.locator('#place').selectOption(vic[1].id);
+    assert.match(await page.locator('#monthly-heat-values').innerText(), /33\\.0 °C/);
     await page.locator('#place').selectOption(vic[2].id);
+    assert.equal(await page.locator('#monthly-heat-chart').isVisible(), false);
+    assert.match(await page.locator('#monthly-heat-status').innerText(), /not available/);
     assert.match(await page.locator('#detail').innerText(), /No data/);
     assert.equal(await page.locator('circle.marker[data-location-id="' + vic[2].id + '"]').getAttribute('fill'), '#9ba9b2');
     assert.match(await page.locator('.callout-tag[data-location-id="' + vic[2].id + '"] .callout-value').textContent(), /No data/);
