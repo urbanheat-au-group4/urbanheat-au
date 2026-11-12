@@ -20,8 +20,14 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_*.py' -v
       - name: Check JavaScript syntax
         run: node --check static/app.js
+      - name: Check comparison code
+        run: |
+          node --check static/compare_core.js
+          node --check static/compare.js
       - name: Test dashboard error handling
         run: node --test tests/test_frontend.cjs
+      - name: Test location comparison
+        run: node --test tests/test_compare.cjs
   browser:
     name: Eight-state browser acceptance
     runs-on: ubuntu-latest

@@ -1,0 +1,114 @@
+/* Compare Locations section */
+.compare {
+  margin-top: 20px;
+}
+
+.compare h2 {
+  font-size: 18px;
+  margin: 0 0 6px;
+}
+
+.compare p {
+  font-size: 13px;
+}
+
+.compare-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.compare-controls label {
+  margin-top: 0;
+}
+
+.compare-notes {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.compare .compare-note {
+  margin: 0;
+  padding: 10px 12px;
+  background: #26333d;
+  border-left: 3px solid #e5ba70;
+  border-radius: 5px;
+  color: #e8e4d6;
+  font-size: 12px;
+}
+
+.compare .compare-note-info {
+  border-left-color: #8ab5c8;
+}
+
+.compare-table {
+  overflow-x: auto;
+}
+
+.compare-table table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 520px;
+  background: #101b29;
+}
+
+.compare-table caption {
+  text-align: left;
+  font-size: 13px;
+  padding: 6px 0;
+  color: #b6c7d5;
+}
+
+.compare-table th, .compare-table td {
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid #344556;
+}
+
+.compare-table thead th {
+  color: #9cdef2;
+  font-size: 14px;
+}
+
+.compare-table thead th small {
+  font-weight: 400;
+  color: #b6c7d5;
+}
+
+.compare-table tbody th {
+  font-size: 13px;
+  font-weight: 600;
+  color: #eaf1f7;
+}
+
+.compare-table td {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.compare-table td small {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 400;
+  color: #b6c7d5;
+}
+
+.compare-table .compare-na {
+  font-weight: 400;
+  color: #9eb2c2;
+}
+
+.compare-source, .compare-limits {
+  font-size: 12px;
+}
+
+@media (max-width: 740px) {
+  .compare-controls {
+    grid-template-columns: 1fr;
+  }
+}

@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="/static/national.css">
 <link rel="stylesheet" href="/static/history.css">
 <link rel="stylesheet" href="/static/seasons.css">
+<link rel="stylesheet" href="/static/compare.css">
 <script src="/static/national_annotations.js" defer></script>
 <script src="/static/national.js" defer></script>
 <script src="/static/intro-states.js" defer></script>
@@ -13,6 +14,8 @@
 <script src="/static/intro-tiles.js" defer></script>
 <script src="/static/history.js" defer></script>
 <script src="/static/seasons.js" defer></script>
+<script src="/static/compare_core.js" defer></script>
+<script src="/static/compare.js" defer></script>
 </head>
 <body>
 <header>
@@ -105,6 +108,21 @@
     <div id="seasons-years"></div>
   </details>
   <p id="seasons-source" class="seasons-source"></p>
+</section>
+
+<section class="panel compare" id="compare" aria-labelledby="compare-title">
+  <h2 id="compare-title">Compare Locations</h2>
+  <p class="compare-intro">Choose two or three locations to see their historical climate side by side. All figures use the same period and model, and are modelled estimates, not weather station readings.</p>
+  <div class="compare-controls">
+    <div><label for="compare-1">Location 1</label><select id="compare-1"></select></div>
+    <div><label for="compare-2">Location 2</label><select id="compare-2"></select></div>
+    <div><label for="compare-3">Location 3 (optional)</label><select id="compare-3"></select></div>
+  </div>
+  <p id="compare-status" role="status" aria-live="polite">Loading comparison data…</p>
+  <div id="compare-notes" class="compare-notes"></div>
+  <div id="compare-table" class="compare-table"></div>
+  <p id="compare-source" class="compare-source"></p>
+  <p class="compare-limits">This compares modelled climate only. It does not show which place is better to live in, because that depends on many things this data does not cover.</p>
 </section>
 
 <section class="panel footnote" aria-label="Data sources and limitations">
