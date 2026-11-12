@@ -18,6 +18,18 @@
   var sourceNote = document.getElementById('seasons-source');
   var data = null;
 
+  if ('IntersectionObserver' in window) {
+    var watcher = new IntersectionObserver(function (entries) {
+      if (entries[0].isIntersecting) {
+        chart.classList.add('seasons-visible');
+        watcher.disconnect();
+      }
+    }, { threshold: 0.3 });
+    watcher.observe(chart);
+  } else {
+    chart.classList.add('seasons-visible');
+  }
+
   function s(value) {
     return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;')
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -67,7 +79,7 @@
     return n;
   }
 
-  function drawChart(place) {
+  function drawChart(place, animate) {
     var width = Math.max(300, Math.round(chart.getBoundingClientRect().width) || 800);
     var small = width < 520;
     var height = small ? 340 : 380;
@@ -120,6 +132,7 @@
           fill: COLOURS[key], 'fill-opacity': key === 'min' ? 0.75 : 1,
           stroke: COLOURS[key], 'stroke-width': 2 });
         if (key === 'min') { bar.setAttribute('stroke-dasharray', '4 3'); }
+        if (animate) { bar.setAttribute('class', value >= 0 ? 'seasons-bar seasons-bar-up' : 'seasons-bar seasons-bar-down'); }
         bar.appendChild(node('title', {}, se.label + ' typical ' + b[2] + ': ' + temp(value) + ' °C'));
         chart.appendChild(bar);
         chart.appendChild(node('text', { x: x + barW / 2, y: value >= 0 ? y1 - 5 : y1 + 15,
@@ -222,7 +235,7 @@
     });
     chart.setAttribute('aria-label', 'Bar chart of typical seasonal temperatures in degrees Celsius for ' +
       place.name + '. ' + parts.join('. ') + '.');
-    drawChart(place);
+    drawChart(place, true);
     drawLegend();
     drawTable(place);
     drawLimits(place);

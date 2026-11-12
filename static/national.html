@@ -8,15 +8,24 @@
 <link rel="stylesheet" href="/static/seasons.css">
 <script src="/static/national_annotations.js" defer></script>
 <script src="/static/national.js" defer></script>
+<script src="/static/intro-states.js" defer></script>
+<script src="/static/intro.js" defer></script>
+<script src="/static/intro-tiles.js" defer></script>
 <script src="/static/history.js" defer></script>
 <script src="/static/seasons.js" defer></script>
 </head>
 <body>
-<header><a class="brand-home" href="/">UrbanHeat AU · Australia</a><span>2015–2025 historical climate</span></header>
+<header>
+<a class="brand-home" href="/"><img src="/static/logo.png" alt="UrbanHeat AU Australia, home" width="66" height="44"></a>
+<button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="site-nav">Menu</button>
+<nav class="site-nav" id="site-nav" aria-label="Explore a state or territory"></nav>
+<span>2015–2025 Historical Climate</span>
+</header>
 <main>
 <section class="intro"><p class="eyebrow">AUSTRALIA · CLIMATE EXPLORER</p>
 <h1>Compare climate across Australia</h1>
-<p>Explore modelled historical weather for 112 Australian locations. Select a state to explore its 14 locations and compare regional conditions.</p></section>
+<p>Explore modelled historical weather for <span class="count" data-count="112">112</span> Australian locations. Select a state to explore its <span class="count" data-count="14">14</span> locations and compare regional conditions.</p>
+<div class="intro-tiles" id="intro-tiles" role="group" aria-label="Highlights from the data"></div></section>
 <section class="layout">
 <aside class="panel">
 <label for="state">State or territory</label>

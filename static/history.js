@@ -7,10 +7,14 @@
   const DATA_URL = '/static/national_history.json';
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const METRICS = {
-    annual_mean_c: {label: 'Annual mean temperature', short: 'Annual mean', daysKey: 'mean_days',
-                    colour: '#b5441f', dash: '', shape: 'circle'},
-    average_max_c: {label: 'Average daily maximum', short: 'Average daily maximum', daysKey: 'max_days',
-                    colour: '#1b5f7c', dash: '8 5', shape: 'square'}
+    annual_mean_c: {
+      label: 'Annual mean temperature', short: 'Annual mean', daysKey: 'mean_days',
+      colour: '#b5441f', dash: '', shape: 'circle'
+    },
+    average_max_c: {
+      label: 'Average daily maximum', short: 'Average daily maximum', daysKey: 'max_days',
+      colour: '#1b5f7c', dash: '8 5', shape: 'square'
+    }
   };
 
   const placeSelect = document.getElementById('history-place');
@@ -24,6 +28,30 @@
   if (!placeSelect || !metricSelect || !chart || !summary) return;
 
   let trends = null;
+
+  let visible = false;
+  let pendingGrow = null;
+  const reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+  function startGrow() {
+    if (pendingGrow && visible) {
+      pendingGrow.beginElement();
+      pendingGrow = null;
+    }
+  }
+
+  if ('IntersectionObserver' in window) {
+    const watcher = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        visible = true;
+        startGrow();
+        watcher.disconnect();
+      }
+    }, { threshold: 0.3 });
+    watcher.observe(chart);
+  } else {
+    visible = true;
+  }
 
   function s(tag, attrs, text) {
     const node = document.createElementNS(SVG_NS, tag);
@@ -58,14 +86,16 @@
     tableBox.replaceChildren();
   }
 
-  function drawChart(place, keys) {
+  function drawChart(place, keys, animate) {
+    chart.replaceChildren();
+    pendingGrow = null;
     chart.replaceChildren();
     const rows = place.years;
     const width = Math.max(300, Math.min(chart.getBoundingClientRect().width || 800, 1100));
     const small = width < 520;
     const height = small ? 320 : 420;
     chart.setAttribute('viewBox', `0 0 ${width} ${height}`);
-    const margin = {left: small ? 46 : 62, right: 18, top: 20, bottom: small ? 56 : 64};
+    const margin = { left: small ? 46 : 62, right: 18, top: 20, bottom: small ? 56 : 64 };
     const innerW = width - margin.left - margin.right;
     const innerH = height - margin.top - margin.bottom;
 
@@ -77,8 +107,10 @@
       }
     }
     if (!values.length) {
-      chart.append(s('text', {x: width / 2, y: height / 2, 'text-anchor': 'middle', fill: '#33505f',
-                              'font-size': 15}, 'No temperature data to show for this location.'));
+      chart.append(s('text', {
+        x: width / 2, y: height / 2, 'text-anchor': 'middle', fill: '#33505f',
+        'font-size': 15
+      }, 'No temperature data to show for this location.'));
       return;
     }
 
@@ -94,24 +126,53 @@
     // Horizontal grid lines and temperature labels
     for (let t = low; t <= high; t += step) {
       const y = yOf(t);
-      chart.append(s('line', {x1: margin.left, x2: width - margin.right, y1: y, y2: y,
-                              stroke: t === low ? '#6b8594' : '#c3d2d8', 'stroke-width': 1}));
-      chart.append(s('text', {x: margin.left - 8, y: y + 4, 'text-anchor': 'end', fill: '#33505f',
-                              'font-size': 12}, String(t)));
+      chart.append(s('line', {
+        x1: margin.left, x2: width - margin.right, y1: y, y2: y,
+        stroke: t === low ? '#6b8594' : '#c3d2d8', 'stroke-width': 1
+      }));
+      chart.append(s('text', {
+        x: margin.left - 8, y: y + 4, 'text-anchor': 'end', fill: '#33505f',
+        'font-size': 12
+      }, String(t)));
     }
     const midY = margin.top + innerH / 2;
-    chart.append(s('text', {x: 14, y: midY, 'text-anchor': 'middle', fill: '#33505f', 'font-size': 12,
-                            transform: `rotate(-90 14 ${midY})`}, 'Temperature (°C)'));
-    chart.append(s('text', {x: margin.left + innerW / 2, y: height - 10, 'text-anchor': 'middle',
-                            fill: '#33505f', 'font-size': 12}, 'Year'));
+    chart.append(s('text', {
+      x: 14, y: midY, 'text-anchor': 'middle', fill: '#33505f', 'font-size': 12,
+      transform: `rotate(-90 14 ${midY})`
+    }, 'Temperature (°C)'));
+    chart.append(s('text', {
+      x: margin.left + innerW / 2, y: height - 10, 'text-anchor': 'middle',
+      fill: '#33505f', 'font-size': 12
+    }, 'Year'));
 
     // Year labels; * marks a year with missing days
     rows.forEach((row, i) => {
       if (small && i % 2 !== 0) return;
       const partial = keys.some(key => number(row[key]) !== null && !isComplete(row, key));
-      chart.append(s('text', {x: xOf(i), y: height - margin.bottom + 20, 'text-anchor': 'middle',
-                              fill: '#33505f', 'font-size': 12}, row.year + (partial ? '*' : '')));
+      chart.append(s('text', {
+        x: xOf(i), y: height - margin.bottom + 20, 'text-anchor': 'middle',
+        fill: '#33505f', 'font-size': 12
+      }, row.year + (partial ? '*' : '')));
     });
+
+
+    // Lines and markers sit inside a clip. For the animation the clip starts at zero width and widens.     ← ADD (this whole block)
+    const revealWidth = width - margin.left + 10;
+    const revealRect = s('rect', { x: margin.left - 10, y: 0, width: revealWidth, height: height });
+    const clip = s('clipPath', { id: 'history-reveal' });
+    clip.append(revealRect);
+    chart.append(clip);
+    const plot = s('g', { 'clip-path': 'url(#history-reveal)' });
+    chart.append(plot);
+    if (animate && !reduceMotion) {
+      revealRect.setAttribute('width', 0);
+      const grow = s('animate', {
+        attributeName: 'width', from: 0, to: revealWidth, dur: '1.2s',
+        begin: 'indefinite', fill: 'freeze'
+      });
+      revealRect.append(grow);
+      pendingGrow = grow;
+    }
 
     // One line per measure. A missing value breaks the line instead of being guessed.
     for (const key of keys) {
@@ -125,21 +186,24 @@
         drawing = true;
       });
       if (path) {
-        chart.append(s('path', {d: path.trim(), fill: 'none', stroke: cfg.colour, 'stroke-width': 2.5,
-                                'stroke-dasharray': cfg.dash || 'none', 'stroke-linejoin': 'round'}));
+        plot.append(s('path',
+          {
+            d: path.trim(), fill: 'none', stroke: cfg.colour, 'stroke-width': 2.5,
+            'stroke-dasharray': cfg.dash || 'none', 'stroke-linejoin': 'round'
+          }));
       }
       rows.forEach((row, i) => {
         const v = number(row[key]);
         if (v === null) return;
         const full = isComplete(row, key);
-        const look = {fill: full ? cfg.colour : '#ffffff', stroke: cfg.colour, 'stroke-width': 2.5};
+        const look = { fill: full ? cfg.colour : '#ffffff', stroke: cfg.colour, 'stroke-width': 2.5 };
         const x = xOf(i), y = yOf(v);
         const marker = cfg.shape === 'circle'
-          ? s('circle', Object.assign({cx: x, cy: y, r: 5.5}, look))
-          : s('rect', Object.assign({x: x - 5, y: y - 5, width: 10, height: 10}, look));
+          ? s('circle', Object.assign({ cx: x, cy: y, r: 5.5 }, look))
+          : s('rect', Object.assign({ x: x - 5, y: y - 5, width: 10, height: 10 }, look));
         const note = full ? '' : ` (incomplete: based on ${daysWithData(row, key)} of ${row.expected_days} days)`;
         marker.append(s('title', {}, `${row.year}: ${cfg.short} ${v.toFixed(1)} °C${note}`));
-        chart.append(marker);
+        plot.append(marker);
       });
     }
   }
@@ -150,12 +214,14 @@
       const cfg = METRICS[key];
       const item = document.createElement('span');
       item.className = 'history-legend-item';
-      const icon = s('svg', {width: 40, height: 14, viewBox: '0 0 40 14', 'aria-hidden': 'true', focusable: 'false'});
-      icon.append(s('line', {x1: 2, x2: 38, y1: 7, y2: 7, stroke: cfg.colour, 'stroke-width': 2.5,
-                             'stroke-dasharray': cfg.dash || 'none'}));
+      const icon = s('svg', { width: 40, height: 14, viewBox: '0 0 40 14', 'aria-hidden': 'true', focusable: 'false' });
+      icon.append(s('line', {
+        x1: 2, x2: 38, y1: 7, y2: 7, stroke: cfg.colour, 'stroke-width': 2.5,
+        'stroke-dasharray': cfg.dash || 'none'
+      }));
       icon.append(cfg.shape === 'circle'
-        ? s('circle', {cx: 20, cy: 7, r: 5, fill: cfg.colour, stroke: cfg.colour, 'stroke-width': 2})
-        : s('rect', {x: 15, y: 2, width: 10, height: 10, fill: cfg.colour, stroke: cfg.colour, 'stroke-width': 2}));
+        ? s('circle', { cx: 20, cy: 7, r: 5, fill: cfg.colour, stroke: cfg.colour, 'stroke-width': 2 })
+        : s('rect', { x: 15, y: 2, width: 10, height: 10, fill: cfg.colour, stroke: cfg.colour, 'stroke-width': 2 }));
       item.append(icon, document.createTextNode(' ' + cfg.label));
       legend.append(item);
     }
@@ -227,7 +293,7 @@
     tableBox.append(table);
   }
 
-  function render() {
+  function render(animate) {
     if (!trends) return;
     const place = trends.locations.find(l => l.id === placeSelect.value);
     if (!place) { showMessage('Choose a location to see its historical trend.'); return; }
@@ -237,7 +303,8 @@
     const text = `${place.name} (${place.state}), ${period}. ${measures}, in °C. Modelled estimates.`;
     summary.textContent = text;
     chart.setAttribute('aria-label', `Line chart. ${text} A data table follows the chart.`);
-    drawChart(place, keys);
+    drawChart(place, keys, animate);
+    startGrow();
     drawLegend(keys);
     describeLimits(place, keys);
     drawTable(place, keys);
@@ -249,11 +316,11 @@
 
   async function load() {
     try {
-      const response = await fetch(DATA_URL, {cache: 'no-store'});
+      const response = await fetch(DATA_URL, { cache: 'no-store' });
       if (!response.ok) throw new Error('not found');
       const data = await response.json();
       if (!data || !Array.isArray(data.locations) || !data.locations.length ||
-          !data.locations.every(l => l && typeof l.id === 'string' && Array.isArray(l.years))) {
+        !data.locations.every(l => l && typeof l.id === 'string' && Array.isArray(l.years))) {
         throw new Error('invalid');
       }
       trends = data;
@@ -265,15 +332,15 @@
     for (const place of trends.locations) placeSelect.add(new Option(`${place.name} (${place.state})`, place.id));
     const preferred = trends.locations.find(l => l.id === 'melbourne-cbd') || trends.locations[0];
     placeSelect.value = preferred.id;
-    render();
+    render(true);
   }
 
-  placeSelect.addEventListener('change', render);
-  metricSelect.addEventListener('change', render);
+  placeSelect.addEventListener('change', () => render(true));
+  metricSelect.addEventListener('change', () => render(true));
   let resizeTimer = null;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(render, 150);
+    resizeTimer = setTimeout(() => render(false), 150);
   });
   load();
 })();
