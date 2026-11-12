@@ -455,7 +455,7 @@ function draw() {
   document.getElementById('high').textContent = labels.format(high, metric.value);
   document.getElementById('status').textContent = state.value === 'ALL' ?
     visible.length + ' locations' : visible.length + ' locations · all labels shown';
-  heading.textContent = state.value === 'ALL' ? 'Australia · National overview' : STATES[state.value] + ' · State view';
+  heading.textContent = state.value === 'ALL' ? 'Australia · National Overview' : STATES[state.value] + ' · State view';
   back.hidden = state.value === 'ALL';
   svg.setAttribute('aria-label', (state.value === 'ALL' ? 'Australia' : STATES[state.value]) +
     ' interactive climate map, ' + visible.length + ' locations');
