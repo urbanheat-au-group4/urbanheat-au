@@ -24,6 +24,13 @@ const STATES = {
   SA: 'South Australia', TAS: 'Tasmania', ACT: 'Australian Capital Territory',
   NT: 'Northern Territory'
 };
+
+// Words shown beside the colour scale, so the legend does not rely on colour alone.     ← ADD
+const LEGEND_WORDS = {
+  average_annual_rainfall_mm: ['Less rain', 'More rain'],
+  average_days_at_least_35c: ['Fewer hot days', 'More hot days']
+};
+
 let points = [];
 let boundaries = [];
 let selected = '';
@@ -451,8 +458,9 @@ function draw() {
   updateStateSummary(averages);
   updateDetail();
   updateMonthlyHeat();
-  document.getElementById('low').textContent = labels.format(low, metric.value);
-  document.getElementById('high').textContent = labels.format(high, metric.value);
+  const words = LEGEND_WORDS[metric.value] || ['Cooler', 'Warmer'];
+  document.getElementById('low').textContent = words[0] + ': ' + labels.format(low, metric.value);
+  document.getElementById('high').textContent = words[1] + ': ' + labels.format(high, metric.value);
   document.getElementById('status').textContent = state.value === 'ALL' ?
     visible.length + ' locations' : visible.length + ' locations · all labels shown';
   heading.textContent = state.value === 'ALL' ? 'Australia · National Overview' : STATES[state.value] + ' · State view';

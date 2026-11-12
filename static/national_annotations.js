@@ -28,7 +28,7 @@
   }
 
   function medianAnnotation(value, median, metric) {
-    if (!Number.isFinite(value) || median === null) return 'No reading';
+    if (!Number.isFinite(value) || median === null) return 'No data';
     const difference = value - median;
     if (Math.abs(difference) < 0.05) return 'At state median';
     const amount = Math.abs(difference).toFixed(1) + unit(metric);

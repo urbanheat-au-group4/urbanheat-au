@@ -274,6 +274,7 @@ svg {
 
 .legend {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
   font-size: 12px;
@@ -671,3 +672,21 @@ header .brand-home img {
 .heat-helper{font-size:12px;line-height:1.5;margin:10px 0;color:#c5d7e4}
 .heat-warning{padding:10px 12px;background:#3a2e25;border-left:3px solid #e5ba70;border-radius:5px;font-size:12px;color:#fff0d8}
 .heat-warning[hidden]{display:none}
+
+/* Selected and keyboard-focused markers need to stand out on the light map. */
+.marker.selected {
+  stroke: #0b1f2d;
+  stroke-width: 4;
+}
+
+.marker:focus-visible {
+  stroke: #0b1f2d;
+  stroke-width: 4;
+  outline: 3px solid #0b1f2d;
+  outline-offset: 3px;
+}
+
+.callout-tag:focus,
+.callout-tag:focus-visible {
+  outline: none;
+}
