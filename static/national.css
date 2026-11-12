@@ -416,7 +416,10 @@ svg {
 .heat-band strong{font-size:18px;color:#f0f8fc}
 .selectable-state{cursor:pointer;stroke:#fff;stroke-linejoin:round}
 .selectable-state:hover,.selectable-state:focus-visible{stroke:#163549;stroke-width:3;outline:none}
-.callout-line{stroke:#24475b;pointer-events:none}
+.callout-line{stroke:#24475b;pointer-events:none;opacity:0}
+.callout-tag:hover .callout-line,
+.callout-tag:focus-visible .callout-line,
+.callout-tag.active .callout-line{opacity:1}
 .callout-box{fill:#f7fbfd;stroke:#557384;pointer-events:none}
 .callout-name{font-family:system-ui,sans-serif;font-weight:700;fill:#17384b;pointer-events:none}
 .callout-value{font-family:system-ui,sans-serif;font-weight:650;fill:#9e442c;pointer-events:none}
