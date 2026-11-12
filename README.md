@@ -120,3 +120,28 @@ The server no longer starts live forecast refreshes by default. For legacy testi
 The Historical Trends chart (UHA-61) and Seasonal Climate Comparison (UHA-62) are part of the national page, below the map.
 
 Project tracking: Jira. Code and tests: GitHub. Sprint reports: Confluence.
+
+## Compare Locations (UHA-63)
+
+The **Compare Locations** section on the national page lets you pick two or three locations and see their historical climate side by side.
+
+**What it shows**
+
+- Typical summer maximum and winter minimum temperature
+- Hot days per year (35 °C or more)
+- Average annual rainfall, plus typical summer and winter rainfall
+- The difference from the first location chosen, where the data supports one
+
+**How it works**
+
+- It combines `static/national_data.json` (yearly figures) and `static/national_seasons.json` (seasonal figures). Build them with `national_export.py` and `seasonal_export.py` as described above.
+- Every location uses the same period (2015-01-01 to 2025-12-31), the same units and the same model (Open-Meteo, ERA5).
+- The calculations are in `static/compare_core.js`. The page code is in `static/compare.js`.
+- Run the tests with `node --test tests/test_compare.cjs`.
+
+**Limitations**
+
+- Values are modelled estimates, not weather station readings.
+- The ERA5 model works on a grid of about 25 km. Locations less than 25 km apart cannot be reliably told apart, so the page warns about them and does not show differences between them or rank them.
+- A seasonal figure only counts years that have a value for every day. If locations are based on a different number of years, the page says so.
+- This compares modelled climate only. It does not say that one place is better to live in, because that depends on things the data does not cover.
