@@ -95,8 +95,8 @@ async function main() {
     // Changing the metric must update map, detail, range and units together.
     await page.locator('#metric').selectOption('average_annual_rainfall_mm');
     assert.match(await page.locator('#detail').innerText(), /500\.0 mm/);
-    assert.equal((await page.locator('#low').innerText()).trim(), '500.0 mm');
-    assert.equal((await page.locator('#high').innerText()).trim(), '800.0 mm');
+    assert.equal((await page.locator('#low').innerText()).trim(), 'Less rain: 500.0 mm');
+    assert.equal((await page.locator('#high').innerText()).trim(), 'More rain: 800.0 mm');
     assert.match(await page.locator('.callout-tag[data-location-id="' + vic[0].id + '"] .callout-value').textContent(), /500\.0 mm/);
 
     // Unavailable data cannot be shown as numeric zero or a plausible reading.
