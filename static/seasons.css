@@ -92,3 +92,24 @@
   .seasons th,
   .seasons td { padding: 6px 4px; font-size: 0.9rem; }
 }
+
+@keyframes seasons-grow {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+.seasons-bar {
+  transform-box: fill-box;
+  animation: seasons-grow .7s ease-out both;
+}
+
+#seasons-chart:not(.seasons-visible) .seasons-bar {
+  animation-play-state: paused;
+}
+
+.seasons-bar-up { transform-origin: bottom; }
+.seasons-bar-down { transform-origin: top; }
+
+@media (prefers-reduced-motion: reduce) {
+  .seasons-bar { animation: none; }
+}
