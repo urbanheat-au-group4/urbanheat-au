@@ -23,6 +23,7 @@
   color: #14232e;
 }
 #seasons-chart text { fill: currentColor; font-family: inherit; }
+#seasons-chart[hidden] { display: none; }
 
 .seasons-legend {
   display: flex;

@@ -11,6 +11,10 @@ const labels = window.NationalAnnotations;
 const FIELDS = {
   annual_mean_c: 'Average temperature',
   annual_average_max_c: 'Daytime maximum',
+  hottest_day_c: 'Hottest modelled day',
+  hottest_10_percent_mean_c: 'Average of hottest 10% of days',
+  hottest_25_percent_mean_c: 'Average of hottest 25% of days',
+  hottest_50_percent_mean_c: 'Average of hottest 50% of days',
   annual_average_min_c: 'Nighttime minimum',
   average_annual_rainfall_mm: 'Annual rainfall',
   average_days_at_least_35c: 'Days ≥35°C per year'
@@ -167,7 +171,7 @@ function drawCallouts(visible, view) {
   for (const rect of labels.labelLayout(visible, metric.value, state.value, selected, view)) {
     const p = rect.point, x = rect.x, y = rect.y;
     const tag = element('g', {
-      class: 'callout-tag', role: 'button', tabindex: '0',
+      class: 'callout-tag' + (p.id === selected ? ' active' : ''), role: 'button', tabindex: '0',
       'data-location-id': p.id,
       'aria-label': 'Show ' + p.name + ': ' + labels.format(p[metric.value], metric.value)
     });
@@ -218,7 +222,13 @@ function updateHighlights(visible) {
   panel.replaceChildren();
   const ordered = visible.filter(p => Number.isFinite(p[metric.value]))
     .sort((a,b) => a[metric.value] - b[metric.value]);
-  if (!ordered.length) return;
+  if (!ordered.length) {
+    const message = document.createElement('p');
+    message.setAttribute('role', 'status');
+    message.textContent = 'No climate measurements are available for these locations and this measure.';
+    panel.append(message);
+    return;
+  }
   for (const [label, point] of [['Lowest', ordered[0]], ['Highest', ordered[ordered.length-1]]]) {
     const card = document.createElement('div');
     const caption = document.createElement('span');
@@ -231,6 +241,87 @@ function updateHighlights(visible) {
     panel.append(card);
   }
 }
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function updateMonthlyHeat() {
+  const chart = document.getElementById('monthly-heat-chart');
+  const status = document.getElementById('monthly-heat-status');
+  const valuesPanel = document.getElementById('monthly-heat-values');
+  chart.replaceChildren();
+  valuesPanel.replaceChildren();
+  const point = points.find(p => p.id === selected);
+  const months = point && point.monthly_average_max_c;
+  const hasHeatData = points.some(p => Array.isArray(p.monthly_average_max_c));
+  if (!Array.isArray(months) || months.length !== 12 ||
+      months.some(value => !Number.isFinite(value))) {
+    chart.hidden = true;
+    status.textContent = !hasHeatData
+      ? 'The saved climate data is out of date. Run python3 run.py to rebuild it.'
+      : (point
+        ? 'Monthly maximum temperatures are not available for this location.'
+        : 'Choose a location above to see its monthly temperatures.');
+    return;
+  }
+  chart.hidden = false;
+  status.textContent = point.name + ': average daytime maximum for each month (°C).';
+
+  // Leave room for month names and the temperature scale.
+  const left = 55, right = 685, top = 30, bottom = 200;
+  const low = Math.floor(Math.min(...months) / 5) * 5 - 5;
+  const high = Math.ceil(Math.max(...months) / 5) * 5 + 5;
+  const height = high - low;
+  const coordinates = months.map((temperature, i) => ({
+    x: left + i * (right - left) / 11,
+    y: bottom - (temperature - low) * (bottom - top) / height
+  }));
+  for (let i = 0; i <= 4; i++) {
+    const temperature = low + i * height / 4;
+    const y = bottom - i * (bottom - top) / 4;
+    chart.append(element('line', {x1:left, x2:right, y1:y, y2:y,
+      stroke:'#8caabb', 'stroke-opacity':'0.4'}));
+    const number = element('text', {x:45, y:y+4, 'text-anchor':'end',
+      fill:'#254257', 'font-size':12});
+    number.textContent = temperature.toFixed(0) + '°';
+    chart.append(number);
+  }
+  const line = element('polyline', {
+    points:coordinates.map(p => p.x.toFixed(1)+','+p.y.toFixed(1)).join(' '),
+    fill:'none',stroke:'#b94d31','stroke-width':3,'stroke-linejoin':'round'
+  });
+  chart.append(line);
+  coordinates.forEach((p, i) => {
+    const dot = element('circle', {cx:p.x,cy:p.y,r:4.5,fill:'#b94d31'});
+    const title = element('title');
+    title.textContent = MONTHS[i] + ': ' + months[i].toFixed(1) + ' °C';
+    dot.append(title);
+    chart.append(dot);
+    const month = element('text', {x:p.x,y:225,'text-anchor':'middle',
+      fill:'#254257','font-size':12});
+    month.textContent = MONTHS[i];
+    chart.append(month);
+  });
+  chart.setAttribute('aria-label', point.name +
+    ': modelled average daily maximum temperature for January through December');
+
+  const table = document.createElement('table');
+  const caption = document.createElement('caption');
+  caption.textContent = point.name + ': monthly average daily maximum (°C)';
+  table.append(caption);
+  const body = document.createElement('tbody');
+  MONTHS.forEach((month, i) => {
+    const row = document.createElement('tr');
+    const name = document.createElement('th');
+    name.scope = 'row';
+    name.textContent = month;
+    const value = document.createElement('td');
+    value.textContent = months[i].toFixed(1) + ' °C';
+    row.append(name, value);
+    body.append(row);
+  });
+  table.append(body);
+  valuesPanel.append(table);
+}
+
 function updateDetail() {
   detail.replaceChildren();
   const point = points.find(p => p.id === selected);
@@ -241,7 +332,34 @@ function updateDetail() {
   const title = document.createElement('strong');
   title.textContent = point.name + ' · ' + point.state;
   detail.append(title);
+  const extra = [
+    ['hottest_day_c', 'Hottest modelled day'],
+    ['hottest_10_percent_mean_c', 'Average of hottest 10% of days'],
+    ['hottest_25_percent_mean_c', 'Average of hottest 25% of days'],
+    ['hottest_50_percent_mean_c', 'Average of hottest 50% of days']
+  ];
+  const extremes = document.createElement('section');
+  extremes.className = 'extreme-detail';
+  const extremeTitle = document.createElement('h3');
+  extremeTitle.textContent = 'How hot does it get?';
+  extremes.append(extremeTitle);
+  for (const [key, label] of extra) {
+    const row = document.createElement('div');
+    row.textContent = label + ': ';
+    const value = document.createElement('span');
+    value.className = 'value';
+    value.textContent = Number.isFinite(point[key]) ?
+      point[key].toFixed(1) + ' °C' : 'No data';
+    if (key === 'hottest_day_c' && Number.isFinite(point[key]) &&
+        /^\d{4}-\d{2}-\d{2}$/.test(point.hottest_day_date || '')) {
+      value.textContent += ' (' + point.hottest_day_date + ')';
+    }
+    row.append(value);
+    extremes.append(row);
+  }
+  detail.append(extremes);
   for (const [key, name] of Object.entries(FIELDS)) {
+    if (key === 'hottest_day_c' || key.startsWith('hottest_')) continue;
     const row = document.createElement('div');
     row.textContent = name + ': ';
     const value = document.createElement('span');
@@ -332,6 +450,7 @@ function draw() {
   updateBands();
   updateStateSummary(averages);
   updateDetail();
+  updateMonthlyHeat();
   document.getElementById('low').textContent = labels.format(low, metric.value);
   document.getElementById('high').textContent = labels.format(high, metric.value);
   document.getElementById('status').textContent = state.value === 'ALL' ?
@@ -341,13 +460,35 @@ function draw() {
   svg.setAttribute('aria-label', (state.value === 'ALL' ? 'Australia' : STATES[state.value]) +
     ' interactive climate map, ' + visible.length + ' locations');
 }
+function showSource(data) {
+  // The page should describe the file we actually loaded.
+  const start = /^\d{4}-\d{2}-\d{2}$/.test(data.start_date || '') ? data.start_date : null;
+  const end = /^\d{4}-\d{2}-\d{2}$/.test(data.end_date || '') ? data.end_date : null;
+  const dates = start && end && start <= end ? start + ' to ' + end : 'Dates not listed';
+  const model = typeof data.model === 'string' && data.model.trim() ? data.model.toUpperCase() : 'Model not listed';
+  const source = typeof data.source === 'string' && data.source.trim() ? data.source : 'Source not listed';
+  const info = source + ' · ' + model + ' · ' + dates;
+  document.getElementById('dataset-info').textContent = info;
+  document.getElementById('source-period').textContent = info;
+}
+
 async function load() {
   try {
     const response = await fetch('/static/national_data.json', {cache:'no-store'});
-    if (!response.ok) throw new Error('Run python3 national_export.py first');
+    if (!response.ok) {
+      if (response.status === 404) throw new Error('Climate data has not been added yet.');
+      throw new Error('Climate data is temporarily unavailable. Please try again later.');
+    }
     const data = await response.json();
     if (!Array.isArray(data.locations) || !data.locations.length) throw new Error('National data missing');
+    showSource(data);
     points = data.locations;
+    const outdated = !points.some(p => Array.isArray(p.monthly_average_max_c));
+    const warning = document.getElementById('heat-data-warning');
+    warning.hidden = !outdated;
+    warning.textContent = outdated
+      ? 'The saved climate data is out of date. Stop the server and run python3 run.py to rebuild it.'
+      : '';
     for (const code of Object.keys(STATES)) {
       const option = document.createElement('option');
       option.value = code;
@@ -374,7 +515,8 @@ async function load() {
       document.getElementById('status').textContent += ' · boundary download needed';
     }
   } catch (error) {
-    document.getElementById('status').textContent = error.message;
+    document.getElementById('status').textContent =
+      error instanceof TypeError ? 'Could not connect to climate data. Check your connection and try again.' : error.message;
   }
 }
 state.addEventListener('change', () => focusState(state.value));

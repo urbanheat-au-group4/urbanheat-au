@@ -4,20 +4,56 @@ CST190 project: an Australia-wide historical climate explorer for **112 location
 
 ## Run locally
 
-Requires Python 3 and a browser. No extra Python packages.
+Use Python 3. The dashboard reads saved historical weather data.
 
-The validated historical snapshots must already be available under `data/national/locations/`. From the project root:
+### First time setup
+
+If `data/national/locations/` is empty, download the historical files first:
 
 ```bash
-python3 national_coverage.py --data-dir data/national
-python3 national_export.py --data-dir data/national
-python3 history_export.py --data-dir data/national
-python3 seasonal_export.py --data-dir data/national
-python3 fetch_national_boundaries.py
-python3 server.py
+python3 national_ingest.py --group australia_historical --out data/national
 ```
 
-Open **http://localhost:8000/**. The same map can be opened at `/static/national.html`.
+The downloader saves up to five new locations per run. **Run it again** until all 112 are saved. It reuses the valid files you already have. Internet access is needed for the downloads.
+
+### Start the app
+
+```bash
+python3 run.py
+```
+
+Open **http://localhost:8000/**.
+
+`run.py` checks the saved readings, makes the map and chart JSON files, checks the state boundaries and starts `server.py`. It downloads state boundaries if they are missing or broken. It **does not** download historical weather again every time the app starts.
+
+To prepare and check the files without starting the server:
+
+```bash
+python3 run.py --check
+```
+
+If data is missing or incorrect, the command stops and tells you what to check. The server will not start with incomplete national data.
+
+You can still use `python3 server.py` to open the website using already prepared files. It does not check or rebuild those files.
+
+### After pulling new heat-feature code
+
+If the new heat figures do not appear, your existing `static/national_data.json` may be from an older export. Stop the website and run:
+
+```bash
+git pull
+python3 run.py
+```
+
+The new `run.py` rebuilds the saved map and chart data from your existing historical files, then starts the website. Choose one of the hottest-day measures in the **Climate measure** dropdown and select a location. The monthly chart is further down the page, with a link next to the controls. If the historical files are missing or incomplete, `run.py` will explain the problem instead of showing made-up data.
+
+## Hot weather and monthly daytime highs
+
+Select a location on the national map to see its hottest modelled day (with the date), and the average temperature of its hottest 10%, 25% and 50% of days.
+
+The **Typical daytime highs through the year** chart shows January to December. Each month is the average of the daily maximum temperatures for that month across 2015–2025, using the same saved historical data. This is not the highest temperature recorded in the month.
+
+The hottest-day groups sort all valid daily maximum temperatures from hottest to coolest. For example, the hottest 10% averages the hottest tenth of days; this is different from the temperature cutoff for the 90th percentile. These modelled estimates are not official temperature records.
 
 The **Back to Australia** button returns from any state or territory to the national view. Use the state selector or click a state outline to zoom in. State and location filters, labels, and the selected climate measurement all update together.
 
@@ -70,6 +106,14 @@ geoBoundaries state outlines → static/national.js → National homepage
 ## Previous Melbourne dashboard
 
 The previous six-suburb Greater Melbourne map is no longer part of the public site. Its source files and current-weather importer remain in the repository for regression tests. The national homepage does not load them.
+
+The old Melbourne map uses the Victorian Government's **Vicmap Admin – Locality Polygon Aligned to Property (LOCALITY_POLYGON)** data. The download scripts use layer 11 of the Vicmap Admin FeatureServer. DataVic lists this dataset under **Creative Commons Attribution 4.0**. I have kept this source separate from the national map because the national state boundaries come from geoBoundaries, not Vicmap.
+
+- [Vicmap locality dataset and licence](https://discover.data.vic.gov.au/dataset/vicmap-admin-locality-polygon-aligned-to-property)
+- [Vicmap Admin source](https://www.land.vic.gov.au/maps-and-spatial/spatial-data/vicmap-catalogue/vicmap-admin)
+- [CC BY 4.0 terms](https://creativecommons.org/licenses/by/4.0/)
+
+The old Melbourne shapes are adapted for display. They show locality boundaries only, not temperature readings across whole suburbs.
 
 The server no longer starts live forecast refreshes by default. For legacy testing only, set `URBANHEAT_LEGACY_REFRESH=1` before starting `server.py`.
 

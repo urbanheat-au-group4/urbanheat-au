@@ -55,6 +55,8 @@ async function runDashboard(data, threshold = '30') {
   vm.runInNewContext(app, sandbox);
   await new Promise(resolve => setImmediate(resolve));
   await new Promise(resolve => setImmediate(resolve));
+  get.run = expression => vm.runInNewContext(expression, sandbox);
+  get.setFetch = handler => { sandbox.fetch = handler; };
   return get;
 }
 
@@ -99,4 +101,51 @@ test('network error shows an unavailable-data message', async () => {
   const get = await runDashboard(new Error('Network unavailable'));
   assert.equal(get('alert-status').textContent, 'Weather data unavailable.');
   assert.equal(get('alerts').textContent, '—');
+});
+
+
+test('refresh reads the latest saved snapshot and keeps it after failure', async () => {
+  const get = await runDashboard(freshData());
+  const next = freshData();
+  next.locations.forEach(row => { row.temperature_c = 40; });
+  get.setFetch(async (url, options) => {
+    assert.equal(url, '/weather_data.json');
+    assert.equal(options.cache, 'no-store');
+    return {ok: true, json: async () => next};
+  });
+  await get.run('loadWeather()');
+  assert.equal(get('alerts').textContent, '6');
+  const timestamp = get('updated').textContent;
+  get.setFetch(async () => { throw new Error('Connection failed'); });
+  await get.run('loadWeather()');
+  assert.equal(get('alerts').textContent, '6');
+  assert.equal(get('updated').textContent, timestamp);
+  assert.match(get('error').textContent, /Last validated readings are retained/);
+});
+
+test('server failure stays visible after loading saved readings and clears on recovery', async () => {
+  const get = await runDashboard(freshData());
+  let failed = true;
+  get.setFetch(async url => ({ok: true, json: async () =>
+    url === '/refresh-status' ? {running: false, last_error: failed ? 'Provider unavailable' : null} : freshData()}));
+  await get.run('pollRefresh()');
+  assert.match(get('refresh-status').textContent, /update failed/);
+  assert.equal(get('count').textContent, '6');
+  failed = false;
+  await get.run('pollRefresh()');
+  assert.equal(get('refresh-status').textContent, 'Current weather loaded successfully');
+});
+
+test('repeated clicks cannot release another request loading guard', async () => {
+  const get = await runDashboard(freshData());
+  let release;
+  let requests = 0;
+  get.setFetch(() => { requests++; return new Promise(resolve => { release = resolve; }); });
+  const pending = get.run('loadWeather()');
+  await get.run('loadWeather()');
+  await get.run('loadWeather()');
+  assert.equal(requests, 1);
+  release({ok: true, json: async () => freshData()});
+  await pending;
+  assert.equal(get.run('refreshInFlight'), false);
 });

@@ -66,6 +66,7 @@
   function showMessage(text) {
     summary.textContent = text;
     chart.innerHTML = '';
+    chart.setAttribute('hidden', '');
     legend.innerHTML = '';
     limits.textContent = '';
     table.innerHTML = '';
@@ -80,6 +81,8 @@
   }
 
   function drawChart(place, animate) {
+    chart.removeAttribute('hidden');
+
     var width = Math.max(300, Math.round(chart.getBoundingClientRect().width) || 800);
     var small = width < 520;
     var height = small ? 340 : 380;
@@ -262,7 +265,7 @@
       placeSelect.value = preferred ? 'melbourne-cbd' : data.locations[0].id;
       render();
     }).catch(function () {
-      showMessage('Seasonal data could not be loaded. Run py seasonal_export.py --data-dir data/national, then refresh.');
+      showMessage('Seasonal data is unavailable right now. Please try again later.');
     });
   }
 

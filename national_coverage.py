@@ -63,6 +63,14 @@ def evaluate_year(days, year):
                 invalid_values[field] += 1
             elif field == "precipitation_sum" and value < 0:
                 invalid_values[field] += 1
+        # Check the temperatures are in the right order.
+        minimum = row.get("temperature_2m_min")
+        mean = row.get("temperature_2m_mean")
+        maximum = row.get("temperature_2m_max")
+        temps = (minimum, mean, maximum)
+        if all(type(value) in (int, float) and math.isfinite(value) for value in temps):
+            if not minimum <= mean <= maximum:
+                invalid_values["temperature_order"] += 1
     missing_days = len(expected - seen)
     usable_days = len(seen)
     status = ("complete" if not missing_days and not duplicates and not invalid_dates
@@ -74,6 +82,7 @@ def evaluate_year(days, year):
         "invalid_date_rows": invalid_dates,
         "missing_values": {f: missing[f] for f in FIELDS},
         "invalid_values": {f: invalid_values[f] for f in FIELDS},
+        "invalid_temperature_order_days": invalid_values["temperature_order"],
         "status": status,
     }
 

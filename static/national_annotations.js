@@ -27,6 +27,14 @@
       a.y < b.y + b.height + gap && a.y + a.height + gap > b.y;
   }
 
+  function medianAnnotation(value, median, metric) {
+    if (!Number.isFinite(value) || median === null) return 'No reading';
+    const difference = value - median;
+    if (Math.abs(difference) < 0.05) return 'At state median';
+    const amount = Math.abs(difference).toFixed(1) + unit(metric);
+    return (difference > 0 ? '+' : '−') + amount + ' vs state median';
+  }
+
   function stateLabelLayout(visible, metric, view) {
     // Two label columns guarantee that all state locations get a readable tag.
     // Markers stay at their real positions; lines connect them to the tags.
@@ -43,15 +51,15 @@
     columns.forEach((column, side) => {
       const ordered = [...column].sort((a, b) => a.y-b.y || a.x-b.x);
       ordered.forEach((point, index) => {
-        const width = Math.max(124, Math.min(215, point.name.length*7.3+28)) * scale;
+        const value = point[metric];
+        const annotation = medianAnnotation(value, median, metric);
+        // Leave room for both lines of text inside the label.
+        const textLength = Math.max(point.name.length * 7.3, annotation.length * 6.5);
+        const width = Math.max(124, textLength + 28) * scale;
         const height = 64 * scale;
         const x = side === 0 ? view.x+margin : view.x+view.width-margin-width;
         const y = view.y+margin +
           (index+0.5)*(view.height-2*margin)/ordered.length - height/2;
-        const value = point[metric];
-        const annotation = !Number.isFinite(value) || median === null ? 'No reading' :
-          value > median ? 'Above state median' :
-          value < median ? 'Below state median' : 'At state median';
         placed.push({point, x, y, width, height, annotation});
       });
     });
@@ -144,7 +152,7 @@
     return counts;
   }
 
-  const helpers = {KEY_LOCATIONS, format, labelLayout, bandSummaries, stateCounts, stateViewBox, hasClusteredCoverage};
+  const helpers = {KEY_LOCATIONS, format, medianAnnotation, labelLayout, bandSummaries, stateCounts, stateViewBox, hasClusteredCoverage};
   root.NationalAnnotations = helpers;
   if (typeof module !== 'undefined' && module.exports) module.exports = helpers;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -19,7 +19,7 @@
 <a class="brand-home" href="/"><img src="/static/logo.png" alt="UrbanHeat AU Australia, home" width="66" height="44"></a>
 <button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="site-nav">Menu</button>
 <nav class="site-nav" id="site-nav" aria-label="Explore a state or territory"></nav>
-<span>2015–2025 Historical Climate</span>
+<span id="dataset-info" hidden>Loading source details…</span>
 </header>
 <main>
 <section class="intro"><p class="eyebrow">AUSTRALIA · CLIMATE EXPLORER</p>
@@ -34,10 +34,16 @@
 <select id="metric">
 <option value="annual_mean_c">Average temperature (°C)</option>
 <option value="annual_average_max_c">Average daytime maximum (°C)</option>
+<option value="hottest_day_c">Hottest modelled day (°C)</option>
+<option value="hottest_10_percent_mean_c">Hottest 10% of days (°C)</option>
+<option value="hottest_25_percent_mean_c">Hottest 25% of days (°C)</option>
+<option value="hottest_50_percent_mean_c">Hottest 50% of days (°C)</option>
 <option value="annual_average_min_c">Average nighttime minimum (°C)</option>
 <option value="average_annual_rainfall_mm">Annual rainfall (mm)</option>
 <option value="average_days_at_least_35c">Days ≥35°C per year</option>
 </select>
+<p class="heat-helper">To see how hot it really gets, choose a heat measure above and select a location. <a href="#monthly-heat-title">See the monthly daytime highs chart</a>.</p>
+<p id="heat-data-warning" class="heat-warning" role="status" hidden></p>
 <label for="place">Find a location</label>
 <select id="place"><option value="">Select a location</option></select>
 <h2 class="highlights-title">Quick comparison</h2><div id="highlights" class="highlights" aria-live="polite"></div>
@@ -52,8 +58,16 @@
 <section id="state-locations" class="state-locations" hidden aria-label="Selected state locations"><h3 id="state-locations-title">All locations</h3><div id="state-location-list" class="state-location-list"></div></section>
 <div id="state-summary" class="state-summary" aria-label="State sample averages"></div>
 <div class="legend"><span id="low">Cooler</span><span class="gradient"></span><span id="high">Warmer</span></div>
-<p class="note">Location labels and climate bands use modelled 2015–2025 data. State shading is the average of 14 sampled locations, not an official statewide estimate. Colours use the same scale across Australia.</p>
+<p class="note">Location labels and climate bands use modelled data for the period shown below. State shading is the average of 14 sampled locations, not an official statewide estimate. Colours use the same scale across Australia.</p>
 </section></section>
+
+<section class="panel monthly-heat" aria-labelledby="monthly-heat-title">
+<h2 id="monthly-heat-title">Typical daytime highs through the year</h2>
+<p>Average daily maximum temperature for each month across the selected 2015–2025 period. Select a location above to see how its daytime highs change through the year.</p>
+<p id="monthly-heat-status" role="status" aria-live="polite">Choose a location above to see its monthly temperatures.</p>
+<svg id="monthly-heat-chart" viewBox="0 0 720 250" role="img" aria-label="Average daily maximum temperature by month" hidden></svg>
+<details class="monthly-heat-table"><summary>View the 12 monthly values</summary><div id="monthly-heat-values"></div></details>
+</section>
 
 <section class="panel history" id="history" aria-labelledby="history-title">   <!-- ADD from here -->
 <h2 id="history-title">Historical Trends</h2>
@@ -93,5 +107,16 @@
   <p id="seasons-source" class="seasons-source"></p>
 </section>
 
-<section class="panel footnote"><strong>Source:</strong> Open-Meteo historical weather model, 2015–2025. Map boundaries: geoBoundaries gbOpen (where downloaded). Coordinates are subject to independent verification. This is not a live heat warning.</section>
+<section class="panel footnote" aria-label="Data sources and limitations">
+<h2>Data sources and limitations</h2>
+<p id="source-period">Loading source details…</p>
+<p>Weather data from <a href="https://open-meteo.com/en/docs/historical-weather-api">Open-Meteo</a>.
+Historical temperatures are modelled estimates, not readings from weather stations in each suburb.</p>
+<p>State outlines from <a href="https://www.geoboundaries.org/">geoBoundaries gbOpen</a> (Australia, ADM1).
+Map outlines are simplified for display. They are not measured temperature surfaces.</p>
+<p>Both datasets are credited under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.
+We calculate summaries from the weather data and display simplified map boundaries.</p>
+<p>State colours are averages from the sampled locations, not a temperature reading for the entire state.
+Location coordinates still need independent checking. The heat indicators are our own comparisons, not official weather warnings.</p>
+</section>
 </main></body></html>

@@ -132,5 +132,31 @@ class TestIngestionFailureProtection(unittest.TestCase):
             self.assertEqual(output.read_text(), "previous valid data")
 
 
+class TestSavedRefresh(unittest.TestCase):
+    def test_success_replaces_saved_readings(self):
+        with tempfile.TemporaryDirectory() as root:
+            output = Path(root) / "weather_data.json"
+            output.write_text('previous snapshot')
+            with patch.object(weather, "OUTPUT_FILE", output), patch.object(weather, "get_weather", return_value=valid_api_response()), patch.object(weather, "get_environment", side_effect=URLError("optional data unavailable")):
+                self.assertEqual(weather.main(), 0)
+            saved = json.loads(output.read_text())
+            self.assertEqual(len(saved["locations"]), 6)
+            self.assertEqual(saved["locations"][0]["temperature_c"], 24.5)
+            self.assertIsNone(saved["locations"][0]["pm25_ug_m3"])
+            self.assertEqual(list(Path(root).iterdir()), [output])
+
+    def test_save_failures_preserve_bytes_and_clean_temporary_file(self):
+        for operation in ("fsync", "replace"):
+            with self.subTest(operation=operation), tempfile.TemporaryDirectory() as root:
+                output = Path(root) / "weather_data.json"
+                previous = b'{"last": "successful snapshot"}\n'
+                output.write_bytes(previous)
+                with patch.object(weather, "OUTPUT_FILE", output), patch.object(weather, "get_weather", return_value=valid_api_response()), patch.object(weather, "get_environment", side_effect=URLError("optional data unavailable")), patch.object(weather.os, operation, side_effect=OSError("disk unavailable")), patch("builtins.print") as log:
+                    self.assertEqual(weather.main(), 1)
+                self.assertEqual(output.read_bytes(), previous)
+                self.assertEqual(list(Path(root).iterdir()), [output])
+                self.assertTrue(any("Could not save weather data: disk unavailable" in str(call) for call in log.call_args_list))
+
+
 if __name__ == "__main__":
     unittest.main()

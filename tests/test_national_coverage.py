@@ -47,6 +47,26 @@ class CoverageTests(unittest.TestCase):
         self.assertEqual(y["invalid_values"]["precipitation_sum"], 1)
         self.assertEqual(y["status"], "incomplete")
 
+    def test_rejects_temperatures_in_the_wrong_order(self):
+        days = complete_days()
+        days[0]["temperature_2m_min"] = 30
+        days[0]["temperature_2m_mean"] = 20
+        days[0]["temperature_2m_max"] = 25
+        days[1]["temperature_2m_min"] = 15
+        days[1]["temperature_2m_mean"] = 30
+        days[1]["temperature_2m_max"] = 25
+
+        result = cov.evaluate_year(days, 2015)
+        self.assertEqual(result["invalid_temperature_order_days"], 2)
+        self.assertEqual(result["status"], "incomplete")
+
+        # Fix both readings and check the year passes again.
+        days[0]["temperature_2m_min"] = 15
+        days[1]["temperature_2m_mean"] = 20
+        result = cov.evaluate_year(days, 2015)
+        self.assertEqual(result["invalid_temperature_order_days"], 0)
+        self.assertEqual(result["status"], "complete")
+
     def test_missing_location_and_metadata_mismatch(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

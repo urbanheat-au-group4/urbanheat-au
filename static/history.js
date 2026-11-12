@@ -81,14 +81,16 @@
     summary.textContent = text;
     chart.setAttribute('aria-label', text);
     chart.replaceChildren();
+    chart.setAttribute('hidden', '');
     legend.replaceChildren();
     limits.textContent = '';
     tableBox.replaceChildren();
   }
 
-  function drawChart(place, keys, animate) {
-    chart.replaceChildren();
-    pendingGrow = null;
+
+    function drawChart(place, keys, animate) {
+    chart.removeAttribute('hidden');
+    pendingGrow = null; 
     chart.replaceChildren();
     const rows = place.years;
     const width = Math.max(300, Math.min(chart.getBoundingClientRect().width || 800, 1100));
@@ -325,7 +327,7 @@
       }
       trends = data;
     } catch (error) {
-      showMessage('Historical data is unavailable. Run: py history_export.py --data-dir data/national');
+      showMessage('Historical data is unavailable right now. Please try again later.');
       return;
     }
     placeSelect.replaceChildren();
