@@ -1,6 +1,7 @@
 .seasons { margin-top: 20px; }
 .seasons h2 { font-size: 18px; margin: 0 0 6px; }
 .seasons-intro { font-size: 13px; margin: 0 0 6px; }
+#seasons-summary { font-size: 14px; color: #dbe8f2; margin: 12px 0 10px; }
 
 .seasons-controls {
   display: grid;
@@ -29,7 +30,9 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px 20px;
-  margin: 8px 0;
+  font-size: 12px;
+  color: #c2d2df;
+  margin: 12px 0;
 }
 .seasons-legend span {
   display: inline-flex;
@@ -44,8 +47,13 @@
 }
 
 .seasons-limits {
-  border-left: 4px solid #d99a00;
-  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 10px 12px;
+  background: #26333d;
+  border-left: 3px solid #e5ba70;
+  border-radius: 5px;
+  color: #e8e4d6;
   margin: 12px 0;
 }
 .seasons-limits:empty { display: none; }
@@ -55,20 +63,27 @@
 .seasons table {
   width: 100%;
   border-collapse: collapse;
+  font-size: 13px;
   margin: 8px 0;
 }
 .seasons caption {
   text-align: left;
-  font-weight: 600;
-  padding: 4px 0 8px;
+  color: #b9cadd;
+  font-size: 12px;
+  padding-bottom: 6px;
 }
 .seasons th,
 .seasons td {
-  padding: 8px 10px;
+  padding: 7px 9px;
   text-align: right;
-  border-bottom: 1px solid rgba(128, 128, 128, 0.4);
+  border: 1px solid #344556;
   vertical-align: top;
 }
+
+.seasons thead th { background: #101b29; color: #eaf1f7; }
+.seasons tbody th { font-weight: 600; color: #eaf1f7; }
+.seasons td { color: #c8d6e2; }
+
 .seasons th:first-child,
 .seasons td:first-child { text-align: left; }
 .seasons-na { font-style: italic; }
@@ -76,21 +91,22 @@
 
 .seasons-years summary {
   cursor: pointer;
-  padding: 8px 0;
-  font-weight: 600;
+  color: #9cdef2;
+  font-size: 14px;
+  padding: 6px 0;
 }
-.seasons-years h3 { margin: 16px 0 4px; font-size: 1rem; }
-.seasons-source { font-size: 0.9rem; opacity: 0.85; }
+.seasons-years h3 { margin: 16px 0 4px; font-size: 15px; }
+.seasons-source { font-size: 12px; margin: 14px 0 0; }
 
 .seasons select:focus-visible,
 .seasons summary:focus-visible {
-  outline: 3px solid #1b5f7c;
+  outline: 2px solid #9cdef2;
   outline-offset: 2px;
 }
 
 @media (max-width: 520px) {
   .seasons th,
-  .seasons td { padding: 6px 4px; font-size: 0.9rem; }
+  .seasons td { padding: 6px 4px; font-size: 12px; }
 }
 
 @keyframes seasons-grow {
