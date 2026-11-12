@@ -619,3 +619,21 @@ header .brand-home img {
 
 /* Show regional sampling limitations and optional close-up. */
 .map-heading #focus-samples{margin-left:9px;background:#214054;border-color:#7ca5bb}.sample-coverage-note{padding:10px 12px;background:#26333d;border-left:3px solid #e5ba70;border-radius:5px;color:#e8e4d6;font-size:12px}.sample-coverage-note[hidden]{display:none}
+
+/* Monthly daily highs for the selected location. */
+.monthly-heat{margin-top:20px}
+.monthly-heat h2{font-size:18px;margin:0 0 6px}
+.monthly-heat p{font-size:13px}
+#monthly-heat-chart{width:100%;max-height:290px;background:#e7f0f2}
+#monthly-heat-chart[hidden]{display:none}
+.monthly-heat-table{margin-top:12px;font-size:13px}
+.monthly-heat-table summary{cursor:pointer;color:#9cdef2;padding:8px 0}
+.monthly-heat-table table{border-collapse:collapse;width:100%;max-width:400px}
+.monthly-heat-table th,.monthly-heat-table td{padding:5px 10px;text-align:left;border-bottom:1px solid #344556}
+.extreme-detail{margin:18px 0;padding:12px;background:#102b3b;border-radius:8px;line-height:1.6}
+.extreme-detail h3{font-size:15px;margin:0 0 8px}
+
+/* Help users find the new heat measures. */
+.heat-helper{font-size:12px;line-height:1.5;margin:10px 0;color:#c5d7e4}
+.heat-warning{padding:10px 12px;background:#3a2e25;border-left:3px solid #e5ba70;border-radius:5px;font-size:12px;color:#fff0d8}
+.heat-warning[hidden]{display:none}
