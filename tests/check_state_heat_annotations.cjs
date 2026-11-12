@@ -17,7 +17,7 @@ const points = catalogue.map(p => ({
 assert.equal(A.medianAnnotation(26, 24, 'annual_mean_c'), '+2.0 °C vs state median');
 assert.equal(A.medianAnnotation(22, 24, 'annual_mean_c'), '−2.0 °C vs state median');
 assert.equal(A.medianAnnotation(24, 24, 'annual_mean_c'), 'At state median');
-assert.equal(A.medianAnnotation(null, 24, 'annual_mean_c'), 'No reading');
+assert.equal(A.medianAnnotation(null, 24, 'annual_mean_c'), 'No data');
 assert.equal(A.medianAnnotation(710, 700, 'average_annual_rainfall_mm'), '+10.0 mm vs state median');
 assert.equal(A.medianAnnotation(13, 11, 'average_days_at_least_35c'), '+2.0 days vs state median');
 
@@ -32,7 +32,7 @@ for (const code of ['NSW','VIC','QLD','WA','SA','TAS','ACT','NT']) {
   assert.equal(new Set(tags.map(t => t.point.id)).size, 14, code + ': unique location IDs');
   assert.ok(tags.some(t => t.annotation === '−5.0 °C vs state median'), code + ': cooler annotation');
   assert.ok(tags.some(t => t.annotation === '+5.0 °C vs state median'), code + ': hotter annotation');
-  assert.equal(tags.filter(t => t.annotation === 'No reading').length, 12, code + ': missing data labelled');
+  assert.equal(tags.filter(t => t.annotation === 'No data').length, 12, code + ': missing data labelled');
   for (const tag of tags) {
     // The comparison needs to fit, even for short location names.
     assert.ok(tag.width >= (tag.annotation.length * 6.5 + 28) * view.width / 1000,
