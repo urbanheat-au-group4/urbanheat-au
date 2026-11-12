@@ -294,7 +294,7 @@ svg {
 }
 
 .map-footer .legend {
-  flex: none;
+  flex: 0 1 auto;
 }
 
 .map-footer .note {
