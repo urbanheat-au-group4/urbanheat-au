@@ -62,8 +62,8 @@ async function main() {
       const style = await control.evaluate(n => getComputedStyle(n).outlineStyle);
       assert.notEqual(style, 'none', label + ': no visible focus outline');
     }
-    await page.locator('#location-card summary').focus();
-    assert.notEqual(await page.locator('#location-card summary')
+    await page.locator('#monthly-heat-title').focus();
+    assert.notEqual(await page.locator('#monthly-heat-title')
       .evaluate(n => getComputedStyle(n).outlineStyle), 'none');
 
     // On phone, the navigation menu must work with Enter and Escape.
