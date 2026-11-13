@@ -79,7 +79,7 @@
 </details>
 
 <section class="panel history" id="history" aria-labelledby="history-title">   <!-- ADD from here -->
-<h2 id="history-title">Historical temperature trends (2015–2025)</h2>
+<h2 id="history-title">Historical Trends</h2>
 <p class="history-intro">See how yearly temperatures have varied at one location. Values are modelled estimates, not weather station readings.</p>
 <div class="history-controls">
 <div><label for="history-place">Location</label><select id="history-place"></select></div>
@@ -91,24 +91,24 @@
 </select></div>
 </div>
 <p id="history-summary" class="history-summary" role="status" aria-live="polite">Loading historical data…</p>
-<svg id="history-chart" viewBox="0 0 800 420" role="img" aria-label="Line chart of yearly temperatures" aria-describedby="history-summary history-limits"></svg>
-<div id="history-legend" class="history-legend" aria-label="Chart key"></div>
+<svg id="history-chart" viewBox="0 0 800 420" role="img" aria-label="Line chart of yearly temperatures"></svg>
+<div id="history-legend" class="history-legend"></div>
 <p id="history-limits" class="history-limits"></p>
 <details class="history-table"><summary>View the data as a table</summary><div id="history-table"></div></details>
 <p id="history-source" class="history-source">Source: Open-Meteo Historical Weather API. Modelled estimates.</p>
 </section>
 <section class="panel seasons" id="seasons" aria-labelledby="seasons-title">
-  <h2 id="seasons-title">Seasonal climate comparison (2015–2025)</h2>
+  <h2 id="seasons-title">Seasonal Climate Comparison</h2>
   <p class="seasons-intro">Typical weather in each Australian season, from modelled historical estimates (not weather station readings). Summer is December to February, autumn March to May, winter June to August and spring September to November.</p>
   <div class="seasons-controls">
     <label for="seasons-place">Location</label>
     <select id="seasons-place"></select>
   </div>
   <p id="seasons-summary" role="status" aria-live="polite">Loading seasonal data…</p>
-  <svg id="seasons-chart" viewBox="0 0 800 380" role="img" aria-label="Bar chart of typical seasonal temperatures" aria-describedby="seasons-summary seasons-limits"></svg>
-  <div id="seasons-legend" class="seasons-legend" aria-label="Chart key"></div>
+  <svg id="seasons-chart" viewBox="0 0 800 380" role="img" aria-label="Bar chart of typical seasonal temperatures"></svg>
+  <div id="seasons-legend" class="seasons-legend"></div>
   <p id="seasons-limits" class="seasons-limits"></p>
-  <div id="seasons-table" role="region" aria-label="Seasonal data table" tabindex="0"></div>
+  <div id="seasons-table"></div>
   <details class="seasons-years">
     <summary>Which years are included</summary>
     <div id="seasons-years"></div>
