@@ -682,11 +682,52 @@ header .brand-home img {
 .marker:focus-visible {
   stroke: #0b1f2d;
   stroke-width: 4;
-  outline: 3px solid #0b1f2d;
-  outline-offset: 3px;
 }
 
-.callout-tag:focus,
-.callout-tag:focus-visible {
+svg :focus,
+svg :focus-visible {
   outline: none;
+}
+
+.detail-period {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #b6c7d5;
+}
+
+/* The card is a dropdown. Location details and the monthly chart sit side by side inside it. */
+.monthly-heat > summary {
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 700;
+  color: #eaf1f7;
+}
+
+.monthly-heat[open] > summary {
+  margin-bottom: 6px;
+}
+
+.monthly-heat-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+  gap: 20px 28px;
+  align-items: start;
+}
+
+.monthly-heat-grid .detail {
+  margin: 0;
+  border: 0;
+  padding: 0;
+  line-height: 1.8;
+}
+
+.monthly-heat-grid .detail .value {
+  white-space: nowrap;
+}
+
+@media (max-width: 740px) {
+  .monthly-heat-grid {
+    grid-template-columns: 1fr;
+  }
 }

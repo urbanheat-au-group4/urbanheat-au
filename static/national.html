@@ -50,7 +50,6 @@
 <label for="place">Find a location</label>
 <select id="place"><option value="">Select a location</option></select>
 <h2 class="highlights-title">Quick comparison</h2><div id="highlights" class="highlights" aria-live="polite"></div>
-<div id="detail" class="detail" aria-live="polite">Choose a location on the map to see its climate results.</div>
 </aside>
 <section class="panel map-panel">
 <div class="map-heading"><div><h2 id="map-title">Australia · National Overview</h2><button id="back-to-australia" type="button" hidden>← Back to Australia</button><button id="focus-samples" type="button" hidden>Focus sampled locations</button></div><span id="status" role="status">Loading…</span></div>
@@ -66,13 +65,18 @@
 </div>
 </section></section>
 
-<section class="panel monthly-heat" aria-labelledby="monthly-heat-title">
-<h2 id="monthly-heat-title">Typical daytime highs through the year</h2>
-<p>Average daily maximum temperature for each month across the selected 2015–2025 period. Select a location above to see how its daytime highs change through the year.</p>
+<details class="panel monthly-heat" id="location-card">
+<summary id="monthly-heat-title">Selected location: climate details and monthly highs</summary>
+<p>Select a location to see its climate figures and how its average daily maximum temperature changes month by month, based on the 2015–2025 period.</p>
+<div class="monthly-heat-grid">
+<div id="detail" class="detail" aria-live="polite">Choose a location on the map to see its climate results.</div>
+<div class="monthly-heat-main">
 <p id="monthly-heat-status" role="status" aria-live="polite">Choose a location above to see its monthly temperatures.</p>
 <svg id="monthly-heat-chart" viewBox="0 0 720 250" role="img" aria-label="Average daily maximum temperature by month" hidden></svg>
 <details class="monthly-heat-table"><summary>View the 12 monthly values</summary><div id="monthly-heat-values"></div></details>
-</section>
+</div>
+</div>
+</details>
 
 <section class="panel history" id="history" aria-labelledby="history-title">   <!-- ADD from here -->
 <h2 id="history-title">Historical Trends</h2>
