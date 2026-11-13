@@ -731,6 +731,27 @@ svg :focus-visible {
     grid-template-columns: 1fr;
   }
 }
+
+/* Bigger tap targets on phones and tablets. */
+@media (max-width: 1024px) {
+  .site-nav button {
+    min-height: 44px;
+  }
+
+    .map-heading button {
+    min-height: 44px;
+  }
+
+  .state-summary-item {
+    min-height: 44px;
+  }
+
+  main .panel summary {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+}
+
 /* UHA-105: keyboard focus should be easy to see on every screen. */
 main select:focus-visible,
 main button:focus-visible,
@@ -747,3 +768,4 @@ main summary:focus-visible,
 @media (max-width: 740px) {
   .layout, .monthly-heat-grid { grid-template-columns: minmax(0,1fr); }
 }
+
