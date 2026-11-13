@@ -96,7 +96,7 @@ async function main() {
     // The seasonal view should show the four seasons and missing measurements.
     assert.equal(await page.locator('#seasons-chart rect').count(), 4);
     assert.notEqual(await page.locator('#seasons-chart').evaluate(node => getComputedStyle(node).display), 'none');
-    assert.match(await page.locator('#seasons-table').innerText(), /Not enough data/);
+    assert.match(await page.locator('#seasons-table').innerText(), /No data/);
     assert.match(await page.locator('#seasons-limits').innerText(), /cannot be compared/);
     assert.match(await page.locator('#seasons-source').innerText(), /era5/);
     await page.locator('#seasons-place').selectOption('sydney');

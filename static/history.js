@@ -109,10 +109,8 @@
       }
     }
     if (!values.length) {
-      chart.append(s('text', {
-        x: width / 2, y: height / 2, 'text-anchor': 'middle', fill: '#33505f',
-        'font-size': 15
-      }, 'No temperature data to show for this location.'));
+      chart.replaceChildren();
+      chart.setAttribute('hidden', '');
       return;
     }
 
@@ -307,7 +305,12 @@
     chart.setAttribute('aria-label', `Line chart. ${text} A data table follows the chart.`);
     drawChart(place, keys, animate);
     startGrow();
-    drawLegend(keys);
+    if (chart.hasAttribute('hidden')) {
+      summary.textContent = `${place.name} (${place.state}), ${period}. No temperature data to show for this location.`;
+      legend.replaceChildren();
+    } else {
+      drawLegend(keys);
+    }
     describeLimits(place, keys);
     drawTable(place, keys);
     if (sourceNote) {
