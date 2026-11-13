@@ -101,8 +101,8 @@
       if (isNum(se.typical_min)) { values.push(se.typical_min); }
     });
     if (!values.length) {
-      chart.appendChild(node('text', { x: width / 2, y: height / 2, 'text-anchor': 'middle', 'font-size': 14 },
-        'No complete seasons, so there is nothing to chart.'));
+      chart.innerHTML = '';
+      chart.setAttribute('hidden', '');
       return;
     }
     var lo = Math.floor(Math.min(0, Math.min.apply(null, values)) / 5) * 5;
@@ -159,7 +159,7 @@
       '<th scope="col">Min (\u00b0C)</th><th scope="col">Rain (mm)</th></tr></thead><tbody>';
     place.seasons.forEach(function (se) {
       function cell(text) {
-        return text === null ? '<td class="seasons-na">Not enough data</td>' : '<td>' + text + '</td>';
+        return text === null ? '<td class="seasons-na">No data</td>' : '<td>' + text + '</td>';
       }
       var counts = [se.max_years.length, se.min_years.length, se.precip_years.length];
       var total = se.years.length;
@@ -233,13 +233,19 @@
     summary.textContent = place.name + ' (' + place.state + '), ' + period +
       '. Typical seasonal maximum and minimum temperatures in °C, and rainfall in mm. Modelled estimates.';
     var parts = place.seasons.map(function (se) {
-      return se.label + ': maximum ' + (temp(se.typical_max) || 'not enough data') +
-        ', minimum ' + (temp(se.typical_min) || 'not enough data');
+      return se.label + ': maximum ' + (temp(se.typical_max) || 'no data') +
+        ', minimum ' + (temp(se.typical_min) || 'no data');
     });
     chart.setAttribute('aria-label', 'Bar chart of typical seasonal temperatures in degrees Celsius for ' +
       place.name + '. ' + parts.join('. ') + '.');
     drawChart(place, true);
-    drawLegend();
+    if (chart.hasAttribute('hidden')) {
+      summary.textContent = place.name + ' (' + place.state + '), ' + period +
+        '. No chart is shown because no season has a complete set of daily values.';
+      legend.innerHTML = '';
+    } else {
+      drawLegend();
+    }
     drawTable(place);
     drawLimits(place);
     drawYears(place);
