@@ -35,6 +35,7 @@ let points = [];
 let boundaries = [];
 let selected = '';
 let focusLocations = false;
+let dataPeriod = '';
 const focusButton = document.getElementById('focus-samples');
 const coverageNote = document.getElementById('sample-coverage-note');
 
@@ -108,6 +109,7 @@ function focusState(code) {
   draw();
 }
 function selectPoint(id) {
+  document.getElementById('location-card').open = true;
   selected = id;
   place.value = id;
   draw();
@@ -261,7 +263,7 @@ function updateMonthlyHeat() {
   const hasHeatData = points.some(p => Array.isArray(p.monthly_average_max_c));
   if (!Array.isArray(months) || months.length !== 12 ||
       months.some(value => !Number.isFinite(value))) {
-    chart.hidden = true;
+    chart.setAttribute('hidden', '');
     status.textContent = !hasHeatData
       ? 'The saved climate data is out of date. Run python3 run.py to rebuild it.'
       : (point
@@ -269,7 +271,7 @@ function updateMonthlyHeat() {
         : 'Choose a location above to see its monthly temperatures.');
     return;
   }
-  chart.hidden = false;
+  chart.removeAttribute('hidden');
   status.textContent = point.name + ': average daytime maximum for each month (°C).';
 
   // Leave room for month names and the temperature scale.
@@ -339,6 +341,10 @@ function updateDetail() {
   const title = document.createElement('strong');
   title.textContent = point.name + ' · ' + point.state;
   detail.append(title);
+  const period = document.createElement('p');
+  period.className = 'detail-period';
+  period.textContent = 'Data period: ' + (dataPeriod || 'Dates not listed');
+  detail.append(period); 
   const extra = [
     ['hottest_day_c', 'Hottest modelled day'],
     ['hottest_10_percent_mean_c', 'Average of hottest 10% of days'],
@@ -473,6 +479,7 @@ function showSource(data) {
   const start = /^\d{4}-\d{2}-\d{2}$/.test(data.start_date || '') ? data.start_date : null;
   const end = /^\d{4}-\d{2}-\d{2}$/.test(data.end_date || '') ? data.end_date : null;
   const dates = start && end && start <= end ? start + ' to ' + end : 'Dates not listed';
+  dataPeriod = dates;
   const model = typeof data.model === 'string' && data.model.trim() ? data.model.toUpperCase() : 'Model not listed';
   const source = typeof data.source === 'string' && data.source.trim() ? data.source : 'Source not listed';
   const info = source + ' · ' + model + ' · ' + dates;
@@ -530,6 +537,7 @@ async function load() {
 state.addEventListener('change', () => focusState(state.value));
 metric.addEventListener('change', draw);
 place.addEventListener('change', () => {
+  if (place.value) document.getElementById('location-card').open = true;
   selected = place.value;
   const found = points.find(p => p.id === selected);
   if (found) state.value = found.state;
