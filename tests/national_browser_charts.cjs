@@ -76,6 +76,15 @@ async function main() {
       document.querySelector('#history-summary')?.textContent?.includes('Melbourne CBD') &&
       document.querySelector('#seasons-summary')?.textContent?.includes('Melbourne CBD'));
 
+    // The chart headings explain the period and the descriptions link to data notes.
+    assert.match(await page.locator('#history-title').innerText(), /2015–2025/);
+    assert.match(await page.locator('#seasons-title').innerText(), /2015–2025/);
+    assert.equal(await page.locator('#history-chart').getAttribute('aria-describedby'),
+      'history-summary history-limits');
+    assert.equal(await page.locator('#seasons-chart').getAttribute('aria-describedby'),
+      'seasons-summary seasons-limits');
+    assert.equal(await page.locator('#seasons-table').getAttribute('tabindex'), '0');
+
     // The chart should show the right place, units, dates and missing years.
     assert.match(await page.locator('#history-summary').innerText(), /2015–2025/);
     assert.match(await page.locator('#history-chart').getAttribute('aria-label'), /degrees|°C/);
