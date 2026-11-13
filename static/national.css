@@ -731,3 +731,23 @@ svg :focus-visible {
     grid-template-columns: 1fr;
   }
 }
+
+/* Bigger tap targets on phones and tablets. */
+@media (max-width: 1024px) {
+  .site-nav button {
+    min-height: 44px;
+  }
+
+    .map-heading button {
+    min-height: 44px;
+  }
+
+  .state-summary-item {
+    min-height: 44px;
+  }
+
+  main .panel summary {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+}
