@@ -751,3 +751,21 @@ svg :focus-visible {
     padding-bottom: 12px;
   }
 }
+
+/* UHA-105: keyboard focus should be easy to see on every screen. */
+main select:focus-visible,
+main button:focus-visible,
+main a:focus-visible,
+main summary:focus-visible,
+.nav-toggle:focus-visible {
+  outline: 3px solid #9cdef2;
+  outline-offset: 3px;
+}
+
+/* UHA-104: keep the content within the screen on smaller devices. */
+.panel, .monthly-heat-grid, .monthly-heat-main { min-width: 0; }
+#history-chart, #seasons-chart, #monthly-heat-chart { max-width: 100%; }
+@media (max-width: 740px) {
+  .layout, .monthly-heat-grid { grid-template-columns: minmax(0,1fr); }
+}
+
