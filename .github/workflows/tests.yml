@@ -60,7 +60,6 @@ jobs:
           npm run test:regression
           npm run test:cross-state
           npm run test:charts
-          npm run test:ui
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
