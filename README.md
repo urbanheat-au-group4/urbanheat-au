@@ -71,17 +71,46 @@ Most tests are offline. Node.js is used for the JavaScript layout tests when ava
 
 GitHub CI runs the eight-state Chromium test, including desktop and mobile screenshots, and uploads them as the `national-map-browser-evidence` artifact. The CI test takes location names and coordinates from the real catalogue, but sets weather measurements to unavailable. It never invents temperatures.
 
-To check your **actual downloaded climate values** locally:
+### Two different checks: real climate data and browser behaviour
+
+**To check real downloaded weather:** first download and validate the historical snapshots, then run:
 
 ```bash
-python3 national_export.py --data-dir data/national
+python3 run.py --check
+```
+
+This checks the saved location snapshots and builds the three JSON exports. It **does not** prove that the coordinates match each real suburb or that Open-Meteo itself is correct. The exports contain modelled readings only if the saved snapshots passed validation. Check the coverage results before using the figures in a presentation.
+
+**To check the website without historical downloads:** start from a fresh clone with no `static/national_data.json`, then run:
+
+```bash
+python3 tests/prepare_national_browser_data.py
 python3 fetch_national_boundaries.py
 npm install
 npx playwright install chromium
 python3 server.py
 ```
 
-In another terminal run `npm run test:browser`. The screenshots are saved under `artifacts/national-map/`. Check the screenshots visually as well: automated tests alone cannot certify that every label is comfortably readable.
+In a second terminal run:
+
+```bash
+npm run test:browser
+npm run test:regression
+npm run test:cross-state
+npm run test:charts
+```
+
+These browser tests use the real catalogue and boundaries but **do not supply real weather measurements**. The test-only export intentionally contains missing readings. Some regression cases use clearly labelled made-up numbers only inside the test, never in real data. Do not use these fixture screenshots as evidence of actual historical temperatures.
+
+The `prepare_national_browser_data.py` script refuses to overwrite an existing `static/national_data.json`. Use a clean test clone instead of deleting your real exported data just to run the UI tests. Browser screenshots are saved under `artifacts/national-map/` and should be inspected visually.
+
+### Common setup problems
+
+- **Missing historical snapshots:** `run.py` explains which location files are missing. Download them separately; historical data is not bundled with GitHub.
+- **HTTP 400 or 429 from Open-Meteo:** stop rather than retrying rapidly. Jira UHA-107 tracks the large national-batch request; do not assume all 112 files were downloaded.
+- **No state outlines:** `fetch_national_boundaries.py` needs a network connection to obtain geoBoundaries data.
+- **Old or missing heat figures:** stop the server and run `python3 run.py` to rebuild the browser exports from the validated snapshots.
+- **Port 8000 is already used:** stop the previous instance of `server.py` before starting another one.
 
 ## Data and limitations
 
