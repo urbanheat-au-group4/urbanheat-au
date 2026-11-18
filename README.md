@@ -16,6 +16,18 @@ python3 national_ingest.py --group australia_historical --out data/national
 
 The downloader saves up to five new locations per run. **Run it again** until all 112 are saved. It reuses the valid files you already have. Internet access is needed for the downloads.
 
+### Faster, resumable national batches (UHA-107)
+
+The optional national batch importer makes **small requests** rather than asking for all 112 locations at once:
+
+```bash
+python3 national_batch.py --out data/national
+```
+
+It requests **two locations at a time**, with an eight-second pause between requests by default. It checks saved files and skips locations that already have valid historical data. If an API request is rate-limited (HTTP 429) or too large (HTTP 400), it stops further requests and keeps all successful files.
+
+The summary is saved to `data/national/batch_result.json`. Check its `completed`, `missing`, `failed`, and `reason` fields after each run. If incomplete, resume **later** with the same command; do not repeatedly retry a rate limit. You may use `--batch-size 1` for smaller requests, or `--delay 15` to space them further apart. A successful script run is not independent verification of the historical readings or coordinates.
+
 ### Start the app
 
 ```bash
