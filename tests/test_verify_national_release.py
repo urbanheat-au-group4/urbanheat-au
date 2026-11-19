@@ -41,7 +41,7 @@ class ReleaseAuditTests(unittest.TestCase):
             for p in self.places])
 
     def run_audit(self, complete=2):
-        with patch.object(verify, "load_catalogue", return_value=self.places), \\
+        with patch.object(verify, "load_catalogue", return_value=self.places), \
              patch.object(verify.national_coverage, "build_report",
                           return_value={"complete_locations": complete,
                                         "expected_locations": 2}):
