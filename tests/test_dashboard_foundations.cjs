@@ -6,7 +6,7 @@ const Metrics = require('../static/dashboard_metrics.js');
 
 const places = [
   {id:'syd',name:'Sydney',state:'NSW',latitude:-33.8688,longitude:151.2093,
-    annual_mean_c:21.1,annual_average_max_c:24.3,average_annual_rainfall_mm:1120.6,
+    annual_mean_c:21.1,annual_average_max_c:24.3,average_annual_rainfall_mm:1120.7,
     average_days_at_least_35c:11.6,monthly_average_max_c:[27,27,26,24,21,18,17,19,21,23,25,26]},
   {id:'mel',name:'Melbourne',state:'VIC',latitude:-37.8136,longitude:144.9631,
     annual_mean_c:17.2,annual_average_max_c:20.8,average_annual_rainfall_mm:620.1,
