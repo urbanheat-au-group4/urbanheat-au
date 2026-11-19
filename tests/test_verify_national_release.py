@@ -71,7 +71,12 @@ class ReleaseAuditTests(unittest.TestCase):
                    count=2, model="wrong")
         result = self.run_audit()
         self.assertFalse(result["pass"])
-        self.assertGreaterEqual(len(result["problems"]), 2)
+        self.assertTrue(any("duplicate" in p for p in result["problems"]))
+        self.fixtures()
+        self.write("map", [
+            {"id": p["id"], "monthly_average_max_c": [20] * 12}
+            for p in self.places], count=2, model="wrong")
+        self.assertTrue(any("model" in p for p in self.run_audit()["problems"]))
 
 
 if __name__ == "__main__":
