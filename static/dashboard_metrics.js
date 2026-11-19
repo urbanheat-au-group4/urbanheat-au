@@ -15,7 +15,6 @@
     { key: 'average_annual_rainfall_mm', label: 'Annual rainfall', unit: 'mm', places: 0 },
     { key: 'average_days_at_least_35c', label: 'Days ≥35°C per year', unit: 'days', places: 1 }
   ]);
-  const byKey = new Map(METRICS.map(m => [m.key, m]));
   const value = (row, key) => row && Number.isFinite(row[key]) ? row[key] : null;
   const text = (v, spec) => v === null ? 'No data' : v.toFixed(spec.places) + ' ' + spec.unit;
   // Model resolution is approximately 25 km. Do not imply nearby city-grid differences.
