@@ -78,10 +78,29 @@ def audit(catalogue=hist.CATALOGUE, data_dir=Path("data/national"),
                         break
                 if len(places) == 112 and any(data.get("state_counts", {}).get(state) != 14 for state in STATES):
                     problems.append("map: expected 14 exported locations per state/territory")
-            if label == "history" and any(len(row.get("years", [])) != hist.END.year - hist.START.year + 1 for row in rows):
-                problems.append("history: at least one location has missing annual records")
-            if label == "seasons" and any(len(row.get("seasons", [])) != 4 for row in rows):
-                problems.append("seasons: at least one location has missing seasonal summaries")
+            if label == "history":
+                years = set(range(hist.START.year, hist.END.year + 1))
+                for row in rows:
+                    actual = [item["year"] for item in row["years"]]
+                    if set(actual) != years or len(actual) != len(years):
+                        problems.append(f"history: {row['id']} has wrong or duplicate annual years")
+                        break
+            if label == "seasons":
+                for row in rows:
+                    seasons = row["seasons"]
+                    names = [item["season"] for item in seasons]
+                    if set(names) != {"summer", "autumn", "winter", "spring"} or len(names) != 4:
+                        problems.append(f"seasons: {row['id']} has wrong or duplicate seasons")
+                        break
+                    for item in seasons:
+                        # First and last summers are partial, but are still exported.
+                        first = hist.START.year
+                        last = hist.END.year + (item["season"] == "summer")
+                        expected = set(range(first, last + 1))
+                        actual = [y["season_year"] for y in item["years"]]
+                        if set(actual) != expected or len(actual) != len(expected):
+                            problems.append(f"seasons: {row['id']} has incomplete or duplicate {item['season']} year labels")
+                            break
         except (OSError, ValueError, TypeError, KeyError) as exc:
             problems.append(f"{label}: cannot inspect {path}: {exc}")
 
