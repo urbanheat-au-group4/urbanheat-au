@@ -61,7 +61,7 @@ async function main() {
         await page.locator('#metric').selectOption(field);
         const expected = value.toFixed(1) + ' ' + unit;
         const tag = page.locator('.callout-tag[data-location-id="' + sample.id + '"] .callout-value');
-        assert.ok((await tag.innerText()).includes(expected), state + '/' + field + ': wrong map value');
+        assert.ok((await tag.textContent()).includes(expected), state + '/' + field + ': wrong map value');
         if (field !== 'hottest_day_c' || sample.hottest_day_date) {
           assert.ok((await page.locator('#detail').innerText()).includes(expected),
             state + '/' + field + ': wrong details value');
@@ -76,6 +76,15 @@ async function main() {
         /average daytime maximum for each month/);
       assert.equal(await page.locator('#monthly-heat-chart circle').count(), 12,
         state + ': missing 12 monthly points');
+      const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const titles = await page.locator('#monthly-heat-chart circle title').allTextContents();
+      assert.deepEqual(titles, sample.monthly_average_max_c.map((value, i) =>
+        monthNames[i] + ': ' + value.toFixed(1) + ' °C'),
+        state + ': chart temperatures do not match real monthly export');
+      const tableValues = await page.locator('#monthly-heat-values td').allTextContents();
+      assert.deepEqual(tableValues, sample.monthly_average_max_c.map(value =>
+        value.toFixed(1) + ' °C'),
+        state + ': monthly data table does not match export');
       report.states.push({state, location: sample.id, metrics: checked, monthly_points: 12});
     }
     assert.deepEqual(report.problems, [], 'Unexpected browser JavaScript errors');
