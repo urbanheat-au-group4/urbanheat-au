@@ -18,6 +18,8 @@ jobs:
           python-version: '3.12'
       - name: Run Python tests
         run: python -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Check real-data browser test syntax (no real datasets in CI)
+        run: node --check tests/national_browser_real_data.cjs
       - name: Check JavaScript syntax
         run: node --check static/app.js
       - name: Check comparison code
