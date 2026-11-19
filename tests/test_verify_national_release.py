@@ -37,8 +37,11 @@ class ReleaseAuditTests(unittest.TestCase):
             {"id": p["id"], "years": [{"year": y} for y in range(2015, 2026)]}
             for p in self.places])
         self.write("seasons", [
-            {"id": p["id"], "seasons": [{}, {}, {}, {}]}
-            for p in self.places])
+            {"id": p["id"], "seasons": [
+                {"season": season, "years": [
+                    {"season_year": y} for y in range(2015, 2027 if season == "summer" else 2026)
+                ]} for season in ("summer", "autumn", "winter", "spring")
+            ]} for p in self.places])
 
     def run_audit(self, complete=2):
         with patch.object(verify, "load_catalogue", return_value=self.places), \
@@ -63,6 +66,21 @@ class ReleaseAuditTests(unittest.TestCase):
         self.assertFalse(self.run_audit()["pass"])
         self.fixtures()
         self.write("history", [{"id": "a", "years": []}])
+        self.assertFalse(self.run_audit()["pass"])
+
+    def test_duplicate_periods_fail(self):
+        self.fixtures()
+        self.write("history", [
+            {"id": p["id"], "years": [{"year": 2015}] * 11}
+            for p in self.places])
+        self.assertFalse(self.run_audit()["pass"])
+
+        self.fixtures()
+        self.write("seasons", [
+            {"id": p["id"], "seasons": [
+                {"season": "summer", "years": [{"season_year": 2015}] * 12}
+                for _ in range(4)
+            ]} for p in self.places])
         self.assertFalse(self.run_audit()["pass"])
 
     def test_wrong_model_duplicate_ids_and_months_fail(self):
