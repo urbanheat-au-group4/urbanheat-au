@@ -31,6 +31,7 @@
       cityId: validId(options.cityId),
       baselineId: validId(options.baselineId),
       metric: validMetric(options.metric),
+      stateCode: typeof options.stateCode === 'string' ? options.stateCode : 'ALL',
     };
     // Same location is a selection, not a valid comparison.
     if (current.cityId === current.baselineId) current.baselineId = '';
@@ -40,7 +41,7 @@
       const baseline = byId.get(current.baselineId);
       return Object.freeze({
         ...current,
-        state: selected ? selected.state : 'ALL',
+        state: current.stateCode === 'ALL' ? (selected ? selected.state : 'ALL') : current.stateCode,
         baselineState: baseline ? baseline.state : 'ALL',
         selected: selected || null, baseline: baseline || null
       });
@@ -51,6 +52,8 @@
       next.baselineId = validId(next.baselineId);
       next.tab = validTab(next.tab);
       next.metric = validMetric(next.metric);
+      const states = new Set([...byId.values()].map(p => p.state));
+      next.stateCode = next.stateCode === 'ALL' || states.has(next.stateCode) ? next.stateCode : 'ALL';
       if (next.cityId && next.cityId === next.baselineId) next.baselineId = '';
       if (Object.keys(current).every(k => current[k] === next[k])) return snapshot();
       current = next;
@@ -59,7 +62,8 @@
       return result;
     }
     function selectCity(id) {
-      return update({ cityId: id });
+      const point = byId.get(id);
+      return update({ cityId: id, stateCode: point ? point.state : current.stateCode });
     }
     function selectBaseline(id) {
       return update({ baselineId: id });
@@ -67,10 +71,12 @@
     function selectState(code) {
       // A state selection is a map filter, not an invented city selection.
       const point = byId.get(current.cityId);
-      return update({ cityId: point && point.state === code ? current.cityId : '' });
+      return update({ stateCode: code, cityId: point && point.state === code ? current.cityId : '' });
     }
     function swap() {
-      return update({ cityId: current.baselineId, baselineId: current.cityId });
+      const newSelected = byId.get(current.baselineId);
+      return update({ cityId: current.baselineId, baselineId: current.cityId,
+        stateCode: newSelected ? newSelected.state : 'ALL' });
     }
     function subscribe(fn) {
       if (typeof fn !== 'function') throw new TypeError('listener must be a function');
