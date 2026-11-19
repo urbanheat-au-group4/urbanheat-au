@@ -28,6 +28,19 @@ It requests **two locations at a time**, with an eight-second pause between requ
 
 The summary is saved to `data/national/batch_result.json`. Check its `completed`, `missing`, `failed`, and `reason` fields after each run. If incomplete, resume **later** with the same command; do not repeatedly retry a rate limit. You may use `--batch-size 1` for smaller requests, or `--delay 15` to space them further apart. A successful script run is not independent verification of the historical readings or coordinates.
 
+### Final offline release audit (Sprint 4)
+
+After the full historical snapshots are present, run:
+
+```bash
+python3 run.py --check
+python3 verify_national_release.py
+```
+
+The second command does **not** contact Open-Meteo or modify your weather exports. It checks that the independent daily coverage audit and all three generated dashboard JSON files agree about the location IDs, 2015–2025 period and ERA5 model. It also checks that the map has a 12-month chart series and the history/seasonal exports have the expected rows.
+
+The results are saved to `artifacts/uha-46-export-audit.json`. Attach that file and the command output to UHA-46, UHA-44 and UHA-82. A PASS verifies **local data consistency only**. It does not establish that the coordinates are independently correct, that Open-Meteo's original measurements are accurate, or that the UI passes manual accessibility tests.
+
 ### Start the app
 
 ```bash
