@@ -30,6 +30,8 @@ jobs:
         run: node --test tests/test_frontend.cjs
       - name: Test location comparison
         run: node --test tests/test_compare.cjs
+      - name: Test shared dashboard state and metrics (no UI changes)
+        run: node --test tests/test_dashboard_foundations.cjs
   browser:
     name: Eight-state browser acceptance
     runs-on: ubuntu-latest
