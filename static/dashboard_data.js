@@ -30,7 +30,7 @@
   }
 
   function metadata(data) {
-    return [data.model, data.start_date, data.end_date];
+    return [data.model, data.start_date, data.end_date, data.source];
   }
   function sameMetadata(a, b) {
     const x = metadata(a), y = metadata(b);
