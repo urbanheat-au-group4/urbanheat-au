@@ -7,7 +7,7 @@ const View = require('../static/dashboard_view_model.js');
 const meta={source:'Open-Meteo Historical Weather API',model:'era5',
   start_date:'2015-01-01',end_date:'2025-12-31'};
 const syd={id:'syd',name:'Sydney',state:'NSW',latitude:-33.8688,longitude:151.2093,
-  annual_mean_c:21,annual_average_max_c:24.2,average_annual_rainfall_mm:1100,
+  annual_mean_c:21,annual_average_max_c:24.2,annual_average_min_c:18.2,average_annual_rainfall_mm:1100,
   monthly_average_max_c:[25,25,24,23,20,18,17,18,20,21,23,24]};
 const mel={id:'mel',name:'Melbourne',state:'VIC',latitude:-37.8136,longitude:144.9631,
   annual_mean_c:17,annual_average_max_c:20,average_annual_rainfall_mm:600,
@@ -73,6 +73,15 @@ test('does not turn unavailable metrics into zero or invent monthly values',()=>
   const v=View.make(b,s.getState());
   assert.equal(v.overview.selectedMetric.value,null);
   assert.equal(v.compare.rows.find(r=>r.key==='hottest_day_c').selectedText,'No data');
+});
+test('nighttime minimum selection retains its value, unit and comparisons',()=>{
+  const b=bundle(),s=State.newStore(b.locations,{cityId:'syd',baselineId:'mel'});
+  s.selectMetric('annual_average_min_c');
+  const v=View.make(b,s.getState());
+  assert.equal(v.overview.selectedMetric.key,'annual_average_min_c');
+  assert.equal(v.overview.selectedMetric.value,18.2);
+  assert.equal(v.overview.selectedMetric.unit,'°C');
+  assert.equal(v.compare.rows.find(r=>r.key==='annual_average_min_c').selectedText,'18.2 °C');
 });
 test('rejects malformed state and unvalidated bundles',()=>{
   const b=bundle(),s=State.newStore(b.locations);
