@@ -34,6 +34,8 @@ jobs:
         run: node --test tests/test_dashboard_foundations.cjs
       - name: Test shared dashboard export adapter (offline)
         run: node --test tests/test_dashboard_data.cjs
+      - name: Test tab view model and cross-section data consistency
+        run: node --test tests/test_dashboard_view_model.cjs
   browser:
     name: Eight-state browser acceptance
     runs-on: ubuntu-latest
