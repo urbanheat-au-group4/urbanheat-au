@@ -8,6 +8,31 @@ This is **non-UI preparation**. The live page, CSS and existing national map scr
 - `static/dashboard_metrics.js`: shared labels, units, null-safe differences, monthly series and ERA5 25 km grid warning. Browser global `UrbanHeatMetrics`.
 - `tests/test_dashboard_foundations.cjs`: offline tests for tab persistence, swap, filtering, selection, null values, units and near-grid comparisons.
 
+## Read the three exports once (new data adapter)
+
+`static/dashboard_data.js` now provides the `UrbanHeatData` API. It loads the existing map, annual history and season files concurrently, **validates source/model/period**, indexes every record by its catalogue ID and reports missing/skipped locations. It does not alter the existing page or write fabricated values.
+
+Dale can add it before his new controller:
+
+```html
+<script src="/static/dashboard_data.js"></script>
+```
+
+```js
+const bundle = await UrbanHeatData.load();
+const store = UrbanHeatState.newStore(bundle.locations);
+const view = bundle.forSelection(store.getState());
+
+// view.selected.map          = national_data.json point, or null
+// view.selected.history      = national_history.json record, or null
+// view.selected.seasons      = national_seasons.json record, or null
+// view.baseline.*            = the same three records for the baseline city
+// bundle.warnings            = missing/skipped source-data warnings
+// bundle.source              = model, source, start and end date
+```
+
+The three existing chart scripts currently fetch their JSON separately. **Do not remove those scripts or duplicate the loaders until Dale integrates the adapter**; this PR supplies a new reusable API only, so the current application remains stable. Existing exports are generated locally, not stored in Git, and the CI tests therefore use small, deterministic representative fixtures. A missing history/season record stays `null` for that location, never another city's data. If metadata disagree, the adapter fails with a rebuild message rather than mixing periods.
+
 ## How Dale wires the new layout
 
 Add these plain scripts **before** any new dashboard controller:
