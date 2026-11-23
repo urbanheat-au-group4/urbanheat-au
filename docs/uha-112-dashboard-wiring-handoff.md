@@ -33,6 +33,37 @@ const view = bundle.forSelection(store.getState());
 
 The three existing chart scripts currently fetch their JSON separately. **Do not remove those scripts or duplicate the loaders until Dale integrates the adapter**; this PR supplies a new reusable API only, so the current application remains stable. Existing exports are generated locally, not stored in Git, and the CI tests therefore use small, deterministic representative fixtures. A missing history/season record stays `null` for that location, never another city's data. If metadata disagree, the adapter fails with a rebuild message rather than mixing periods.
 
+## Generate one read-only view for all three tabs
+
+`static/dashboard_view_model.js` combines the existing validated data bundle with one `UrbanHeatState` snapshot. It supplies the UI with a stable object for all three tabs. The module contains **no DOM code or CSS**, and cannot overwrite Dale's work.
+
+Load the script after `dashboard_metrics.js`:
+
+```html
+<script src="/static/dashboard_state.js"></script>
+<script src="/static/dashboard_metrics.js"></script>
+<script src="/static/dashboard_data.js"></script>
+<script src="/static/dashboard_view_model.js"></script>
+```
+
+Dale's eventual page controller can subscribe once and re-render only the active tab:
+
+```js
+const bundle = await UrbanHeatData.load();
+const store = UrbanHeatState.newStore(bundle.locations);
+function updateDashboard(state) {
+  const view = UrbanHeatViewModel.make(bundle, state);
+  // Render view.overview, view.historical or view.compare based on view.activeTab.
+  // view.selection carries IDs, city names, baseline, state and metric.
+  // view.source always identifies source, model and date range.
+  // view.warnings contains no-data / 25-km grid caveats.
+}
+store.subscribe(updateDashboard);
+updateDashboard(store.getState());
+```
+
+The view exposes `overview.locations`, `overview.selected`, `overview.monthly`, `historical.selected`/`historical.baseline`, `historical.selectedSeasons`/`historical.baselineSeasons`, and `compare.rows`. A missing location or historical record stays `null`. The module does **not** add a visible tab or layout: UHA-114/UHA-117/UHA-118 remain Dale's UI tasks.
+
 ## How Dale wires the new layout
 
 Add these plain scripts **before** any new dashboard controller:

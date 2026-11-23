@@ -8,6 +8,7 @@
   const METRICS = Object.freeze([
     { key: 'annual_mean_c', label: 'Average temperature', unit: '°C', places: 1 },
     { key: 'annual_average_max_c', label: 'Average daily maximum', unit: '°C', places: 1 },
+    { key: 'annual_average_min_c', label: 'Average daily minimum', unit: '°C', places: 1 },
     { key: 'hottest_day_c', label: 'Hottest modelled day', unit: '°C', places: 1 },
     { key: 'hottest_10_percent_mean_c', label: 'Average hottest 10% of days', unit: '°C', places: 1 },
     { key: 'hottest_25_percent_mean_c', label: 'Average hottest 25% of days', unit: '°C', places: 1 },
