@@ -50,6 +50,11 @@ test('period or model mismatch fails before UI can mix datasets',()=>{
   b[2].model='another-model';
   assert.throws(()=>adapter.makeBundle(...b),/mismatch/);
 });
+test('different source provenance is rejected even with same model and period',()=>{
+  const docs=exportsFor();
+  docs[2].source='Unknown alternate provider';
+  assert.throws(()=>adapter.makeBundle(...docs),/mismatch/);
+});
 test('missing metadata and duplicate IDs are rejected',()=>{
   const a=exportsFor();delete a[0].model;
   assert.throws(()=>adapter.makeBundle(...a),/metadata|missing/);
