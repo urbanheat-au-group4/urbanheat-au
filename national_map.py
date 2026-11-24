@@ -1,11 +1,10 @@
-"""National map coordinate and marker geometry independent of dashboard JS.
+"""Place catalogue locations on the national SVG map.
 
-Marker coordinates are modelled location points, not state-wide temperature areas.
-This module does not invent geographical outlines. State boundaries require an
-authoritative, licensed GeoJSON source before the full SVG UI is marked Done.
+The markers are individual locations, not temperature areas.
 """
 from collections import Counter
 from html import escape
+
 from location_catalogue import load_catalogue
 
 WIDTH = 1000
@@ -17,34 +16,41 @@ STATES = ("NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT")
 
 
 def project(latitude, longitude):
-    """Project mainland, Tasmanian and territorial locations onto one SVG grid."""
+    """Convert a latitude and longitude to SVG x/y coordinates."""
     if not (WEST <= longitude <= EAST and SOUTH <= latitude <= NORTH):
         raise ValueError("Location outside Australian map extent")
+
     x = PADDING + (longitude - WEST) * (WIDTH - 2 * PADDING) / (EAST - WEST)
     y = PADDING + (NORTH - latitude) * (HEIGHT - 2 * PADDING) / (NORTH - SOUTH)
     return round(x, 2), round(y, 2)
 
 
 def markers(path, state=None):
-    """Select verified catalogue *format* with no silent duplicate IDs."""
+    """Return map markers, optionally for just one state."""
     if state is not None and state not in STATES:
         raise ValueError("Unknown jurisdiction")
-    records = load_catalogue(path, "australia_historical")
-    selected = [r for r in records if state is None or r["state"] == state]
-    if len({r["id"] for r in selected}) != len(selected):
+
+    places = load_catalogue(path, "australia_historical")
+    selected = [place for place in places if state is None or place["state"] == state]
+
+    if len({place["id"] for place in selected}) != len(selected):
         raise ValueError("Duplicate marker ID")
-    return [{**r, "x": project(r["latitude"], r["longitude"])[0],
-             "y": project(r["latitude"], r["longitude"])[1]} for r in selected]
+
+    result = []
+    for place in selected:
+        x, y = project(place["latitude"], place["longitude"])
+        result.append({**place, "x": x, "y": y})
+    return result
 
 
 def marker_svg(locations):
-    """Produce an SVG marker group; never treat a point as a locality polygon."""
+    """Make accessible SVG circles from our checked map markers."""
     parts = ['<g class="national-location-markers" role="group" aria-label="Australian locations">']
-    for item in locations:
-        label = escape(f'{item["name"]}, {item["state"]}', quote=True)
-        key = escape(item["id"], quote=True)
+    for place in locations:
+        label = escape(f'{place["name"]}, {place["state"]}', quote=True)
+        key = escape(place["id"], quote=True)
         parts.append(
-            f'<circle data-location-id="{key}" cx="{item["x"]}" cy="{item["y"]}" '
+            f'<circle data-location-id="{key}" cx="{place["x"]}" cy="{place["y"]}" '
             f'r="4.5" role="img" aria-label="{label}"><title>{label}</title></circle>'
         )
     parts.append("</g>")
@@ -52,4 +58,4 @@ def marker_svg(locations):
 
 
 def jurisdiction_counts(locations):
-    return dict(Counter(item["state"] for item in locations))
+    return dict(Counter(place["state"] for place in locations))
