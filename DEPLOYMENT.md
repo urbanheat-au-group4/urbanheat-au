@@ -10,9 +10,11 @@ The build checks the Python tests, downloads the real state boundaries and packa
 
 ## Climate data
 
-The raw historical snapshots are not stored in Git. Without generated exports, the deployed map shows the 112 catalogue locations and marks climate readings as unavailable. Historical and seasonal charts show their unavailable-data messages. No weather values are invented.
+The Pages workflow publishes the three summary JSON files in `data/pages-climate/`. The source is Open-Meteo ERA5 (2015–2025), licensed CC BY 4.0. These files contain calculations from the daily data. The raw historical snapshots stay in the local cache.
 
-For a build with actual climate readings, supply validated exports in static/national_data.json, static/national_history.json and static/national_seasons.json before running build_site.py. The automatic workflow currently starts from the repository contents; local uncommitted datasets will not be uploaded by it.
+To refresh the hosted summaries from saved snapshots, run `python3 pages_climate.py` and commit the three files under `data/pages-climate/`. The exporter uses the existing weather checks and keeps all catalogue markers. Places without a validated snapshot show `No data` and are left out of the charts. The coverage line on the dashboard shows how many locations have readings.
+
+Use `python3 build_site.py --climate-dir data/pages-climate` to preview exactly what the workflow publishes.
 
 ## Local build
 

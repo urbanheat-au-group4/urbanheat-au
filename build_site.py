@@ -1,9 +1,13 @@
 """Package the national dashboard for static hosting."""
+import argparse
 import json
 import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+import pages_climate
+from verify_national_release import EXPORTS
 
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "_site"
@@ -11,12 +15,14 @@ ASSETS = (
     "national.css", "history.css", "seasons.css", "compare.css",
     "national_annotations.js", "national.js", "intro-states.js", "intro.js",
     "intro-tiles.js", "history.js", "seasons.js", "compare_core.js", "compare.js",
-    "logo.png", "BG.jpg", "national_data.json", "australia_states.geojson",
-    "national_history.json", "national_seasons.json",
+    "logo.png", "BG.jpg", "australia_states.geojson", *EXPORTS.values(),
 )
 
-def build():
-    if not (ROOT / "static/national_data.json").exists():
+def build(climate_dir=None):
+    if climate_dir is not None:
+        available, expected = pages_climate.check(climate_dir, ROOT / "locations.json")
+        print(f"Publishing climate readings for {available}/{expected} locations")
+    elif not (ROOT / "static/national_data.json").exists():
         subprocess.run([sys.executable, str(ROOT / "tests/prepare_national_browser_data.py")],
                        cwd=ROOT, check=True)
     boundary = ROOT / "static/australia_states.geojson"
@@ -27,6 +33,8 @@ def build():
     (OUT / "static").mkdir(parents=True)
     for name in ASSETS:
         source = ROOT / "static" / name
+        if climate_dir is not None and name in EXPORTS.values():
+            source = climate_dir / name
         if not source.exists():
             if name in ("national_history.json", "national_seasons.json"):
                 continue
@@ -46,4 +54,6 @@ def build():
     print("Built _site. Missing historical exports remain unavailable.")
 
 if __name__ == "__main__":
-    build()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--climate-dir", type=Path)
+    build(parser.parse_args().climate_dir)

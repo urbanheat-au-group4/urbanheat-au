@@ -81,9 +81,14 @@
       box.appendChild(tile);
     });
 
-    var period = String(data.start_date).slice(0, 4) + '\u2013' + String(data.end_date).slice(0, 4);
-    add(box, 'small', 'intro-tiles-note', 'From the ' + data.locations.length +
-      ' locations with data, ' + period + '. Modelled estimates, not weather station readings.');
+    var available = data.locations.filter(function (place) {
+      return Number.isFinite(place.annual_mean_c);
+    }).length;
+    var period = data.start_date && data.end_date
+      ? ' (' + data.start_date.slice(0, 4) + '\u2013' + data.end_date.slice(0, 4) + ')' : '';
+    add(box, 'small', 'intro-tiles-note', available
+      ? 'Modelled climate estimates for ' + available + ' of ' + data.locations.length + ' locations' + period + '.'
+      : 'Historical climate readings are unavailable. The map shows the location catalogue.');
 
     if (reduceMotion || !('IntersectionObserver' in window) || !counters.length) { return; }
     counters.forEach(function (c) {
