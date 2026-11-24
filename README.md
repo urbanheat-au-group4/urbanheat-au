@@ -4,7 +4,7 @@ CST190 project: an Australia-wide historical climate explorer for **112 location
 
 ## Live dashboard
 
-Open [UrbanHeat AU on GitHub Pages](https://urbanheat-au-group4.github.io/urbanheat-au/). The hosted map shows the location catalogue. Historical readings and charts are available once the validated climate exports are published. Updates to `main` rebuild and deploy the site. See [hosting setup](DEPLOYMENT.md).
+Open [UrbanHeat AU on GitHub Pages](https://urbanheat-au-group4.github.io/urbanheat-au/). The map shows all 112 locations. The coverage line shows how many have validated historical readings. Updates to `main` rebuild and deploy the site. See [hosting setup](DEPLOYMENT.md).
 
 ## Run locally
 
