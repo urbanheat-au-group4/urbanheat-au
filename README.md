@@ -2,6 +2,10 @@
 
 CST190 project: an Australia-wide historical climate explorer for **112 locations** across all eight Australian states and territories. The homepage is the national SVG map. Selecting a state zooms in to its 14 locations; selecting a marker shows the modelled climate statistics.
 
+## Live dashboard
+
+Open [UrbanHeat AU on GitHub Pages](https://urbanheat-au-group4.github.io/urbanheat-au/). The hosted map shows the location catalogue. Historical readings and charts are available once the validated climate exports are published. Updates to `main` rebuild and deploy the site. See [hosting setup](DEPLOYMENT.md).
+
 ## Run locally
 
 Use Python 3. The dashboard reads saved historical weather data.
