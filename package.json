@@ -7,6 +7,7 @@
     "test:regression": "node tests/national_browser_regression.cjs",
     "test:cross-state": "node tests/national_browser_cross_state.cjs",
     "test:charts": "node tests/national_browser_charts.cjs",
+    "test:a11y": "node tests/national_browser_accessibility.cjs",
     "test:real-data": "node tests/national_browser_real_data.cjs"
   },
   "devDependencies": {
