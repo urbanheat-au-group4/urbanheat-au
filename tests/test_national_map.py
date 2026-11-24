@@ -1,6 +1,7 @@
 """Offline tests for national-map marker geometry."""
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from national_map import markers, marker_svg, project, jurisdiction_counts
 
@@ -24,6 +25,12 @@ class NationalMapTests(unittest.TestCase):
         self.assertEqual(len(locations), 112)
         self.assertEqual(set(jurisdiction_counts(locations).values()), {14})
         self.assertEqual(len({r["id"] for r in locations}), 112)
+
+    def test_each_location_is_projected_once(self):
+        with patch('national_map.project', wraps=project) as projection:
+            result = markers(CATALOGUE, 'VIC')
+        self.assertEqual(len(result), 14)
+        self.assertEqual(projection.call_count, 14)
 
     def test_state_filter(self):
         self.assertEqual(len(markers(CATALOGUE, "VIC")), 14)
