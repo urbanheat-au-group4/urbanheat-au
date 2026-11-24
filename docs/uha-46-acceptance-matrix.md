@@ -1,44 +1,71 @@
-# UHA-46: Final acceptance checklist (working draft)
+# UHA-46 | Final testing checklist
 
-**Started:** 18 November 2026  
-**Owner:** Paul  
-**Status:** In Progress. This is a test plan, not final sign-off.
+**Updated:** 25 November 2026  
+**Status:** In Progress
 
-## Acceptance checklist
+Our goal is to check that the national dashboard works with real saved weather data, not just test examples.
 
-| Check | Existing evidence | Still needed before sign-off |
+## What I need to check
+
+| Check | How I will check it | Result |
 | --- | --- | --- |
-| National homepage is the single public entry point | UHA-82; `tests/test_homepage_route.py` | Run against the final `main` build and verify manually |
-| All eight states/territories display and zoom correctly | `tests/national_browser_smoke.cjs` | Review actual state screenshot legibility |
-| Each state has 14 matching selectable locations | `locations.json`, browser smoke test | Independently verify catalogue coordinates |
-| Map label, selected marker and measure dropdown agree | Browser regression and cross-state tests | Confirm sample figures against validated real exports |
-| Annual, monthly and seasonal climate charts render | `tests/national_browser_charts.cjs` and regression tests | Check real 2015–2025 values and missing-year behaviour |
-| Comparison of two or three locations works | `tests/test_compare.cjs`, UHA-63 | Review real-data comparisons and no-data states |
-| Missing and bad readings are not invented | Historic validation and fixture tests | Review current real-data coverage, rejected files and audit |
-| One-command startup works from saved snapshots | `tests/test_run.py`, UHA-108 | Test from a clean clone with real historical files |
-| Historical source, dates and limitations are visible | UHA-43 and existing HTML | Confirm UI text and documentation match final exported model |
-| Phone/tablet/desktop and keyboard operation | Existing national browser tests | Manual accessible navigation and contrast review under UHA-47 |
-| All required automated tests pass | GitHub CI | Record final `main` commit SHA and green CI URL |
-| Demonstration can be repeated | UHA-50 runbook | Complete an actual rehearsal with screenshots or recording |
+| National homepage opens | Start the app and open the homepage | Pending final check |
+| Eight states display correctly | Use the map and state dropdown | Pending final screenshot review |
+| Each state has 14 locations | Check the catalogue and map | Automated test available; manual check pending |
+| Map and selected location agree | Click markers and compare labels and readings | Pending real-data check |
+| Monthly and historical charts work | Select locations and compare the figures with exports | Pending real-data check |
+| Seasonal charts work | Check season values and missing-data labels | Pending real-data check |
+| Comparison works | Choose two locations and check units and differences | Pending real-data check |
+| Missing data is handled correctly | Check messages and saved-data validation | Automated tests available |
+| Python and browser tests pass | Save CI link and tested commit | Final-main result pending |
+| Keyboard and mobile use works | Test phone, tablet, keyboard and focus order | Manual check pending |
+| Final demo works | Rehearse it and save screenshots | Not completed |
 
-## Important open questions
+## How to collect the evidence
 
-- **UHA-107:** the national batch import of all 112 locations in one API call triggered HTTP 400. A later request received HTTP 429. Do not assume a complete real dataset until the importer and audit are verified.
-- **UHA-97 reference:** Jira comments refer to a data audit under UHA-97, but that issue key was not visible when checked on 18 November. Locate or restore the actual tracking item before recording the audit as complete.
-- **UHA-47:** screen-reader testing and manual focus order are not covered by simple automated keyboard activation.
-- **Dale's UI work:** UHA-94 and its unfinished subtasks belong to Dale. This checklist does not implement or close his tasks.
+Run this on the computer with the historical weather files:
 
-## Evidence record (complete after checks)
+```bash
+bash scripts/collect_final_evidence.sh
+```
 
-- Tested Git commit SHA: **Pending**
-- Date and computer used: **Pending**
-- Real snapshot coverage: **Pending**
-- Python CI URL and result: **Pending**
-- Browser CI URL and result: **Pending**
-- Actual screenshot/recording links: **Pending**
-- Defects and exceptions: **Pending**
-- Reviewer and acceptance decision: **Pending**
+The script saves a dated folder under `artifacts/final-acceptance/` with test results and any export audit it could complete.
 
-## Acceptance rule
+Then start the app:
 
-Keep UHA-46 In Progress until each required item has evidence, any exceptions are recorded, and a reviewer confirms the outcome. Synthetic browser data proves interface handling, not historical weather accuracy.
+```bash
+python3 server.py
+```
+
+In another terminal:
+
+```bash
+npm run test:real-data
+```
+
+Keep the command output, the generated reports, and screenshots. Link them in UHA-44 and UHA-46.
+
+**Important:** The browser CI uses location names and test files, not our real weather readings. It cannot replace the real-data test.
+
+## Known problems
+
+- UHA-111: keyboard focus can disappear after selecting a map marker. This must be fixed or recorded as an accepted limitation.
+- UHA-107: the importer previously made requests that were too large. The smaller batch importer was added, but a final real-data audit is still needed.
+- We have not independently verified every location's coordinates.
+- Dale's outstanding UI work belongs to Dale and is not covered by this checklist.
+
+## Evidence record
+
+| Evidence | Link or result |
+| --- | --- |
+| Final commit tested | Pending |
+| Python tests and browser CI | Pending final commit |
+| Real historical coverage | Pending new audit |
+| Map, history and seasons exports | Pending new audit |
+| Real-data browser results | Pending |
+| Desktop and phone screenshots | Pending |
+| Keyboard and accessibility review | Pending |
+| Demo rehearsal | Pending |
+| Final reviewer decision | Pending |
+
+I will only mark UHA-46 Done after the checks have results and the final review is recorded.
