@@ -40,22 +40,25 @@ async function audit(page, width) {
   await page.locator('#state').focus();
   await page.locator('#state').selectOption('NSW');
   await page.waitForFunction(() => document.querySelectorAll('circle.marker').length === 14);
-  const marker = page.locator('circle.marker').first();
-  const id = await marker.getAttribute('data-location-id');
-  await marker.focus();
-  await marker.press('Enter');
-  assert.equal(await page.locator('#place').inputValue(), id,
-    'Keyboard marker action did not select the location');
+  const place = page.getByRole('combobox', {name: 'Find a location', exact: true});
+  for (const [index, key] of ['Enter', 'Space'].entries()) {
+    const marker = page.locator('circle.marker').nth(index);
+    const id = await marker.getAttribute('data-location-id');
+    await marker.focus();
+    await page.keyboard.press(key);
+    assert.equal(await place.inputValue(), id,
+      `${width}px: ${key} did not select the location`);
+    assert.ok(await page.locator('#location-card').evaluate(card => card.open),
+      `${width}px: ${key} did not open the location details`);
+    assert.ok(await place.evaluate(select => document.activeElement === select),
+      `${width}px: ${key} did not move focus to Find a location`);
+  }
   assert.equal(await page.locator('#state').inputValue(), 'NSW');
 
   // Core content must fit a phone without sideways scrolling.
   const overflow = await page.evaluate(() =>
     document.documentElement.scrollWidth - document.documentElement.clientWidth);
   assert.ok(overflow <= 2, width + 'px: sideways overflow of ' + overflow + 'px');
-
-  // A browser test can confirm focus, but not whether a screen reader announces it well.
-  assert.equal(await marker.evaluate(el => document.activeElement === el), true,
-    'Keyboard focus was lost after selecting a marker');
 }
 
 async function main() {

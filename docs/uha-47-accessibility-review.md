@@ -9,8 +9,9 @@ Run `npm run test:a11y` after starting the national dashboard with catalogue-onl
 - visible labels for the nine main selection controls;
 - alternative text for the home logo and an accessible label for the map;
 - status roles on loading, warning, chart and comparison feedback;
-- selecting NSW, then selecting a location by focusing a marker and pressing Enter;
-- preserved selection and absence of horizontal page overflow;
+- selecting NSW, then using Enter or Space on a marker to open the selected location details;
+- whether focus moves to the labelled Find a location dropdown after the map redraws;
+- preserved state selection and absence of horizontal page overflow;
 - no browser JavaScript exceptions.
 
 This runs as part of GitHub's eight-state browser CI. It does **not** certify WCAG conformance or screen-reader accessibility.
