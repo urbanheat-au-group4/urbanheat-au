@@ -2,12 +2,12 @@
 # UrbanHeat AU final release evidence. Never substitutes fixture data for real snapshots.
 # Usage from the repo root: bash scripts/collect_final_evidence.sh
 set -uo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 ROOT="$PWD"
 SHA="$(git rev-parse HEAD 2>/dev/null || printf unknown)"
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
-OUT="$ROOT/artifacts/final-acceptance/$STAMP"
-mkdir -p "$OUT"
+mkdir -p "$ROOT/artifacts/final-acceptance" || exit 1
+OUT="$(mktemp -d "$ROOT/artifacts/final-acceptance/$STAMP-XXXXXX")" || exit 1
 printf 'UrbanHeat final release evidence\nUTC: %s\ncommit: %s\nroot: %s\n' "$STAMP" "$SHA" "$ROOT" | tee "$OUT/manifest.txt"
 printf 'Git worktree changes (review these for reproducibility):\n' >> "$OUT/manifest.txt"
 git status --short >> "$OUT/manifest.txt" 2>&1 || true
@@ -34,10 +34,7 @@ printf 'Snapshot JSON file count (not a validation result): %s\n' "$(find data/n
 run_check python-tests python3 -m unittest discover -s tests -p 'test_*.py' -v || true
 if run_check real-data-build python3 run.py --check; then
   if [ -f static/national_data.json ] && [ -f static/national_history.json ] && [ -f static/national_seasons.json ]; then
-    run_check export-audit python3 verify_national_release.py || true
-    if [ -f artifacts/uha-46-export-audit.json ]; then
-      cp artifacts/uha-46-export-audit.json "$OUT/export-audit.json"
-    fi
+    run_check export-audit python3 verify_national_release.py --output "$OUT/export-audit.json" || true
   else
     printf 'BLOCKED: validated build returned success but three exports are not present.\n' | tee -a "$OUT/manifest.txt"
     failed=1

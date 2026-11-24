@@ -49,7 +49,7 @@ Keep the command output, the generated reports, and screenshots. Link them in UH
 
 ## Known problems
 
-- UHA-111: keyboard focus can disappear after selecting a map marker. This must be fixed or recorded as an accepted limitation.
+- UHA-111: check that selecting a map marker with the keyboard moves focus to the Find a location dropdown and lets users keep tabbing.
 - UHA-107: the importer previously made requests that were too large. The smaller batch importer was added, but a final real-data audit is still needed.
 - We have not independently verified every location's coordinates.
 - Dale's outstanding UI work belongs to Dale and is not covered by this checklist.
