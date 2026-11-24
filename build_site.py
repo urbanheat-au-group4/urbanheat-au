@@ -7,9 +7,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "_site"
-ASSETS = ("national.css", "history.css", "seasons.css", "national_annotations.js",
-          "national.js", "history.js", "seasons.js", "national_data.json",
-          "australia_states.geojson", "national_history.json", "national_seasons.json")
+ASSETS = (
+    "national.css", "history.css", "seasons.css", "compare.css",
+    "national_annotations.js", "national.js", "intro-states.js", "intro.js",
+    "intro-tiles.js", "history.js", "seasons.js", "compare_core.js", "compare.js",
+    "logo.png", "BG.jpg", "national_data.json", "australia_states.geojson",
+    "national_history.json", "national_seasons.json",
+)
 
 def build():
     if not (ROOT / "static/national_data.json").exists():
@@ -28,8 +32,11 @@ def build():
                 continue
             raise FileNotFoundError(source)
         target = OUT / "static" / name
-        if source.suffix in (".js", ".css"):
+        if source.suffix == ".js":
             target.write_text(source.read_text().replace("/static/", "./static/"))
+        elif source.suffix == ".css":
+            # CSS resolves image URLs from static/, not from index.html.
+            target.write_text(source.read_text().replace("/static/", "./"))
         else:
             shutil.copyfile(source, target)
     html = (ROOT / "static/national.html").read_text()

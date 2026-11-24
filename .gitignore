@@ -43,6 +43,7 @@ climate_statistics.json
 data/national/
 
 # Generated map layers and browser evidence
+_site/
 static/national_data.json
 static/australia_states.geojson
 artifacts/
