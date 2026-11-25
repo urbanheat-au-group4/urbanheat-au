@@ -1,65 +1,32 @@
 # UHA-50 | Our final demonstration
 
-**Updated:** 25 November 2026  
-**Status:** Ready to rehearse, not yet completed
+**Rehearsed in Chromium on 26 November 2026** using the packaged Pages build from `93d34b9`.
 
-## What we will show
+Open the [live dashboard](https://urbanheat-au-group4.github.io/urbanheat-au/). Check that the heading shows 112 of 112 locations. The site uses Open-Meteo ERA5 modelled climate for 2015–2025.
 
-UrbanHeat AU displays historical climate information for 112 selected locations across Australia. The data comes from Open-Meteo ERA5 models for 2015–2025. It is not a live weather forecast.
-
-## Before we start
-
-1. Use the latest tested version of the app, with the real historical data files.
-2. Run `python3 run.py --check` and make sure it succeeds.
-3. Run `python3 verify_national_release.py` and review the result.
-4. Start the site with `python3 run.py`.
-5. Open `http://localhost:8000/` and check one city's actual figures against the saved export.
-6. Check that the map, chart labels and units are readable on the demo screen.
-
-If the weather data is missing, do not show example temperatures as real measurements.
-
-## Five-minute plan
-
-| Time | What we show | What we explain |
+| Time | What I do | What I explain |
 | --- | --- | --- |
-| 0:00–0:40 | National homepage | Eight states and territories, 112 selected locations |
-| 0:40–1:30 | Select Victoria or NSW | Zoom into a state and show its 14 locations |
-| 1:30–2:20 | Choose a city | Explain the temperature, rainfall and hot-day figures |
-| 2:20–3:10 | Change the heat measure | Show the hottest modelled day and hottest 10%, 25% and 50% of days |
-| 3:10–4:00 | Open historical and seasonal charts | Explain monthly highs and how temperatures change through the year |
-| 4:00–4:40 | Compare two locations | Explain what is similar or different, using the same model and years |
-| 4:40–5:00 | Explain testing and limits | Describe how we checked data and why modelled values have limits |
+| 0:00–0:45 | Open Overview | UrbanHeat covers 112 selected locations in eight states and territories. |
+| 0:45–1:30 | Select Tasmania, then Launceston | The state view shows 14 locations. Launceston’s annual mean is 13.4 °C. |
+| 1:30–2:20 | Use Map measure to show the hottest modelled day and the hottest 10%, 25% and 50% | The hottest day was 35.4 °C on 31 January 2020. The group averages are 27.5, 25.2 and 22.5 °C. |
+| 2:20–3:35 | Open Historical | Show the twelve monthly highs, annual temperature trends and four seasons. Open a data table to show exact values. |
+| 3:35–4:35 | Choose Timber Creek as the baseline, open Compare and swap | The selected places carry across tabs. Differences use the same period. Places within about 25 km can share the same model grid. |
+| 4:35–5:00 | Return to the source note and show the test evidence | State colours summarise our sampled locations. ERA5 figures are modelled estimates and missing data stays blank. |
 
-Use the actual interface that is ready on demonstration day. If Dale's updated tabs are merged, follow those tabs. Otherwise, show the existing working dashboard.
+## If Pages is unavailable
 
-## What I will say about the limitations
-
-- ERA5 gives modelled temperatures and rainfall, not readings from a weather station in every suburb.
-- State colours represent our selected places, not a temperature reading for the whole state.
-- Nearby places may share the same model grid, so a tiny difference is not always meaningful.
-- Missing measurements stay missing. We do not fill them with invented numbers.
-
-## If the downloaded data is unavailable
-
-Use a **separate clean copy** of the project and prepare the map-only test data:
+Serve the same packaged data locally. If the state-outlines file is absent, run the first command once.
 
 ```bash
-python3 tests/prepare_national_browser_data.py
 python3 fetch_national_boundaries.py
-python3 server.py
+python3 build_site.py --climate-dir data/pages-climate
+python3 -m http.server 8000 --directory _site
 ```
 
-Tell the audience that it is an interface-only demonstration without real weather figures. Never replace the real historical exports with test fixtures.
+Then open `http://localhost:8000/`. If the historical files are unavailable, show the map and explain the message in the chart. Use the recorded evidence for the weather figures.
 
-## After the rehearsal
+## Rehearsal results
 
-- [ ] Record the date and tested Git commit
-- [ ] Save a screenshot or short recording
-- [ ] Confirm the eight state views and 14 locations per state
-- [ ] Check a real temperature value against the export
-- [ ] Check missing-data messages
-- [ ] Check keyboard use and phone layout
-- [ ] Record any problems we found
-- [ ] Confirm who presents each part
+The rehearsal loaded the national map, selected Tasmania’s 14 locations, matched all five Launceston readings above against the exported values, opened the three charts and swapped the comparison pair. When the browser was made to receive HTTP 503 for the history file, the annual chart displayed a clear unavailable message. The release checks also captured desktop and mobile screenshots. Presenter order and the assessed presentation remain team activities.
 
-Attach the results to UHA-50. The runbook being written does not mean the rehearsal has happened.
+[Browser results and screenshots](https://github.com/urbanheat-au-group4/urbanheat-au/actions/runs/45637913010) · [UHA-50](https://urban-heatmap.atlassian.net/browse/UHA-50)
