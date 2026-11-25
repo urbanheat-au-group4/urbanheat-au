@@ -11,6 +11,7 @@
     "test:real-data": "node tests/national_browser_real_data.cjs"
   },
   "devDependencies": {
-    "@playwright/test": "1.64.1"
+    "@playwright/test": "1.64.1",
+    "axe-core": "4.14.1"
   }
 }

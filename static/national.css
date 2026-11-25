@@ -16,6 +16,26 @@ a {
   color: #9cdef2;
 }
 
+:where(a, button, select, summary, [tabindex]):focus-visible {
+  outline: 2px solid #9cdef2;
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 10;
+  transform: translateY(calc(-100% - 12px));
+  padding: 12px;
+  background: #101b29;
+  border-radius: 6px;
+}
+
+.skip-link:focus {
+  transform: none;
+}
+
 header {
   background: #101b29;
   border-bottom: 1px solid #344355;
@@ -61,6 +81,9 @@ p {
 
 .intro {
   margin-bottom: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #172332;
 }
 
 .intro p {
@@ -647,7 +670,7 @@ header .brand-home img {
     font-size: 16px;
   }
 
-  .callout-tag {
+  .map-callouts {
     display: none;
   }
 }
@@ -807,6 +830,7 @@ svg :focus-visible {
   max-width: 1180px;
   margin: 12px auto 0;
   padding: 0 20px;
+  background: #101b29;
 }
 
 @media (max-width: 1024px) {
@@ -826,6 +850,7 @@ svg :focus-visible {
   flex-wrap: wrap;
   gap: 4px 16px;
   padding: 10px 20px 0;
+  background: #101b29;
 }
 
 .dashboard-heading h1,
@@ -863,6 +888,36 @@ svg :focus-visible {
   .control-strip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .control-strip select {
+    min-height: 44px;
+  }
+
+  #monthly-heat-chart text {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 420px) {
+  .control-strip {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tab-bar button {
+    flex: 1;
+    min-width: 0;
+    padding-inline: 4px;
+    text-align: center;
+  }
+
+  #monthly-heat-chart text {
+    font-size: 28px;
+  }
+
+  #history-chart text,
+  #seasons-chart text {
+    font-size: 13px;
+  }
 }
 
 .historical-monthly,
@@ -883,6 +938,7 @@ svg :focus-visible {
 
 .historical-quick table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 13px;
 }
@@ -892,6 +948,7 @@ svg :focus-visible {
   padding: 7px 4px;
   border-bottom: 1px solid #344556;
   text-align: left;
+  overflow-wrap: anywhere;
 }
 
 /* UHA-112: compact desktop Overview. One screen, no page scroll. */

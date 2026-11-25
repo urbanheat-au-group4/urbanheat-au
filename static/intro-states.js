@@ -20,21 +20,22 @@
     var button = document.createElement('button');
     button.type = 'button';
     button.textContent = text;
-    button.setAttribute('aria-label', description);
-    button.addEventListener('click', function () {
+    if (description) button.setAttribute('aria-label', text + ' · ' + description);
+    button.addEventListener('click', function (event) {
       if (typeof points === 'undefined' || !points.length) { return; }
       closeMenu(false);
       window.UrbanHeatDashboard.show('overview');
       focusState(code);
       var heading = document.getElementById('map-title');
       if (heading) {
+        if (event.detail === 0) heading.focus({preventScroll: true});
         heading.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
       }
     });
     nav.appendChild(button);
   }
 
-  addButton('ALL', 'All Australia', 'Show all of Australia');
+  addButton('ALL', 'All Australia');
   Object.keys(STATES).forEach(function (code) {
     addButton(code, code, 'Explore ' + STATES[code]);
   });

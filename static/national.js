@@ -115,7 +115,7 @@ function selectPoint(id) {
   selectionStore.update({cityId: id});
 }
 function drawBoundaries(averages, low, high, view) {
-  const group = element('g', {'aria-label': 'State and territory boundaries'});
+  const group = element('g', {role: 'group', 'aria-label': 'State and territory boundaries'});
   for (const feature of boundaries) {
     const d = paths(feature.geometry);
     if (!d) continue;
@@ -148,7 +148,7 @@ function drawBoundaries(averages, low, high, view) {
 }
 function drawMarkers(visible, low, high, view) {
   const scale = view.width / 1000;
-  const group = element('g', {'aria-label': 'Climate locations'});
+  const group = element('g', {role: 'group', 'aria-label': 'Climate locations'});
   for (const p of visible) {
     const value = p[metric.value];
     const circle = element('circle', {
@@ -157,7 +157,8 @@ function drawMarkers(visible, low, high, view) {
       fill: Number.isFinite(value) ? color(value, low, high) : '#9ba9b2',
       class: 'marker' + (selected === p.id ? ' selected' : ''),
       'stroke-width': 1.7 * scale,
-      role: 'button', tabindex: '0',
+      role: 'button', tabindex: state.value === 'ALL' ? '-1' : '0',
+      'aria-pressed': p.id === selected ? 'true' : 'false',
       'aria-label': p.name + ', ' + p.state + ': ' + labels.format(value, metric.value)
     });
     const title = element('title');
@@ -176,13 +177,15 @@ function drawMarkers(visible, low, high, view) {
 }
 function drawCallouts(visible, view) {
   const scale = view.width / 1000;
-  const group = element('g', {'aria-label': 'Labelled climate locations'});
+  const group = element('g', {class: 'map-callouts', role: 'group', 'aria-label': 'Labelled climate locations'});
   for (const rect of labels.labelLayout(visible, metric.value, state.value, selected, view)) {
     const p = rect.point, x = rect.x, y = rect.y;
+    const reading = labels.format(p[metric.value], metric.value);
     const tag = element('g', {
       class: 'callout-tag' + (p.id === selected ? ' active' : ''), role: 'button', tabindex: '0',
       'data-location-id': p.id,
-      'aria-label': 'Show ' + p.name + ': ' + labels.format(p[metric.value], metric.value)
+      'aria-pressed': p.id === selected ? 'true' : 'false',
+      'aria-label': [p.name, reading, rect.annotation].filter(Boolean).join(' ')
     });
     const nearestX = Math.min(x + rect.width, Math.max(x, p.x));
     const nearestY = Math.min(y + rect.height, Math.max(y, p.y));
@@ -205,15 +208,15 @@ function drawCallouts(visible, view) {
       x: x + 10*scale, y: y + 37*scale,
       class: 'callout-value', 'font-size': 15*scale
     });
-    value.textContent = labels.format(p[metric.value], metric.value);
-    tag.append(value);
+    value.textContent = reading;
+    tag.append(' ', value);
     if (rect.annotation) {
       const note = element('text', {
         x: x + 10*scale, y: y + 54*scale,
         class: 'callout-note', 'font-size': 10.5*scale
       });
       note.textContent = rect.annotation;
-      tag.append(note);
+      tag.append(' ', note);
     }
     tag.addEventListener('click', () => selectPoint(p.id));
     tag.addEventListener('keydown', event => {
@@ -256,6 +259,7 @@ function updateMonthlyHeat() {
   const chart = document.getElementById('monthly-heat-chart');
   const status = document.getElementById('monthly-heat-status');
   const valuesPanel = document.getElementById('monthly-heat-values');
+  const tableDisclosure = valuesPanel.closest('details');
   chart.replaceChildren();
   valuesPanel.replaceChildren();
   const point = points.find(p => p.id === selected);
@@ -263,6 +267,7 @@ function updateMonthlyHeat() {
   const hasHeatData = points.some(p => Array.isArray(p.monthly_average_max_c));
   if (!Array.isArray(months) || months.length !== 12 ||
       months.some(value => !Number.isFinite(value))) {
+    tableDisclosure.hidden = true;
     chart.setAttribute('hidden', '');
     status.textContent = !hasHeatData
       ? 'The saved climate data is out of date. Run python3 run.py to rebuild it.'
@@ -271,6 +276,7 @@ function updateMonthlyHeat() {
         : 'Choose a location above to see its monthly temperatures.');
     return;
   }
+  tableDisclosure.hidden = false;
   chart.removeAttribute('hidden');
   status.textContent = point.name + ': average daytime maximum for each month (°C).';
 
@@ -403,13 +409,17 @@ function updateStateSummary(averages) {
     const card = document.createElement('button');
     card.type = 'button';
     card.className = 'state-summary-item';
-    card.setAttribute('aria-label', 'Explore ' + STATES[code] + ', sample average ' + labels.format(average.value, metric.value));
+    const reading = labels.format(average.value, metric.value);
+    card.setAttribute('aria-label', code + ' ' + reading + ', explore ' + STATES[code]);
     const name = document.createElement('strong');
     name.textContent = code;
     const value = document.createElement('span');
-    value.textContent = labels.format(average.value, metric.value);
-    card.append(name, value);
-    card.addEventListener('click', () => focusState(code));
+    value.textContent = reading;
+    card.append(name, ' ', value);
+    card.addEventListener('click', event => {
+      focusState(code);
+      if (event.detail === 0) state.focus();
+    });
     summary.append(card);
   }
 }
@@ -432,7 +442,10 @@ function renderMobileStateTags(visible) {
     const value = document.createElement('strong');
     value.textContent = labels.format(p[metric.value], metric.value);
     button.append(name, value);
-    button.addEventListener('click', () => selectPoint(p.id));
+    button.addEventListener('click', event => {
+      selectPoint(p.id);
+      if (event.detail === 0) place.focus();
+    });
     list.append(button);
   }
 }

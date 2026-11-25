@@ -23,6 +23,7 @@
   const legend = document.getElementById('history-legend');
   const limits = document.getElementById('history-limits');
   const tableBox = document.getElementById('history-table');
+  const tableDisclosure = tableBox.closest('details');
   const sourceNote = document.getElementById('history-source');
   if (!metricSelect || !chart || !summary) return;
 
@@ -84,6 +85,7 @@
     legend.replaceChildren();
     limits.textContent = '';
     tableBox.replaceChildren();
+    tableDisclosure.hidden = true;
   }
 
 
@@ -327,6 +329,7 @@
     }
     describeLimits(place, keys);
     drawTable(place, keys);
+    tableDisclosure.hidden = false;
     if (sourceNote) {
       sourceNote.textContent = `Source: ${trends.source}` + (trends.model ? ` (model: ${trends.model})` : '') +
         `. Period: ${period}. Units: °C. Values are modelled estimates, not weather station measurements.`;

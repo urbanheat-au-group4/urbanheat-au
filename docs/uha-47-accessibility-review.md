@@ -1,17 +1,19 @@
 # UHA-47 Accessibility and usability evidence
 
-**Status:** Automated checks prepared. Manual review not yet completed.
+The automated checks cover the main keyboard, labelling, contrast and reflow requirements. An independent review with a screen reader is still open.
 
 ## What the automated check covers
 
-Run `npm run test:a11y` after starting the national dashboard with catalogue-only test data. It uses Chromium at desktop (1440 px), tablet (768 px) and mobile (390 px) widths to check:
+Run `npm run test:a11y` against the national dashboard. GitHub Actions runs it with the catalogue-only fixture and the packaged Pages build. It checks Overview, Historical and Compare in Chromium at 320, 390, 768, 1366 and 1440 px.
 
-- visible labels for the nine main selection controls;
+- visible labels and accessible names for the dashboard controls;
 - alternative text for the home logo and an accessible label for the map;
 - status roles on loading, warning, chart and comparison feedback;
-- selecting NSW, then using Enter or Space on a marker to open the selected location details;
-- whether focus moves to the labelled Find a location dropdown after the map redraws;
-- preserved state selection and absence of horizontal page overflow;
+- the skip link and visible keyboard focus on the state selector;
+- keyboard selection from state navigation, state summary buttons, SVG markers and the mobile location list;
+- keyboard scrolling in the annual data table and no horizontal page overflow with chart tables open;
+- 44 px targets for the main phone controls and automated axe checks on all three tabs;
+- representative contrast checks on headings, coverage, control labels and map callouts in the populated build;
 - no browser JavaScript exceptions.
 
 This runs as part of GitHub's eight-state browser CI. It does **not** certify WCAG conformance or screen-reader accessibility.
@@ -40,4 +42,4 @@ Complete the following after a real manual session:
 - Manual results and defects: **Pending**
 - Final outcome: **Pending**
 
-Keep Jira UHA-47 **In Progress** until manual results are recorded. If an issue is found, file a separate Jira bug with expected/actual behaviour and the relevant screenshot. Dale owns UHA-94 UI implementation; this task is testing and reporting, not taking over those changes.
+Keep Jira UHA-47 open until the manual session is recorded. Link the browser workflow, describe any remaining defects and include the browser and assistive technology versions used.
