@@ -92,11 +92,14 @@
     pendingGrow = null; 
     chart.replaceChildren();
     const rows = place.years;
-    const width = Math.max(300, Math.min(chart.getBoundingClientRect().width || 800, 1100));
+    const bounds = chart.getBoundingClientRect();
+    const width = Math.max(300, Math.min(bounds.width || 800, 1100));
     const small = width < 520;
-    const height = small ? 320 : 420;
+    const compact = window.matchMedia('(min-width: 1101px)').matches;
+    const height = compact ? Math.round(bounds.height) : (small ? 320 : 420);
     chart.setAttribute('viewBox', `0 0 ${width} ${height}`);
-    const margin = { left: small ? 46 : 62, right: 18, top: 20, bottom: small ? 56 : 64 };
+    const margin = compact ? {left: 42, right: 26, top: 16, bottom: 26} :
+      {left: small ? 46 : 62, right: 18, top: 20, bottom: small ? 56 : 64};
     const innerW = width - margin.left - margin.right;
     const innerH = height - margin.top - margin.bottom;
 
@@ -115,7 +118,7 @@
 
     let low = Math.floor(Math.min(...values) - 0.5);
     let high = Math.ceil(Math.max(...values) + 0.5);
-    const step = high - low > 8 ? 2 : 1;
+    const step = compact ? Math.max(1, Math.ceil((high - low) / 5)) : (high - low > 8 ? 2 : 1);
     high = low + Math.ceil((high - low) / step) * step;
     const yOf = v => margin.top + innerH * (1 - (v - low) / (high - low));
     const xOf = i => rows.length === 1
@@ -135,21 +138,25 @@
       }, String(t)));
     }
     const midY = margin.top + innerH / 2;
-    chart.append(s('text', {
-      x: 14, y: midY, 'text-anchor': 'middle', fill: '#33505f', 'font-size': 12,
-      transform: `rotate(-90 14 ${midY})`
-    }, 'Temperature (°C)'));
-    chart.append(s('text', {
-      x: margin.left + innerW / 2, y: height - 10, 'text-anchor': 'middle',
-      fill: '#33505f', 'font-size': 12
-    }, 'Year'));
+    if (compact) {
+      chart.append(s('text', {x: 8, y: 12, fill: '#33505f', 'font-size': 12}, '°C'));
+    } else {
+      chart.append(s('text', {
+        x: 14, y: midY, 'text-anchor': 'middle', fill: '#33505f', 'font-size': 12,
+        transform: `rotate(-90 14 ${midY})`
+      }, 'Temperature (°C)'));
+      chart.append(s('text', {
+        x: margin.left + innerW / 2, y: height - 10, 'text-anchor': 'middle',
+        fill: '#33505f', 'font-size': 12
+      }, 'Year'));
+    }
 
     // Year labels; * marks a year with missing days
     rows.forEach((row, i) => {
       if (small && i % 2 !== 0) return;
       const partial = keys.some(key => number(row[key]) !== null && !isComplete(row, key));
       chart.append(s('text', {
-        x: xOf(i), y: height - margin.bottom + 20, 'text-anchor': 'middle',
+        x: xOf(i), y: height - margin.bottom + (compact ? 16 : 20), 'text-anchor': 'middle',
         fill: '#33505f', 'font-size': 12
       }, row.year + (partial ? '*' : '')));
     });

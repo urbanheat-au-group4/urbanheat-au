@@ -74,13 +74,15 @@
   function drawChart(place, animate) {
     chart.removeAttribute('hidden');
 
-    var width = Math.max(300, Math.round(chart.getBoundingClientRect().width) || 800);
+    var bounds = chart.getBoundingClientRect();
+    var width = Math.max(300, Math.round(bounds.width) || 800);
     var small = width < 520;
-    var height = small ? 340 : 380;
+    var compact = window.matchMedia('(min-width: 1101px)').matches;
+    var height = compact ? Math.round(bounds.height) : (small ? 340 : 380);
     var left = small ? 40 : 56;
     var right = 12;
-    var top = 28;
-    var bottom = 52;
+    var top = compact ? 22 : 28;
+    var bottom = compact ? 38 : 52;
     var plotW = width - left - right;
     var plotH = height - top - bottom;
     chart.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
@@ -101,7 +103,8 @@
     if (hi <= lo) { hi = lo + 5; }
     function y(v) { return top + plotH - ((v - lo) / (hi - lo)) * plotH; }
 
-    for (var t = lo; t <= hi; t += 5) {
+    var step = compact ? Math.max(5, Math.ceil((hi - lo) / 25) * 5) : 5;
+    for (var t = lo; t <= hi; t += step) {
       chart.appendChild(node('line', { x1: left, x2: width - right, y1: y(t), y2: y(t),
         stroke: 'currentColor', 'stroke-opacity': t === 0 ? 0.6 : 0.2 }));
       chart.appendChild(node('text', { x: left - 6, y: y(t) + 4, 'text-anchor': 'end', 'font-size': 12 }, String(t)));

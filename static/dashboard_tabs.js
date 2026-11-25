@@ -5,16 +5,54 @@
   var buttons = document.querySelectorAll('[data-tab-button]');
   var baseline = document.getElementById('baseline');
   var swap = document.getElementById('swap-locations');
+  var monthly = document.getElementById('monthly-heat-content');
+  var overviewMonthly = document.getElementById('overview-monthly');
+  var historicalMonthly = document.getElementById('historical-monthly');
+  var quickStatus = document.getElementById('historical-quick-status');
+  var quickTable = document.getElementById('historical-quick-table');
   var currentTab = 'overview';
   var store;
 
+  function cell(row, tag, value, scope) {
+    var item = document.createElement(tag);
+    if (scope) item.scope = scope;
+    item.textContent = value;
+    row.append(item);
+  }
+
+  function renderBaseline(selection) {
+    quickTable.replaceChildren();
+    if (!selection?.cityId || !selection.baselineId) {
+      quickStatus.textContent = 'Choose a location and a baseline above to see their differences.';
+      return;
+    }
+    var result = window.UrbanHeatMetrics.compareRows(selection.selected, selection.baseline);
+    quickStatus.textContent = result.notes.join(' ');
+    var table = document.createElement('table');
+    var head = table.createTHead().insertRow();
+    ['Measure', selection.selected.name, selection.baseline.name, 'Difference'].forEach(function (label) {
+      cell(head, 'th', label, 'col');
+    });
+    var body = table.createTBody();
+    for (var row of result.rows) {
+      if (!['annual_mean_c', 'annual_average_max_c', 'average_annual_rainfall_mm'].includes(row.key)) continue;
+      var tr = body.insertRow();
+      cell(tr, 'th', row.label, 'row');
+      for (var value of [row.selectedText, row.baselineText, row.differenceText]) cell(tr, 'td', value);
+    }
+    quickTable.append(table);
+  }
+
   function notify(selection) {
+    if (currentTab === 'historical') renderBaseline(selection);
     window.dispatchEvent(new CustomEvent('urbanheat:selection', {detail: selection}));
   }
 
   function show(tab) {
     if (!TABS.includes(tab)) return;
     currentTab = tab;
+    var monthlySlot = tab === 'historical' ? historicalMonthly : overviewMonthly;
+    if (monthly.parentNode !== monthlySlot) monthlySlot.append(monthly);
     TABS.forEach(function (name) {
       document.getElementById('panel-' + name).hidden = name !== tab;
     });

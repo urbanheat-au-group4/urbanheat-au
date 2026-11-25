@@ -758,6 +758,10 @@ svg :focus-visible {
   grid-template-columns: 190px minmax(0, 1fr);
 }
 
+.app-body {
+  min-width: 0;
+}
+
 .side-nav {
   display: flex;
   flex-direction: column;
@@ -807,7 +811,7 @@ svg :focus-visible {
 
 @media (max-width: 1024px) {
   .app-shell {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .side-nav {
@@ -861,6 +865,35 @@ svg :focus-visible {
   }
 }
 
+.historical-monthly,
+.historical-quick {
+  margin-top: 20px;
+}
+
+.historical-monthly h2,
+.historical-quick h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+.historical-monthly p,
+.historical-quick p {
+  font-size: 13px;
+}
+
+.historical-quick table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.historical-quick th,
+.historical-quick td {
+  padding: 7px 4px;
+  border-bottom: 1px solid #344556;
+  text-align: left;
+}
+
 /* UHA-112: compact desktop Overview. One screen, no page scroll. */
 @media (min-width: 1101px) {
   html, body { height: 100%; }
@@ -886,6 +919,36 @@ svg :focus-visible {
     grid-template-rows: auto minmax(0, 1fr);
   }
   #panel-overview[hidden] { display: none; }
+  #panel-historical:not([hidden]) {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template: repeat(2, minmax(0, 1fr)) / repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  #panel-historical > .panel {
+    min-width: 0;
+    margin: 0;
+    padding: 8px 12px;
+    overflow: auto;
+  }
+  #panel-historical .history-intro,
+  #panel-historical .seasons-intro { display: none; }
+  #panel-historical h2 { font-size: 15px; }
+  #panel-historical .history-controls { display: block; max-width: 240px; margin: 0; }
+  #panel-historical .history-controls label { margin: 0; font-size: 11px; }
+  #panel-historical .history-controls select { padding: 4px 8px; font-size: 13px; }
+  #panel-historical #history-summary,
+  #panel-historical #seasons-summary,
+  #panel-historical #monthly-heat-status { font-size: 12px; margin: 4px 0; }
+  #panel-historical #history-chart,
+  #panel-historical #seasons-chart { height: clamp(110px, 16vh, 148px); min-height: 0; margin: 0; }
+  #panel-historical #monthly-heat-chart { max-height: 160px; }
+  #panel-historical #monthly-heat-chart text { font-size: 17px; }
+  #panel-historical .history-legend,
+  #panel-historical .seasons-legend { gap: 4px 10px; margin: 4px 0; font-size: 11px; }
+  #panel-historical details { margin: 4px 0; }
+  #panel-historical details > summary { padding: 2px 0; font-size: 12px; }
   #panel-overview > .intro { display: none; }
   #panel-overview > .layout { display: contents; }
   #panel-overview > .layout > .map-panel {
