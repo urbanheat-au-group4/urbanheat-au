@@ -6,6 +6,10 @@ CST190 project: an Australia-wide historical climate explorer for **112 location
 
 Open [UrbanHeat AU on GitHub Pages](https://urbanheat-au-group4.github.io/urbanheat-au/). The map shows all 112 locations. The coverage line shows how many have validated historical readings. Updates to `main` rebuild and deploy the site. See [hosting setup](DEPLOYMENT.md).
 
+1. Start on **Overview**. Pick a place on the map or use **Find a location**.
+2. Open **Historical** for monthly highs, annual trends and seasonal charts for that location.
+3. Choose a **Comparison baseline** and open **Compare**. You can swap the two places or add a third. Your selections stay in place as you switch tabs.
+
 ## Run locally
 
 Use Python 3. The dashboard reads saved historical weather data.
@@ -74,13 +78,13 @@ git pull
 python3 run.py
 ```
 
-The new `run.py` rebuilds the saved map and chart data from your existing historical files, then starts the website. Choose one of the hottest-day measures in the **Climate measure** dropdown and select a location. The monthly chart is further down the page, with a link next to the controls. If the historical files are missing or incomplete, `run.py` will explain the problem instead of showing made-up data.
+`run.py` rebuilds the saved map and chart data from your historical files, then starts the website. Choose a heat measure in **Map measure** and select a location. Open **Historical** for the monthly daytime highs chart. If historical files are missing or incomplete, `run.py` explains which data is missing.
 
 ## Hot weather and monthly daytime highs
 
 Select a location on the national map to see its hottest modelled day (with the date), and the average temperature of its hottest 10%, 25% and 50% of days.
 
-The **Typical daytime highs through the year** chart shows January to December. Each month is the average of the daily maximum temperatures for that month across 2015–2025, using the same saved historical data. This is not the highest temperature recorded in the month.
+The **Monthly daytime highs** chart shows January to December. Each point averages the daily maximum temperatures for that month across 2015–2025.
 
 The hottest-day groups sort all valid daily maximum temperatures from hottest to coolest. For example, the hottest 10% averages the hottest tenth of days; this is different from the temperature cutoff for the 90th percentile. These modelled estimates are not official temperature records.
 
@@ -135,7 +139,7 @@ The `prepare_national_browser_data.py` script refuses to overwrite an existing `
 
 ### Common setup problems
 
-- **Missing historical snapshots:** `run.py` explains which location files are missing. Download them separately; historical data is not bundled with GitHub.
+- **Missing historical snapshots:** `run.py` explains which location files are missing. Download the raw daily snapshots separately. The repository includes the summary files used on GitHub Pages.
 - **HTTP 400 or 429 from Open-Meteo:** stop rather than retrying rapidly. Jira UHA-107 tracks the large national-batch request; do not assume all 112 files were downloaded.
 - **No state outlines:** `fetch_national_boundaries.py` needs a network connection to obtain geoBoundaries data.
 - **Old or missing heat figures:** stop the server and run `python3 run.py` to rebuild the browser exports from the validated snapshots.
@@ -175,20 +179,20 @@ The old Melbourne shapes are adapted for display. They show locality boundaries 
 
 The server no longer starts live forecast refreshes by default. For legacy testing only, set `URBANHEAT_LEGACY_REFRESH=1` before starting `server.py`.
 
-The Historical Trends chart (UHA-61) and Seasonal Climate Comparison (UHA-62) are part of the national page, below the map.
+The **Historical** tab includes Historical Trends (UHA-61), Seasonal Climate Comparison (UHA-62) and data tables for the selected location.
 
 Project tracking: Jira. Code and tests: GitHub. Sprint reports: Confluence.
 
 ## Compare Locations (UHA-63)
 
-The **Compare Locations** section on the national page lets you pick two or three locations and see their historical climate side by side.
+The **Compare** tab shows the selected location and baseline side by side. Use the controls above the tabs to change either selection.
 
 **What it shows**
 
 - Typical summer maximum and winter minimum temperature
 - Hot days per year (35 °C or more)
 - Average annual rainfall, plus typical summer and winter rainfall
-- The difference from the first location chosen, where the data supports one
+- The difference from the selected baseline, where the data supports one
 
 **How it works**
 
