@@ -1,5 +1,7 @@
 # UrbanHeat AU | What we need to finish
 
+For the 26 November release results, see the [final testing matrix](uha-46-acceptance-matrix.md) and [Sprint 4 delivery report](uha-51-sprint4-final-evidence-supplement.md). The notes below record the 25 November planning status.
+
 **Updated:** 25 November 2026  
 **My work:** tests, data checks, documentation and the final demo  
 **Dale's work:** UI changes under UHA-94 and UHA-112
