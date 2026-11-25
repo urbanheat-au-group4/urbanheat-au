@@ -13,14 +13,12 @@ async function audit(page, width) {
     document.querySelector('#status')?.textContent?.includes('112 locations'));
 
   // Controls and images need names even when weather data is unavailable.
-  for (const id of ['state', 'metric', 'place', 'history-place',
-                    'history-metric', 'seasons-place', 'compare-1',
-                    'compare-2', 'compare-3']) {
+  for (const id of ['state', 'metric', 'place', 'baseline', 'history-metric', 'compare-3']) {
     const select = page.locator('#' + id);
     assert.equal(await select.count(), 1, id + ': control missing');
     const label = page.locator('label[for="' + id + '"]');
     assert.equal(await label.count(), 1, id + ': missing label');
-    assert.ok((await label.innerText()).trim(), id + ': empty label');
+    assert.ok((await label.textContent()).trim(), id + ': empty label');
   }
   const logo = page.locator('.brand-home img');
   assert.ok((await logo.getAttribute('alt'))?.trim(), 'Home logo missing alt text');

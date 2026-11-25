@@ -37,4 +37,6 @@ class BuildSiteTests(unittest.TestCase):
             css = (site / "static/national.css").read_text()
             background = re.search(r'url\("([^\"]+BG\.jpg)"\)', css).group(1)
             self.assertTrue((site / "static" / background).is_file(), background)
-            self.assertIn("./static/national_data.json", (site / "static/national.js").read_text())
+            loader = (site / "static/dashboard_data.js").read_text()
+            for filename in ("national_data.json", "national_history.json", "national_seasons.json"):
+                self.assertIn("./static/" + filename, loader)

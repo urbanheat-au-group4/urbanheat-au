@@ -7,6 +7,10 @@
 <link rel="stylesheet" href="/static/history.css">
 <link rel="stylesheet" href="/static/seasons.css">
 <link rel="stylesheet" href="/static/compare.css">
+<script src="/static/dashboard_state.js" defer></script>
+<script src="/static/dashboard_metrics.js" defer></script>
+<script src="/static/dashboard_data.js" defer></script>
+<script src="/static/dashboard_tabs.js" defer></script>
 <script src="/static/national_annotations.js" defer></script>
 <script src="/static/national.js" defer></script>
 <script src="/static/intro-states.js" defer></script>
@@ -24,16 +28,21 @@
 <nav class="site-nav" id="site-nav" aria-label="Explore a state or territory"></nav>
 <span id="dataset-info" hidden>Loading source details…</span>
 </header>
-<main>
-<section class="intro"><p class="eyebrow">AUSTRALIA · CLIMATE EXPLORER</p>
+<div class="app-shell">
+<nav class="side-nav" aria-label="Dashboard sections">
+<button type="button" data-tab-button="overview">Overview</button>
+<button type="button" data-tab-button="historical">Historical</button>
+<button type="button" data-tab-button="compare">Compare</button>
+</nav>
+<div class="app-body">
+<div class="dashboard-heading">
 <h1>Compare climate across Australia</h1>
-<p>Explore modelled historical weather for <span class="count" data-count="112">112</span> Australian locations. Select a state to explore its <span class="count" data-count="14">14</span> locations and compare regional conditions.</p>
-<div class="intro-tiles" id="intro-tiles" role="group" aria-label="Highlights from the data"></div></section>
-<section class="layout">
-<aside class="panel">
-<label for="state">State or territory</label>
-<select id="state"><option value="ALL">All Australia</option></select>
-<label for="metric">Climate measure</label>
+<p id="dataset-coverage"></p>
+</div>
+<div class="control-strip" role="group" aria-label="Dashboard selections">
+<div class="control"><label for="state">State or territory</label>
+<select id="state"><option value="ALL">All Australia</option></select></div>
+<div class="control"><label for="metric">Map measure</label>
 <select id="metric">
 <option value="annual_mean_c">Average temperature (°C)</option>
 <option value="annual_average_max_c">Average daytime maximum (°C)</option>
@@ -44,11 +53,26 @@
 <option value="annual_average_min_c">Average nighttime minimum (°C)</option>
 <option value="average_annual_rainfall_mm">Annual rainfall (mm)</option>
 <option value="average_days_at_least_35c">Days ≥35°C per year</option>
-</select>
+</select></div>
+<div class="control"><label for="place">Find a location</label>
+<select id="place"><option value="">Select a location</option></select></div>
+<div class="control"><label for="baseline">Comparison baseline</label>
+<select id="baseline" disabled><option value="">Choose a baseline</option></select></div>
+</div>
+<div class="tab-bar" role="tablist" aria-label="Dashboard views">
+<button type="button" role="tab" id="tab-overview" aria-controls="panel-overview" aria-selected="true" data-tab-button="overview">Overview</button>
+<button type="button" role="tab" id="tab-historical" aria-controls="panel-historical" aria-selected="false" tabindex="-1" data-tab-button="historical">Historical</button>
+<button type="button" role="tab" id="tab-compare" aria-controls="panel-compare" aria-selected="false" tabindex="-1" data-tab-button="compare">Compare</button>
+</div>
+<main>
+<div role="tabpanel" id="panel-overview" aria-labelledby="tab-overview" tabindex="0">
+<section class="intro"><p class="eyebrow">AUSTRALIA · CLIMATE EXPLORER</p>
+<p>Explore modelled historical weather for <span class="count" data-count="112">112</span> Australian locations. Select a state to explore its <span class="count" data-count="14">14</span> locations and compare regional conditions.</p>
+<div class="intro-tiles" id="intro-tiles" role="group" aria-label="Highlights from the data"></div></section>
+<section class="layout">
+<aside class="panel">
 <p class="heat-helper">To see how hot it really gets, choose a heat measure above and select a location. <a href="#monthly-heat-title">See the monthly daytime highs chart</a>.</p>
 <p id="heat-data-warning" class="heat-warning" role="status" hidden></p>
-<label for="place">Find a location</label>
-<select id="place"><option value="">Select a location</option></select>
 <h2 class="highlights-title">Quick comparison</h2><div id="highlights" class="highlights" aria-live="polite"></div>
 </aside>
 <section class="panel map-panel">
@@ -70,19 +94,26 @@
 <p>Select a location to see its climate figures and how its average daily maximum temperature changes month by month, based on the 2015–2025 period.</p>
 <div class="monthly-heat-grid">
 <div id="detail" class="detail" aria-live="polite">Choose a location on the map to see its climate results.</div>
-<div class="monthly-heat-main">
+<div id="overview-monthly">
+<div class="monthly-heat-main" id="monthly-heat-content">
 <p id="monthly-heat-status" role="status" aria-live="polite">Choose a location above to see its monthly temperatures.</p>
 <svg id="monthly-heat-chart" viewBox="0 0 720 250" role="img" aria-label="Average daily maximum temperature by month" hidden></svg>
 <details class="monthly-heat-table"><summary>View the 12 monthly values</summary><div id="monthly-heat-values"></div></details>
 </div>
 </div>
+</div>
 </details>
+</div>
+<div role="tabpanel" id="panel-historical" aria-labelledby="tab-historical" tabindex="0" hidden>
 
-<section class="panel history" id="history" aria-labelledby="history-title">   <!-- ADD from here -->
+<section class="panel historical-monthly" aria-labelledby="historical-monthly-title">
+<h2 id="historical-monthly-title">Monthly daytime highs</h2>
+<div id="historical-monthly"></div>
+</section>
+<section class="panel history" id="history" aria-labelledby="history-title">
 <h2 id="history-title">Historical Trends</h2>
 <p class="history-intro">See how yearly temperatures have varied at one location. Values are modelled estimates, not weather station readings.</p>
 <div class="history-controls">
-<div><label for="history-place">Location</label><select id="history-place"></select></div>
 <div><label for="history-metric">Temperature measure</label>
 <select id="history-metric">
 <option value="both">Compare both measures</option>
@@ -93,47 +124,53 @@
 <p id="history-summary" class="history-summary" role="status" aria-live="polite">Loading historical data…</p>
 <svg id="history-chart" viewBox="0 0 800 420" role="img" aria-label="Line chart of yearly temperatures"></svg>
 <div id="history-legend" class="history-legend"></div>
+<details class="history-table"><summary>View the data as a table</summary>
 <p id="history-limits" class="history-limits"></p>
-<details class="history-table"><summary>View the data as a table</summary><div id="history-table"></div></details>
+<div id="history-table"></div>
 <p id="history-source" class="history-source">Source: Open-Meteo Historical Weather API. Modelled estimates.</p>
+</details>
 </section>
 <section class="panel seasons" id="seasons" aria-labelledby="seasons-title">
   <h2 id="seasons-title">Seasonal Climate Comparison</h2>
   <p class="seasons-intro">Typical weather in each Australian season, from modelled historical estimates (not weather station readings). Summer is December to February, autumn March to May, winter June to August and spring September to November.</p>
-  <div class="seasons-controls">
-    <label for="seasons-place">Location</label>
-    <select id="seasons-place"></select>
-  </div>
   <p id="seasons-summary" role="status" aria-live="polite">Loading seasonal data…</p>
   <svg id="seasons-chart" viewBox="0 0 800 380" role="img" aria-label="Bar chart of typical seasonal temperatures"></svg>
   <div id="seasons-legend" class="seasons-legend"></div>
-  <p id="seasons-limits" class="seasons-limits"></p>
-  <div id="seasons-table"></div>
   <details class="seasons-years">
-    <summary>Which years are included</summary>
+    <summary>View seasonal data and years used</summary>
+    <p id="seasons-limits" class="seasons-limits"></p>
+    <div id="seasons-table"></div>
     <div id="seasons-years"></div>
+    <p id="seasons-source" class="seasons-source"></p>
   </details>
-  <p id="seasons-source" class="seasons-source"></p>
 </section>
+<section class="panel historical-quick" aria-labelledby="historical-quick-title">
+<h2 id="historical-quick-title">Baseline summary</h2>
+<p id="historical-quick-status" role="status"></p>
+<div id="historical-quick-table"></div>
+</section>
+</div>
+<div role="tabpanel" id="panel-compare" aria-labelledby="tab-compare" tabindex="0" hidden>
 
 <section class="panel compare" id="compare" aria-labelledby="compare-title">
   <h2 id="compare-title">Compare Locations</h2>
-  <p class="compare-intro">Choose two or three locations to see their historical climate side by side. All figures use the same period and model, and are modelled estimates, not weather station readings.</p>
+  <p class="compare-intro">Choose a location and a baseline above to compare their modelled climate. You can add a third location here.</p>
   <div class="compare-controls">
-    <div><label for="compare-1">Location 1</label><select id="compare-1"></select></div>
-    <div><label for="compare-2">Location 2</label><select id="compare-2"></select></div>
-    <div><label for="compare-3">Location 3 (optional)</label><select id="compare-3"></select></div>
+    <div><label for="compare-3">Third location (optional)</label><select id="compare-3" disabled></select></div>
+    <button id="swap-locations" type="button" disabled>Swap location and baseline</button>
   </div>
   <p id="compare-status" role="status" aria-live="polite">Loading comparison data…</p>
   <div id="compare-notes" class="compare-notes"></div>
-  <div id="compare-table" class="compare-table"></div>
+  <div id="compare-table" class="compare-table" role="region" aria-label="Climate comparison table"></div>
   <p id="compare-source" class="compare-source"></p>
   <p class="compare-limits">This compares modelled climate only. It does not show which place is better to live in, because that depends on many things this data does not cover.</p>
 </section>
+</div>
 
 <section class="panel footnote" aria-label="Data sources and limitations">
 <h2>Data sources and limitations</h2>
 <p id="source-period">Loading source details…</p>
+<details class="footnote-more"><summary>Credits and limitations</summary>
 <p>Weather data from <a href="https://open-meteo.com/en/docs/historical-weather-api">Open-Meteo</a>.
 Historical temperatures are modelled estimates, not readings from weather stations in each suburb.</p>
 <p>State outlines from <a href="https://www.geoboundaries.org/">geoBoundaries gbOpen</a> (Australia, ADM1).
@@ -142,5 +179,9 @@ Map outlines are simplified for display. They are not measured temperature surfa
 We calculate summaries from the weather data and display simplified map boundaries.</p>
 <p>State colours are averages from the sampled locations, not a temperature reading for the entire state.
 Location coordinates still need independent checking. The heat indicators are our own comparisons, not official weather warnings.</p>
+</details>
 </section>
-</main></body></html>
+</main>
+</div>
+</div>
+</body></html>

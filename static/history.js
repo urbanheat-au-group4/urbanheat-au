@@ -4,7 +4,7 @@
 (function () {
   'use strict';
 
-  const DATA_URL = '/static/national_history.json';
+  const dashboard = window.UrbanHeatDashboard;
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const METRICS = {
     annual_mean_c: {
@@ -17,7 +17,6 @@
     }
   };
 
-  const placeSelect = document.getElementById('history-place');
   const metricSelect = document.getElementById('history-metric');
   const chart = document.getElementById('history-chart');
   const summary = document.getElementById('history-summary');
@@ -25,7 +24,7 @@
   const limits = document.getElementById('history-limits');
   const tableBox = document.getElementById('history-table');
   const sourceNote = document.getElementById('history-source');
-  if (!placeSelect || !metricSelect || !chart || !summary) return;
+  if (!metricSelect || !chart || !summary) return;
 
   let trends = null;
 
@@ -93,11 +92,14 @@
     pendingGrow = null; 
     chart.replaceChildren();
     const rows = place.years;
-    const width = Math.max(300, Math.min(chart.getBoundingClientRect().width || 800, 1100));
+    const bounds = chart.getBoundingClientRect();
+    const width = Math.max(300, Math.min(bounds.width || 800, 1100));
     const small = width < 520;
-    const height = small ? 320 : 420;
+    const compact = window.matchMedia('(min-width: 1101px)').matches;
+    const height = compact ? Math.round(bounds.height) : (small ? 320 : 420);
     chart.setAttribute('viewBox', `0 0 ${width} ${height}`);
-    const margin = { left: small ? 46 : 62, right: 18, top: 20, bottom: small ? 56 : 64 };
+    const margin = compact ? {left: 42, right: 26, top: 16, bottom: 26} :
+      {left: small ? 46 : 62, right: 18, top: 20, bottom: small ? 56 : 64};
     const innerW = width - margin.left - margin.right;
     const innerH = height - margin.top - margin.bottom;
 
@@ -116,7 +118,7 @@
 
     let low = Math.floor(Math.min(...values) - 0.5);
     let high = Math.ceil(Math.max(...values) + 0.5);
-    const step = high - low > 8 ? 2 : 1;
+    const step = compact ? Math.max(1, Math.ceil((high - low) / 5)) : (high - low > 8 ? 2 : 1);
     high = low + Math.ceil((high - low) / step) * step;
     const yOf = v => margin.top + innerH * (1 - (v - low) / (high - low));
     const xOf = i => rows.length === 1
@@ -136,21 +138,25 @@
       }, String(t)));
     }
     const midY = margin.top + innerH / 2;
-    chart.append(s('text', {
-      x: 14, y: midY, 'text-anchor': 'middle', fill: '#33505f', 'font-size': 12,
-      transform: `rotate(-90 14 ${midY})`
-    }, 'Temperature (°C)'));
-    chart.append(s('text', {
-      x: margin.left + innerW / 2, y: height - 10, 'text-anchor': 'middle',
-      fill: '#33505f', 'font-size': 12
-    }, 'Year'));
+    if (compact) {
+      chart.append(s('text', {x: 8, y: 12, fill: '#33505f', 'font-size': 12}, '°C'));
+    } else {
+      chart.append(s('text', {
+        x: 14, y: midY, 'text-anchor': 'middle', fill: '#33505f', 'font-size': 12,
+        transform: `rotate(-90 14 ${midY})`
+      }, 'Temperature (°C)'));
+      chart.append(s('text', {
+        x: margin.left + innerW / 2, y: height - 10, 'text-anchor': 'middle',
+        fill: '#33505f', 'font-size': 12
+      }, 'Year'));
+    }
 
     // Year labels; * marks a year with missing days
     rows.forEach((row, i) => {
       if (small && i % 2 !== 0) return;
       const partial = keys.some(key => number(row[key]) !== null && !isComplete(row, key));
       chart.append(s('text', {
-        x: xOf(i), y: height - margin.bottom + 20, 'text-anchor': 'middle',
+        x: xOf(i), y: height - margin.bottom + (compact ? 16 : 20), 'text-anchor': 'middle',
         fill: '#33505f', 'font-size': 12
       }, row.year + (partial ? '*' : '')));
     });
@@ -294,9 +300,17 @@
   }
 
   function render(animate) {
-    if (!trends) return;
-    const place = trends.locations.find(l => l.id === placeSelect.value);
-    if (!place) { showMessage('Choose a location to see its historical trend.'); return; }
+    if (!trends || dashboard.getTab() !== 'historical') return;
+    const selection = dashboard.getState();
+    if (!selection?.cityId) {
+      showMessage('Choose a location above to see its historical trend.');
+      return;
+    }
+    const place = trends.locations.find(l => l.id === selection.cityId);
+    if (!place) {
+      showMessage('No historical data is available for ' + selection.selected.name + '.');
+      return;
+    }
     const keys = selectedKeys();
     const period = `${String(trends.start_date).slice(0, 4)}–${String(trends.end_date).slice(0, 4)}`;
     const measures = keys.map(k => METRICS[k].label).join(' and ');
@@ -321,9 +335,7 @@
 
   async function load() {
     try {
-      const response = await fetch(DATA_URL, { cache: 'no-store' });
-      if (!response.ok) throw new Error('not found');
-      const data = await response.json();
+      const data = await window.UrbanHeatData.read('history');
       if (!data || !Array.isArray(data.locations) || !data.locations.length ||
         !data.locations.every(l => l && typeof l.id === 'string' && Array.isArray(l.years))) {
         throw new Error('invalid');
@@ -333,14 +345,10 @@
       showMessage('Historical data is unavailable right now. Please try again later.');
       return;
     }
-    placeSelect.replaceChildren();
-    for (const place of trends.locations) placeSelect.add(new Option(`${place.name} (${place.state})`, place.id));
-    const preferred = trends.locations.find(l => l.id === 'melbourne-cbd') || trends.locations[0];
-    placeSelect.value = preferred.id;
     render(true);
   }
 
-  placeSelect.addEventListener('change', () => render(true));
+  window.addEventListener('urbanheat:selection', () => render(true));
   metricSelect.addEventListener('change', () => render(true));
   let resizeTimer = null;
   window.addEventListener('resize', () => {

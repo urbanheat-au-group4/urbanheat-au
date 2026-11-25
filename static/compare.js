@@ -5,12 +5,13 @@
   'use strict';
 
   const core = window.CompareCore;
-  const selects = [1, 2, 3].map(n => document.getElementById('compare-' + n));
+  const dashboard = window.UrbanHeatDashboard;
+  const third = document.getElementById('compare-3');
   const statusBox = document.getElementById('compare-status');
   const notesBox = document.getElementById('compare-notes');
   const tableBox = document.getElementById('compare-table');
   const sourceBox = document.getElementById('compare-source');
-  if (!core || selects.some(select => !select) || !statusBox || !notesBox || !tableBox || !sourceBox) return;
+  if (!core || !third || !statusBox || !notesBox || !tableBox || !sourceBox) return;
 
   let records = [];
   let meta = null;
@@ -19,6 +20,7 @@
     statusBox.textContent = text;
     notesBox.replaceChildren();
     tableBox.replaceChildren();
+    tableBox.removeAttribute('tabindex');
   }
 
   function makeOption(value, text) {
@@ -26,17 +28,6 @@
     option.value = value;
     option.textContent = text;
     return option;
-  }
-
-  // A location already chosen in another box is switched off, so the same one cannot be picked twice.
-  function refreshOptions() {
-    const chosen = selects.map(select => select.value);
-    selects.forEach((select, index) => {
-      Array.from(select.options).forEach(option => {
-        option.disabled = option.value !== '' &&
-          chosen.some((id, other) => other !== index && id === option.value);
-      });
-    });
   }
 
   function makeCell(row, index, firstName) {
@@ -74,7 +65,7 @@
       th.textContent = record.name + ' (' + record.state + ')';
       if (index === 0) {
         const small = document.createElement('small');
-        small.textContent = 'Comparison base';
+        small.textContent = 'Comparison baseline';
         th.append(document.createElement('br'), small);
       }
       headRow.append(th);
@@ -96,6 +87,7 @@
     });
     table.append(body);
     tableBox.replaceChildren(table);
+    tableBox.tabIndex = 0;
   }
 
   function drawNotes(notes) {
@@ -109,18 +101,21 @@
   }
 
   function render() {
-    // If the same location is somehow chosen twice, the later box is cleared.
-    const ids = selects.map(select => select.value);
-    selects.forEach((select, index) => {
-      if (select.value && ids.indexOf(select.value) < index) select.value = '';
-    });
-    refreshOptions();
-
-    const picked = core.uniqueIds(selects.map(select => select.value))
-      .map(id => records.find(record => record.id === id))
-      .filter(Boolean);
-    if (picked.length < core.MIN_LOCATIONS) {
-      showMessage('Choose at least two locations to compare.');
+    if (!meta) return;
+    const {cityId, baselineId, selected, baseline} = dashboard.getState() || {};
+    const sharedIds = [baselineId, cityId];
+    if (third.value && sharedIds.includes(third.value)) third.value = '';
+    for (const option of third.options) option.disabled = sharedIds.includes(option.value);
+    if (dashboard.getTab() !== 'compare') return;
+    if (!cityId || !baselineId) {
+      showMessage('Choose a location and a different baseline above to compare.');
+      return;
+    }
+    const picked = core.uniqueIds([...sharedIds, third.value])
+      .map(id => records.find(record => record.id === id));
+    if (!picked[0] || !picked[1]) {
+      const missing = picked[0] ? selected : baseline;
+      showMessage('Comparison data is unavailable for ' + missing.name + '.');
       return;
     }
     const result = core.compare(picked, meta);
@@ -136,25 +131,12 @@
     return Object.values(data).find(Array.isArray) || [];
   }
 
-  // The second box starts on a Victorian location far enough from the first for the model to tell them apart.
-  function chooseDefaults() {
-    const first = records.find(record => record.id === 'melbourne-cbd') || records[0];
-    const others = records.filter(record => record !== first);
-    const second = others.find(record => record.state === first.state &&
-      core.distanceKm(first, record) >= core.NEAR_KM) || others[0];
-    selects[0].value = first.id;
-    selects[1].value = second ? second.id : '';
-  }
-
   async function load() {
     try {
-      const [dataResponse, seasonsResponse] = await Promise.all([
-        fetch('/static/national_data.json', { cache: 'no-store' }),
-        fetch('/static/national_seasons.json', { cache: 'no-store' })
+      const [data, seasons] = await Promise.all([
+        window.UrbanHeatData.read('map'),
+        window.UrbanHeatData.read('seasons')
       ]);
-      if (!dataResponse.ok || !seasonsResponse.ok) throw new Error('not found');
-      const data = await dataResponse.json();
-      const seasons = await seasonsResponse.json();
       if (!Array.isArray(seasons.locations)) throw new Error('invalid');
       const seasonById = new Map(seasons.locations.map(location => [location.id, location]));
       records = listFrom(data)
@@ -170,20 +152,19 @@
       sourceBox.textContent = 'Source: ' + (seasons.source || data.source) +
         (seasons.model ? ' (model: ' + seasons.model + ')' : '') + ', ' +
         seasons.start_date + ' to ' + seasons.end_date +
-        '. The same period, units and model are used for every location. Values are modelled estimates, ' +
+        '. Values are modelled estimates, ' +
         'not weather station readings. Summer is December to February and winter is June to August.';
     } catch (error) {
       showMessage('Comparison data is unavailable right now. Please try again later.');
       return;
     }
-    selects.forEach((select, index) => {
-      select.replaceChildren(makeOption('', index < 2 ? 'Choose a location' : 'No third location'));
-      records.forEach(record => select.append(makeOption(record.id, record.name + ' (' + record.state + ')')));
-      select.addEventListener('change', render);
-    });
-    chooseDefaults();
+    third.replaceChildren(makeOption('', 'No third location'));
+    records.forEach(record => third.append(makeOption(record.id, record.name + ' (' + record.state + ')')));
+    third.disabled = false;
+    third.addEventListener('change', render);
     render();
   }
 
+  window.addEventListener('urbanheat:selection', render);
   load();
 })();

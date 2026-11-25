@@ -14,13 +14,36 @@
 
 .compare-controls {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: end;
+  max-width: 620px;
   gap: 12px;
   margin: 12px 0;
 }
 
 .compare-controls label {
   margin-top: 0;
+}
+
+#swap-locations {
+  min-height: 44px;
+  padding: 6px 12px;
+  border: 1px solid #60788b;
+  border-radius: 6px;
+  background: #172332;
+  color: #eaf1f7;
+  cursor: pointer;
+}
+
+#swap-locations:disabled {
+  opacity: .6;
+  cursor: default;
+}
+
+.compare-table:focus-visible,
+#swap-locations:focus-visible {
+  outline: 2px solid #9cdef2;
+  outline-offset: 2px;
 }
 
 .compare-notes {

@@ -34,6 +34,7 @@ const LEGEND_WORDS = {
 let points = [];
 let boundaries = [];
 let selected = '';
+let selectionStore;
 let focusLocations = false;
 let dataPeriod = '';
 const focusButton = document.getElementById('focus-samples');
@@ -102,17 +103,16 @@ function stateAverages() {
   return result;
 }
 function focusState(code) {
-  state.value = code;
-  selected = '';
+  if (!selectionStore) return;
+  const wasFocused = focusLocations;
   focusLocations = false;
-  place.value = '';
-  draw();
+  const previous = selectionStore.getState();
+  const current = selectionStore.selectState(code);
+  if (wasFocused && previous.stateCode === current.stateCode && previous.cityId === current.cityId) draw();
 }
 function selectPoint(id) {
   document.getElementById('location-card').open = true;
-  selected = id;
-  place.value = id;
-  draw();
+  selectionStore.update({cityId: id});
 }
 function drawBoundaries(averages, low, high, view) {
   const group = element('g', {'aria-label': 'State and territory boundaries'});
@@ -489,12 +489,7 @@ function showSource(data) {
 
 async function load() {
   try {
-    const response = await fetch('/static/national_data.json', {cache:'no-store'});
-    if (!response.ok) {
-      if (response.status === 404) throw new Error('Climate data has not been added yet.');
-      throw new Error('Climate data is temporarily unavailable. Please try again later.');
-    }
-    const data = await response.json();
+    const data = await window.UrbanHeatData.read('map');
     if (!Array.isArray(data.locations) || !data.locations.length) throw new Error('National data missing');
     showSource(data);
     points = data.locations;
@@ -510,12 +505,28 @@ async function load() {
       option.textContent = STATES[code];
       state.append(option);
     }
-    for (const p of [...points].sort((a,b) => a.name.localeCompare(b.name))) {
+    const locations = [...points].sort((a,b) => a.name.localeCompare(b.name));
+    for (const p of locations) {
       const option = document.createElement('option');
       option.value = p.id;
       option.textContent = p.name + ' (' + p.state + ')';
       place.append(option);
     }
+    selectionStore = window.UrbanHeatDashboard.init(locations, metric.value);
+    let previous = selectionStore.getState();
+    selectionStore.subscribe(current => {
+      const mapChanged = current.stateCode !== previous.stateCode ||
+        current.cityId !== previous.cityId || current.metric !== previous.metric;
+      if (current.stateCode !== previous.stateCode) focusLocations = false;
+      previous = current;
+      if (!mapChanged) return;
+      selected = current.cityId;
+      state.value = current.stateCode;
+      metric.value = current.metric;
+      place.value = selected;
+      if (selected) document.getElementById('location-card').open = true;
+      draw();
+    });
     try {
       const geo = await fetch('/static/australia_states.geojson', {cache:'no-store'});
       if (geo.ok) {
@@ -530,19 +541,16 @@ async function load() {
       document.getElementById('status').textContent += ' · boundary download needed';
     }
   } catch (error) {
-    document.getElementById('status').textContent =
-      error instanceof TypeError ? 'Could not connect to climate data. Check your connection and try again.' : error.message;
+    let message = error.message;
+    if (error.status === 404) message = 'Climate data has not been added yet.';
+    else if (error.status) message = 'Climate data is temporarily unavailable. Please try again later.';
+    else if (error instanceof TypeError) message = 'Could not connect to climate data. Check your connection and try again.';
+    document.getElementById('status').textContent = message;
   }
 }
 state.addEventListener('change', () => focusState(state.value));
-metric.addEventListener('change', draw);
-place.addEventListener('change', () => {
-  if (place.value) document.getElementById('location-card').open = true;
-  selected = place.value;
-  const found = points.find(p => p.id === selected);
-  if (found) state.value = found.state;
-  draw();
-});
+metric.addEventListener('change', () => selectionStore?.selectMetric(metric.value));
+place.addEventListener('change', () => selectionStore?.selectCity(place.value));
 back.addEventListener('click', () => {focusState('ALL'); state.focus();});
 focusButton.addEventListener('click', () => {focusLocations = !focusLocations; draw(); focusButton.focus();});
 load();

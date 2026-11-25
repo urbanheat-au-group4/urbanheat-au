@@ -1,14 +1,13 @@
 (function () {
   'use strict';
 
-  var DATA_URL = '/static/national_seasons.json';
+  var dashboard = window.UrbanHeatDashboard;
   var NS = 'http://www.w3.org/2000/svg';
   var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   var COLOURS = { max: '#b5441f', min: '#1b5f7c' };
 
   var chart = document.getElementById('seasons-chart');
-  var placeSelect = document.getElementById('seasons-place');
-  if (!chart || !placeSelect) { return; }
+  if (!chart) { return; }
 
   var summary = document.getElementById('seasons-summary');
   var legend = document.getElementById('seasons-legend');
@@ -55,14 +54,6 @@
     return used;
   }
 
-  function selectedPlace() {
-    var id = placeSelect.value;
-    for (var i = 0; i < data.locations.length; i += 1) {
-      if (data.locations[i].id === id) { return data.locations[i]; }
-    }
-    return null;
-  }
-
   function showMessage(text) {
     summary.textContent = text;
     chart.innerHTML = '';
@@ -83,13 +74,15 @@
   function drawChart(place, animate) {
     chart.removeAttribute('hidden');
 
-    var width = Math.max(300, Math.round(chart.getBoundingClientRect().width) || 800);
+    var bounds = chart.getBoundingClientRect();
+    var width = Math.max(300, Math.round(bounds.width) || 800);
     var small = width < 520;
-    var height = small ? 340 : 380;
+    var compact = window.matchMedia('(min-width: 1101px)').matches;
+    var height = compact ? Math.round(bounds.height) : (small ? 340 : 380);
     var left = small ? 40 : 56;
     var right = 12;
-    var top = 28;
-    var bottom = 52;
+    var top = compact ? 22 : 28;
+    var bottom = compact ? 38 : 52;
     var plotW = width - left - right;
     var plotH = height - top - bottom;
     chart.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
@@ -110,7 +103,8 @@
     if (hi <= lo) { hi = lo + 5; }
     function y(v) { return top + plotH - ((v - lo) / (hi - lo)) * plotH; }
 
-    for (var t = lo; t <= hi; t += 5) {
+    var step = compact ? Math.max(5, Math.ceil((hi - lo) / 25) * 5) : 5;
+    for (var t = lo; t <= hi; t += step) {
       chart.appendChild(node('line', { x1: left, x2: width - right, y1: y(t), y2: y(t),
         stroke: 'currentColor', 'stroke-opacity': t === 0 ? 0.6 : 0.2 }));
       chart.appendChild(node('text', { x: left - 6, y: y(t) + 4, 'text-anchor': 'end', 'font-size': 12 }, String(t)));
@@ -224,9 +218,15 @@
   }
 
   function render() {
-    var place = selectedPlace();
+    if (!data || dashboard.getTab() !== 'historical') return;
+    var selection = dashboard.getState();
+    if (!selection || !selection.cityId) {
+      showMessage('Choose a location above to see its seasonal climate.');
+      return;
+    }
+    var place = data.locations.find(function (point) { return point.id === selection.cityId; });
     if (!place || !Array.isArray(place.seasons) || !place.seasons.length) {
-      showMessage('No seasonal data is available for this location.');
+      showMessage('No seasonal data is available for ' + selection.selected.name + '.');
       return;
     }
     var period = data.start_date.slice(0, 4) + ' to ' + data.end_date.slice(0, 4);
@@ -256,31 +256,23 @@
   }
 
   function load() {
-    fetch(DATA_URL, { cache: 'no-store' }).then(function (r) {
-      if (!r.ok) { throw new Error('HTTP ' + r.status); }
-      return r.json();
-    }).then(function (json) {
+    window.UrbanHeatData.read('seasons').then(function (json) {
       if (!json || !Array.isArray(json.locations) || !json.locations.length) {
         throw new Error('No locations');
       }
       data = json;
-      placeSelect.innerHTML = data.locations.map(function (p) {
-        return '<option value="' + s(p.id) + '">' + s(p.name) + ' (' + s(p.state) + ')</option>';
-      }).join('');
-      var preferred = data.locations.some(function (p) { return p.id === 'melbourne-cbd'; });
-      placeSelect.value = preferred ? 'melbourne-cbd' : data.locations[0].id;
       render();
     }).catch(function () {
       showMessage('Seasonal data is unavailable right now. Please try again later.');
     });
   }
 
-  placeSelect.addEventListener('change', function () { if (data) { render(); } });
+  window.addEventListener('urbanheat:selection', render);
   var timer = null;
   window.addEventListener('resize', function () {
     clearTimeout(timer);
     timer = setTimeout(function () {
-      if (data) { var p = selectedPlace(); if (p && p.seasons && p.seasons.length) { drawChart(p); } }
+      render();
     }, 150);
   });
   load();

@@ -18,7 +18,7 @@ jobs:
           python-version: '3.12'
       - name: Run Python tests
         run: python -m unittest discover -s tests -p 'test_*.py' -v
-      - name: Check real-data browser test syntax (no real datasets in CI)
+      - name: Check real-data browser test syntax
         run: node --check tests/national_browser_real_data.cjs
       - name: Check JavaScript syntax
         run: node --check static/app.js
@@ -69,11 +69,20 @@ jobs:
           npm run test:cross-state
           npm run test:charts
           npm run test:a11y
+      - name: Test packaged Pages build with real climate data
+        run: |
+          python3 build_site.py --climate-dir data/pages-climate
+          cp _site/static/national_data.json static/national_data.json
+          python3 -m http.server 8001 --bind 127.0.0.1 --directory _site >/tmp/urbanheat-pages.log 2>&1 &
+          sleep 1
+          URBANHEAT_URL=http://127.0.0.1:8001/ npm run test:real-data
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: national-map-browser-evidence
-          path: artifacts/national-map/
+          path: |
+            artifacts/national-map/
+            artifacts/uha-44-real-browser.json
           if-no-files-found: warn
           retention-days: 14
