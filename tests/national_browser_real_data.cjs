@@ -5,6 +5,7 @@ const {chromium} = require('@playwright/test');
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
+const { openLocationCard } = require('./browser_helpers.cjs');
 
 const ROOT = path.join(__dirname, '..');
 const URL = process.env.URBANHEAT_URL || 'http://127.0.0.1:8000/';
@@ -53,6 +54,7 @@ async function main() {
       assert.equal(await page.locator('circle.marker').count(), 14);
       assert.equal(await page.locator('.callout-tag').count(), 14);
       await page.locator('#place').selectOption(sample.id);
+      await openLocationCard(page);
       assert.equal(await page.locator('#place').inputValue(), sample.id);
       const checked = [];
       for (const [field, unit] of METRICS) {
@@ -71,7 +73,6 @@ async function main() {
       await page.locator('#metric').selectOption('annual_mean_c');
       assert.equal(await page.locator('#heat-data-warning').isVisible(), false,
         state + ': stale-data warning shown for real export');
-      await page.locator('#location-card').evaluate(el => {el.open = true;});
       assert.match(await page.locator('#monthly-heat-status').innerText(),
         /average daytime maximum for each month/);
       assert.equal(await page.locator('#monthly-heat-chart circle').count(), 12,

@@ -2,6 +2,7 @@
 // Dataset is a synthetic browser-only fixture. Production snapshots stay untouched.
 const { chromium } = require('@playwright/test');
 const assert = require('node:assert/strict');
+const { openLocationCard } = require('./browser_helpers.cjs');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -59,6 +60,7 @@ async function main() {
       for (const [metric, units, values, mean] of METRICS) {
         await page.locator('#metric').selectOption(metric);
         await page.locator('#place').selectOption(first.id);
+        await openLocationCard(page);
         assert.equal(await page.locator('#place').inputValue(), first.id);
         assert.equal(await page.locator('#state').inputValue(), code);
         const firstText = values(i)[0].toFixed(1) + ' ' + units;
@@ -82,6 +84,7 @@ async function main() {
       // A global location selection must change state and keep one selected ID.
       await page.locator('#back-to-australia').click();
       await page.locator('#place').selectOption(second.id);
+    await openLocationCard(page);
       assert.equal(await page.locator('#state').inputValue(), code);
       assert.equal(await page.locator('#place').inputValue(), second.id);
       assert.ok((await page.locator('#detail').innerText()).includes(second.name));

@@ -48,8 +48,10 @@ async function audit(page, width) {
     await page.keyboard.press(key);
     assert.equal(await place.inputValue(), id,
       `${width}px: ${key} did not select the location`);
-    assert.ok(await page.locator('#location-card').evaluate(card => card.open),
-      `${width}px: ${key} did not open the location details`);
+    // Phones and tablets open the details in the page. On wide screens the
+    // details are a pop-up that stays closed until someone asks for it.
+    assert.equal(await page.locator('#location-card').evaluate(card => card.open), width < 1101,
+      `${width}px: location details should ${width < 1101 ? '' : 'not '}open by themselves`);
     assert.ok(await place.evaluate(select => document.activeElement === select),
       `${width}px: ${key} did not move focus to Find a location`);
   }

@@ -1,6 +1,7 @@
 // I check the two charts using known test data, not made-up production readings.
 const { chromium } = require('@playwright/test');
 const assert = require('node:assert/strict');
+const { openTab, openMoreDetail } = require('./browser_helpers.cjs');
 
 const BASE = process.env.URBANHEAT_URL || 'http://127.0.0.1:8000/';
 
@@ -75,6 +76,8 @@ async function main() {
     await page.waitForFunction(() =>
       document.querySelector('#history-summary')?.textContent?.includes('Melbourne CBD') &&
       document.querySelector('#seasons-summary')?.textContent?.includes('Melbourne CBD'));
+    await openTab(page, 'historical');
+    await openMoreDetail(page, 'hc-legacy');
 
     // The chart should show the right place, units, dates and missing years.
     assert.match(await page.locator('#history-summary').innerText(), /2015–2025/);
@@ -96,6 +99,7 @@ async function main() {
     // The seasonal view should show the four seasons and missing measurements.
     assert.equal(await page.locator('#seasons-chart rect').count(), 4);
     assert.notEqual(await page.locator('#seasons-chart').evaluate(node => getComputedStyle(node).display), 'none');
+    await page.locator('details.seasons-table-more summary').click();
     assert.match(await page.locator('#seasons-table').innerText(), /No data/);
     assert.match(await page.locator('#seasons-limits').innerText(), /cannot be compared/);
     assert.match(await page.locator('#seasons-source').innerText(), /era5/);

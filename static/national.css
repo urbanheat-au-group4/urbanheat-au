@@ -946,3 +946,336 @@ svg :focus-visible {
   #location-card .monthly-heat-table summary { font-size: 12px; padding: 0; }
 }
 
+/* UHA-112: compact desktop Historical and Compare tabs. */
+@media (min-width: 1101px) {
+  #panel-historical:not([hidden]) {
+    flex: 1; min-height: 0;
+    display: grid; gap: 10px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+  }
+  #panel-compare:not([hidden]) {
+    flex: 1; min-height: 0;
+    display: flex; flex-direction: column;
+  }
+  #panel-historical > section, #panel-compare > section {
+    margin: 0; min-height: 0; overflow-y: auto;
+    display: flex; flex-direction: column; padding: 12px 16px;
+  }
+  #panel-compare > section { flex: 1; }
+  #panel-historical > section > *:not(svg), #panel-compare > section > * { flex: none; }
+  #panel-historical h2, #panel-compare h2 { margin: 0 0 4px; }
+  #panel-historical .history-intro, #panel-historical .seasons-intro, #panel-compare .compare-intro { display: none; }
+  #panel-historical .history-controls { margin: 0 0 4px; }
+  #panel-historical label, #panel-compare label { margin: 0 0 3px; font-size: 11px; }
+  #panel-historical select, #panel-compare select { padding: 6px 10px; }
+  #panel-historical .seasons-controls { max-width: none; margin: 0 0 4px; gap: 0; }
+  #panel-historical #history-summary, #panel-historical #seasons-summary { font-size: 12px; line-height: 1.35; margin: 4px 0; }
+  #panel-historical #history-chart, #panel-historical #seasons-chart { flex: 1 1 0; min-height: 200px; height: 0; margin: 0; }
+  #panel-historical .history-legend, #panel-historical .seasons-legend { margin: 6px 0 0; font-size: 11px; gap: 4px 14px; }
+  #panel-historical .history-limits, #panel-historical .seasons-limits { margin: 6px 0 0; padding: 5px 10px; font-size: 11px; line-height: 1.35; max-height: 64px; overflow-y: auto; }
+  #panel-historical .history-table, #panel-historical .seasons-table-more { margin-top: 4px; }
+  #panel-historical .history-table summary, #panel-historical .seasons-table-more summary, #panel-historical .seasons-years summary { font-size: 12px; padding: 3px 0; cursor: pointer; color: #9cdef2; }
+  #panel-historical .seasons-years { margin-top: 0; }
+  #panel-historical .history-source, #panel-historical .seasons-source { font-size: 11px; line-height: 1.3; margin: 4px 0 0; }
+
+  #panel-compare .compare-controls { margin: 0 0 6px; }
+  #panel-compare #compare-status { margin: 4px 0; font-size: 12px; }
+  #panel-compare .compare-notes { margin: 4px 0; gap: 4px; max-height: 96px; overflow-y: auto; }
+  #panel-compare .compare-note { padding: 5px 10px; font-size: 11px; }
+  #panel-compare .compare-table { flex: 1 1 auto; min-height: 120px; overflow: auto; }
+  #panel-compare .compare-table table { min-width: 0; }
+  #panel-compare .compare-table caption { padding: 2px 0 4px; font-size: 12px; }
+  #panel-compare .compare-table th, #panel-compare .compare-table td { padding: 5px 10px; }
+  #panel-compare .compare-table td { font-size: 15px; }
+  #panel-compare .compare-table td small { margin-top: 1px; font-size: 11px; }
+  #panel-compare .compare-source, #panel-compare .compare-limits { font-size: 11px; line-height: 1.3; margin: 4px 0 0; }
+}
+
+/* Short screens (about 790px tall or less): Historical and Compare. */
+@media (min-width: 1101px) and (max-height: 790px) {
+  #panel-historical #history-chart, #panel-historical #seasons-chart { min-height: 130px; }
+  #panel-historical .history-limits, #panel-historical .seasons-limits { max-height: 48px; }
+  #panel-compare .compare-notes { max-height: 70px; }
+  #panel-compare .compare-table caption { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  #panel-compare .compare-table th, #panel-compare .compare-table td { padding: 3px 8px; }
+  #panel-compare .compare-table td { font-size: 14px; }
+  #panel-compare .compare-table thead th { font-size: 13px; }
+}
+
+/* UHA-112: very short screens (about 700px tall or less, e.g. a 1366 x 768 laptop with browser toolbars). */
+@media (min-width: 1101px) and (max-height: 700px) {
+  header { padding-top: 3px; padding-bottom: 3px; }
+  header .brand-home img { height: 32px; }
+  .control-strip { padding: 4px 16px 6px; gap: 10px; }
+  .control-strip label { font-size: 10px; margin-bottom: 1px; }
+  .control-strip select { padding: 4px 10px; }
+  .tab-bar { margin: 5px 0 0; }
+  .tab-bar button { min-height: 32px; padding: 3px 14px; }
+  #panel-historical > section, #panel-compare > section { padding: 8px 14px; }
+  #panel-historical h2, #panel-compare h2 { font-size: 18px; margin: 0 0 2px; }
+  #panel-historical select, #panel-compare select { padding: 4px 10px; }
+  #panel-historical #history-summary, #panel-historical #seasons-summary { font-size: 11px; margin: 3px 0; }
+  #panel-historical .history-legend, #panel-historical .seasons-legend { margin: 4px 0 0; }
+  #panel-historical .history-limits, #panel-historical .seasons-limits { margin: 4px 0 0; padding: 3px 8px; font-size: 10.5px; }
+  #panel-historical .history-table summary, #panel-historical .seasons-table-more summary, #panel-historical .seasons-years summary { padding: 1px 0; font-size: 11.5px; }
+  #panel-historical .history-source, #panel-historical .seasons-source { font-size: 10px; line-height: 1.25; margin: 2px 0 0; }
+  #panel-compare #compare-status { margin: 2px 0; font-size: 11px; }
+  #panel-compare .compare-controls { margin: 0 0 3px; }
+  #panel-compare .compare-table th, #panel-compare .compare-table td { padding: 2px 8px; }
+  #panel-compare .compare-source, #panel-compare .compare-limits { font-size: 10px; margin: 2px 0 0; }
+}
+
+/* UHA-112: Overview right-hand panel, baseline selector and ERA5 badge. */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+table.sr-only { display: block; }
+.app-body, main, #panel-historical, #panel-compare { min-width: 0; }
+
+.control-strip { grid-template-columns: repeat(4, minmax(0, 1fr)) 176px; align-items: end; }
+.era5-badge { margin: 0; padding: 4px 10px; border: 1px solid #4d8a8f; border-radius: 8px; background: #12353b; color: #bff0ec; font-size: 11px; line-height: 1.25; }
+.control-strip select { font-size: 14px; }
+@media (max-width: 1100px) { .control-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } .era5-badge { grid-column: 1 / -1; max-width: none; } }
+@media (max-width: 740px) { .control-strip { grid-template-columns: 1fr; } }
+
+.overview-summary, .monthly-preview, .overview-caveats { margin-top: 14px; }
+.overview-summary h3, .overview-caveats h2, .monthly-preview h2 { margin: 0; }
+.ov-ids { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ov-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+.ov-card { background: #101b29; border: 1px solid #344556; border-radius: 8px; padding: 8px 12px; min-width: 0; }
+.ov-card h3 { font-size: 13px; margin: 0 0 2px; }
+.ov-big { margin: 0; font-size: 22px; font-weight: 700; line-height: 1.15; overflow-wrap: anywhere; }
+.ov-big-selected { color: #ff9a5c; }
+.ov-big-base { color: #5fd0c8; }
+.ov-kpi { margin: 0; font-size: 20px; font-weight: 700; color: #ff9a5c; line-height: 1.2; }
+.ov-kpi.is-empty { color: #9eb2c2; }
+.ov-sub { margin: 0; font-size: 11.5px; line-height: 1.3; color: #a9bccd; }
+.ov-compare { margin-top: 8px; }
+.ov-compare h3 { font-size: 14px; }
+.ov-table { width: 100%; border-collapse: collapse; margin-top: 4px; font-size: 13px; }
+.ov-table th, .ov-table td { padding: 5px 6px; border-bottom: 1px solid #344556; text-align: right; }
+.ov-table th:first-child { text-align: left; font-weight: 600; }
+.ov-table thead th { font-size: 11px; color: #a9bccd; text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+.ov-table tbody td:last-child { font-weight: 700; color: #5fd0c8; }
+.ov-note { margin-top: 4px; }
+.monthly-preview h2, .overview-caveats h2 { font-size: 15px; }
+.monthly-preview > .ov-sub { margin-bottom: 4px; }
+#ov-monthly { display: block; width: 100%; height: auto; background: #101b29; border: 1px solid #344556; border-radius: 8px; }
+.ov-line { fill: none; stroke-width: 2; }
+.ov-line.ov-selected { stroke: #ff9a5c; }
+.ov-line.ov-base { stroke: #5fd0c8; stroke-dasharray: 6 3; }
+.ov-dot.ov-selected { fill: #ff9a5c; }
+.ov-dot.ov-base { fill: #5fd0c8; }
+.ov-grid { stroke: #344556; stroke-width: 1; }
+.ov-axis { fill: #b1c4d5; font-size: 10px; }
+.ov-legend { display: inline-flex; flex-wrap: wrap; gap: 4px 16px; list-style: none; margin: 4px 0 0; padding: 0; font-size: 12px; }
+.ov-legend li { display: flex; align-items: center; gap: 6px; }
+.ov-key { display: inline-block; width: 10px; height: 10px; }
+.ov-key-selected { background: #ff9a5c; border-radius: 50%; }
+.ov-key-base { background: #5fd0c8; }
+.ov-monthly-table { display: inline-block; margin-left: 16px; font-size: 12px; }
+.ov-monthly-table summary { cursor: pointer; color: #9cdef2; }
+.ov-monthly-table table { border-collapse: collapse; margin-top: 4px; }
+.ov-monthly-table th, .ov-monthly-table td { padding: 2px 8px; text-align: right; border-bottom: 1px solid #344556; }
+.ov-monthly-table th:first-child { text-align: left; }
+.overview-caveats ul { margin: 6px 0 0; padding-left: 18px; font-size: 12px; line-height: 1.4; }
+.overview-caveats li + li { margin-top: 2px; }
+
+@media (min-width: 1101px) {
+  #panel-overview {
+    grid-template-columns: minmax(0, 1fr) 430px;
+    grid-template-rows: minmax(0, 1fr) auto auto;
+  }
+  #panel-overview > .layout > .map-panel { grid-column: 1; grid-row: 1; }
+  #panel-overview > .layout > aside { display: none; }
+
+  #panel-overview > #overview-summary {
+    grid-column: 2; grid-row: 1; margin: 0; min-height: 0; overflow: auto;
+    padding: 10px 12px; display: flex; flex-direction: column;
+  }
+  #panel-overview > #monthly-preview {
+    grid-column: 1; grid-row: 2 / span 2; margin: 0; padding: 8px 14px; min-height: 0;
+    display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto minmax(0, 1fr) auto;
+    column-gap: 12px; row-gap: 4px; align-items: baseline;
+  }
+  #monthly-preview > h2 { grid-column: 1; grid-row: 1; }
+  #monthly-preview > .ov-sub:first-of-type { grid-column: 2; grid-row: 1; margin: 0; }
+  #monthly-preview > #ov-monthly { grid-column: 1 / -1; grid-row: 2; align-self: stretch; }
+  #monthly-preview > #ov-monthly-status { grid-column: 1 / -1; grid-row: 2; align-self: start; justify-self: start; z-index: 1; margin: 4px 8px; padding: 2px 8px; background: #101b29; border-radius: 6px; }
+  #monthly-preview > #ov-monthly-status:empty { display: none; }
+  #monthly-preview > .ov-legend { grid-column: 1; grid-row: 3; margin: 0; }
+  #monthly-preview > .ov-monthly-table { grid-column: 2; grid-row: 3; margin: 0; justify-self: end; }
+  #panel-overview > #overview-caveats { grid-column: 2; grid-row: 2; margin: 0; padding: 8px 12px; }
+  #panel-overview > #location-card {
+    grid-column: 2; grid-row: 3; margin: 0; padding: 6px 12px; min-height: 0; overflow: visible; position: relative;
+  }
+  #location-card > summary { font-size: 13px; margin: 0; padding: 2px 0; cursor: pointer; }
+  #location-card[open] > .monthly-heat-grid {
+    position: absolute; bottom: calc(100% + 8px); right: 0; width: 100%; max-height: 62vh; overflow: auto;
+    z-index: 30; background: #172332; border: 1px solid #52677b; border-radius: 12px; padding: 12px 14px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+  }
+  #monthly-preview #ov-monthly { min-height: 0; height: auto; contain: size; }
+}
+
+@media (min-width: 1101px) and (max-height: 820px) {
+  .ov-big { font-size: 19px; }
+  .ov-kpi { font-size: 18px; }
+  .ov-card { padding: 6px 10px; }
+  .ov-kpis, .ov-compare { margin-top: 6px; }
+  .ov-table th, .ov-table td { padding: 3px 6px; }
+  .ov-table { font-size: 12.5px; }
+  .overview-caveats ul { font-size: 11.5px; line-height: 1.3; margin-top: 3px; }
+}
+
+@media (min-width: 1101px) and (max-height: 700px) {
+  .ov-card h3 { font-size: 12px; }
+  .ov-big { font-size: 17px; }
+  .ov-kpi { font-size: 16px; }
+  .ov-sub { font-size: 10.5px; line-height: 1.2; }
+  .ov-compare h3 { font-size: 13px; }
+  .ov-table th, .ov-table td { padding: 2px 6px; }
+  .ov-table { font-size: 12px; }
+  .overview-caveats h2, .monthly-preview h2 { font-size: 13px; }
+  .overview-caveats ul { font-size: 11px; line-height: 1.25; }
+  #panel-overview > #overview-caveats, #panel-overview > #monthly-preview { padding: 6px 12px; }
+}
+
+/* UHA-112: give the map more room on shorter screens. */
+@media (min-width: 1101px) and (max-height: 820px) {
+  .map-footer .note { display: none; }
+  .map-footer { margin-top: 4px; }
+  .heat-annotations { margin: 0 0 4px; }
+  .state-summary { margin-top: 4px; }
+  #monthly-preview h2 { font-size: 13px; }
+  .ov-legend { margin-top: 2px; font-size: 11px; }
+  #overview-caveats ul { margin-top: 2px; }
+  #location-card > summary { font-size: 12.5px; padding: 0; }
+  #panel-overview > #location-card { padding: 4px 12px; }
+}
+
+/* UHA-112: Historical and Compare tabs follow the mockups. */
+.ov-dot.hollow { fill: #101b29; stroke-width: 2; }
+.ov-dot.ov-selected.hollow { stroke: #ff9a5c; }
+.ov-dot.ov-base.hollow { stroke: #5fd0c8; }
+.ov-key-hatch { background: repeating-linear-gradient(45deg, #5fd0c8 0 2px, #10353a 2px 4px); }
+.ov-value { font-size: 9.5px; fill: #e6eef5; }
+.hc-svg { display: block; width: 100%; height: auto; background: #101b29; border: 1px solid #344556; border-radius: 8px; }
+.hc-grid, .cp-grid { display: grid; gap: 12px; }
+.hc-grid > .panel, .cp-grid > .panel { margin: 0; }
+.hc-grid h2, .cp-grid h2 { font-size: 16px; margin: 0 0 2px; }
+.hc-card .ov-legend, .cp-monthly-card .ov-legend { margin-top: 4px; }
+.hc-measures { margin-top: 10px; }
+.hc-sel { color: #ff9a5c; }
+.hc-base { color: #5fd0c8; }
+.hc-data-table th:first-child { text-align: left; }
+.hc-data-table td, .hc-data-table th { text-align: right; }
+.hc-data-table th:first-child { text-align: left; }
+.cp-pair { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin: 6px 0; }
+.cp-name { margin: 0; font-size: 26px; font-weight: 700; }
+.cp-name-selected { color: #ff9a5c; }
+.cp-name-base { color: #5fd0c8; }
+.cp-swap { min-width: 44px; min-height: 44px; border-radius: 50%; border: 1px solid #52677b; background: #101b29; color: #e6eef5; font-size: 22px; cursor: pointer; }
+.cp-swap:hover:not(:disabled) { background: #1d3042; }
+.cp-swap:disabled { opacity: .45; cursor: not-allowed; }
+.cp-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.cp-cards .ov-kpi { font-size: 24px; }
+.cp-prov-list { margin: 4px 0 0; padding-left: 18px; font-size: 12px; line-height: 1.4; }
+.cp-prov-list:empty { display: none; }
+.legacy-detail { margin-top: 12px; padding: 8px 14px; }
+.legacy-detail > summary { cursor: pointer; font-weight: 600; color: #9cdef2; }
+.legacy-detail > section { margin-top: 12px; }
+@media (max-width: 1100px) {
+  .hc-grid, .cp-grid { grid-template-columns: minmax(0, 1fr); }
+  .cp-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hc-svg { height: 220px; }
+  .cp-name { font-size: 22px; }
+}
+
+@media (min-width: 1101px) {
+  #panel-historical:not([hidden]), #panel-compare:not([hidden]) {
+    flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; position: relative;
+  }
+  #panel-historical > .hc-grid {
+    flex: 1; min-height: 0;
+    grid-template-columns: 250px minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+  .hc-context { grid-column: 1; grid-row: 1 / span 2; min-height: 0; overflow: auto; }
+  .hc-card-monthly { grid-column: 2; grid-row: 1; }
+  .hc-card-annual { grid-column: 3; grid-row: 1; }
+  .hc-card-seasons { grid-column: 2; grid-row: 2; }
+  .hc-card-summary { grid-column: 3; grid-row: 2; }
+  .hc-data { grid-column: 1 / -1; grid-row: 3; }
+  .hc-card, .cp-monthly-card { display: flex; flex-direction: column; min-height: 0; overflow: hidden; padding: 10px 14px; }
+  .hc-card .hc-svg, .cp-monthly-card .hc-svg { flex: 1 1 0; min-height: 0; height: 0; contain: size; }
+  .hc-card-summary { overflow: auto; }
+  .hc-data { padding: 8px 14px; }
+  .hc-data .ov-table { margin-top: 2px; }
+
+  #panel-compare > .cp-grid {
+    flex: 1; min-height: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+  .cp-select { grid-column: 1 / -1; grid-row: 1; padding: 8px 14px; }
+  .cp-cards { grid-column: 1 / -1; grid-row: 2; gap: 10px; }
+  .cp-summary { grid-column: 1; grid-row: 3 / span 2; min-height: 0; overflow: auto; }
+  .cp-monthly-card { grid-column: 2; grid-row: 3; }
+  .cp-prov { grid-column: 2; grid-row: 4; }
+  .cp-pair { margin: 2px 0; }
+
+  .legacy-detail { flex: none; margin: 0; padding: 6px 14px; }
+  .legacy-detail[open] {
+    position: absolute; left: 0; right: 0; bottom: 0; max-height: 100%; overflow: auto; z-index: 25;
+    background: #172332; box-shadow: 0 -10px 30px rgba(0, 0, 0, .5);
+  }
+  .legacy-detail[open] > section { margin: 12px 0 0; }
+  #hc-legacy[open]::details-content { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  #hc-legacy[open]::details-content > section { margin: 0; }
+}
+
+@media (min-width: 1101px) and (max-height: 820px) {
+  .hc-grid h2, .cp-grid h2 { font-size: 14px; }
+  .hc-card, .cp-monthly-card { padding: 7px 12px; }
+  .hc-card > .ov-sub:not([role="status"]), .cp-monthly-card > .ov-sub:not([role="status"]) { font-size: 10.5px; }
+  .hc-card .ov-legend, .cp-monthly-card .ov-legend { font-size: 11px; margin-top: 2px; }
+  .hc-context .ov-big { font-size: 18px; }
+  .cp-name { font-size: 20px; }
+  .cp-swap { min-height: 36px; min-width: 40px; font-size: 18px; }
+  .cp-cards .ov-kpi { font-size: 19px; }
+  .cp-cards .ov-card { padding: 6px 12px; }
+  .cp-prov-list { font-size: 11px; line-height: 1.3; }
+}
+
+@media (min-width: 1101px) and (max-height: 700px) {
+  .hc-card > .ov-sub:not([role="status"]), .cp-monthly-card > .ov-sub:not([role="status"]) { display: none; }
+  .cp-select > .ov-sub { display: none; }
+  .hc-data > .ov-sub { display: none; }
+  .hc-data { padding: 6px 12px; }
+  .hc-data .ov-table th, .hc-data .ov-table td { padding: 1px 6px; }
+  .cp-cards .ov-sub { font-size: 10px; }
+}
+
+/* UHA-112: keep the new panel headings and tables compact on desktop (beats the older short-screen heading rules). */
+@media (min-width: 1101px) {
+  .legacy-detail > summary { font-size: 14px; }
+  .hc-measures th, .hc-measures td { padding: 3px 4px; font-size: 12px; }
+  .hc-measures th:first-child { white-space: nowrap; }
+  .hc-context .ov-big { font-size: 18px; }
+}
+@media (min-width: 1101px) and (max-height: 820px) {
+  #panel-historical .hc-grid h2, #panel-compare .cp-grid h2 { font-size: 14px; margin: 0 0 2px; }
+}
+@media (min-width: 1101px) and (max-height: 700px) {
+  #panel-historical .hc-grid h2, #panel-compare .cp-grid h2 { font-size: 13px; }
+  #panel-historical .hc-context h2 { margin-bottom: 0; }
+  .cp-prov-list { font-size: 10.5px; line-height: 1.25; }
+  .cp-prov { padding: 6px 12px; }
+}
+
+/* UHA-112: the older single-location charts, shown on request. */
+@media (min-width: 1101px) {
+  #hc-legacy #history-chart, #hc-legacy #seasons-chart { flex: none; height: auto; min-height: 0; }
+}

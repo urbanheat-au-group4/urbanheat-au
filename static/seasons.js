@@ -85,7 +85,9 @@
 
     var width = Math.max(300, Math.round(chart.getBoundingClientRect().width) || 800);
     var small = width < 520;
-    var height = small ? 340 : 380;
+    var boxHeight = chart.getBoundingClientRect().height;
+    var fitBox = window.matchMedia('(min-width: 1101px)').matches && boxHeight >= 120;
+    var height = fitBox ? Math.round(boxHeight) : (small ? 340 : 380);
     var left = small ? 40 : 56;
     var right = 12;
     var top = 28;

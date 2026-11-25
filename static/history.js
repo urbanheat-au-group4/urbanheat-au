@@ -91,11 +91,13 @@
     function drawChart(place, keys, animate) {
     chart.removeAttribute('hidden');
     pendingGrow = null; 
-    chart.replaceChildren();
     const rows = place.years;
     const width = Math.max(300, Math.min(chart.getBoundingClientRect().width || 800, 1100));
     const small = width < 520;
-    const height = small ? 320 : 420;
+    const boxHeight = chart.getBoundingClientRect().height;
+    const fitBox = window.matchMedia('(min-width: 1101px)').matches && boxHeight >= 120;
+    const height = fitBox ? Math.round(boxHeight) : (small ? 320 : 420);
+    chart.replaceChildren();
     chart.setAttribute('viewBox', `0 0 ${width} ${height}`);
     const margin = { left: small ? 46 : 62, right: 18, top: 20, bottom: small ? 56 : 64 };
     const innerW = width - margin.left - margin.right;
@@ -156,7 +158,7 @@
     });
 
 
-    // Lines and markers sit inside a clip. For the animation the clip starts at zero width and widens.     ← ADD (this whole block)
+    // Lines and markers sit inside a clip. For the animation the clip starts at zero width and widens.
     const revealWidth = width - margin.left + 10;
     const revealRect = s('rect', { x: margin.left - 10, y: 0, width: revealWidth, height: height });
     const clip = s('clipPath', { id: 'history-reveal' });

@@ -5,6 +5,7 @@ const {chromium} = require('@playwright/test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const { openLocationCard } = require('./browser_helpers.cjs');
 
 const url = process.env.URBANHEAT_URL || 'http://127.0.0.1:8000/';
 const artifacts = path.join(__dirname, '..', 'artifacts', 'national-map');
@@ -70,6 +71,7 @@ async function checkState(page, code) {
   await page.locator('.callout-tag[data-location-id="' + firstId + '"]').focus();
   await page.locator('.callout-tag[data-location-id="' + firstId + '"]').press('Enter');
   assert.equal(await page.locator('#place').inputValue(), firstId, code + ': keyboard label selection failed');
+  await openLocationCard(page);
   await check((await page.locator('#detail').innerText()).includes(name),
     code + ': tag did not update detail');
   // Dense Canberra markers overlap. Every labelled location must remain mouse-selectable.

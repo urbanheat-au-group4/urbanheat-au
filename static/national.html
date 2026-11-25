@@ -16,6 +16,8 @@
 <script src="/static/seasons.js" defer></script>
 <script src="/static/compare_core.js" defer></script>
 <script src="/static/compare.js" defer></script>
+<script src="/static/overview_panel.js" defer></script>
+<script src="/static/comparison_panels.js" defer></script>
 <script src="/static/dashboard_tabs.js" defer></script>
 </head>
 <body>
@@ -32,9 +34,13 @@
 <button type="button" data-tab-button="compare">Compare</button>
 </nav>
 <div class="app-body">
-<div class="control-strip" role="group" aria-label="Location and climate measure">
+<div class="control-strip" role="group" aria-label="Location, baseline and climate measure">
 <div class="control"><label for="state">State or territory</label>
 <select id="state"><option value="ALL">All Australia</option></select></div>
+<div class="control"><label for="place">Find a location</label>
+<select id="place"><option value="">Select a location</option></select></div>
+<div class="control"><label for="baseline">Baseline location</label>
+<select id="baseline"></select></div>
 <div class="control"><label for="metric">Climate measure</label>
 <select id="metric">
 <option value="annual_mean_c">Average temperature (°C)</option>
@@ -47,8 +53,7 @@
 <option value="average_annual_rainfall_mm">Annual rainfall (mm)</option>
 <option value="average_days_at_least_35c">Days ≥35°C per year</option>
 </select></div>
-<div class="control"><label for="place">Find a location</label>
-<select id="place"><option value="">Select a location</option></select></div>
+<p class="era5-badge" id="era5-badge" role="status">Loading source details…</p>
 </div>
 <div class="tab-bar" role="tablist" aria-label="Dashboard views">
 <button type="button" role="tab" id="tab-overview" aria-controls="panel-overview" aria-selected="true" data-tab-button="overview">Overview</button>
@@ -81,6 +86,43 @@
 </div>
 </section></section>
 
+<section class="panel overview-summary" id="overview-summary" aria-labelledby="overview-summary-title">
+<h2 class="sr-only" id="overview-summary-title">Selected location compared with the baseline</h2>
+<div class="ov-ids">
+<div class="ov-card"><h3>Selected location</h3><p class="ov-big ov-big-selected" id="ov-selected-name">Choose a location</p><p class="ov-sub" id="ov-selected-sub">Use the map or the location selector</p></div>
+<div class="ov-card"><h3>Baseline location</h3><p class="ov-big ov-big-base" id="ov-baseline-name">Loading…</p><p class="ov-sub" id="ov-baseline-sub"></p></div>
+</div>
+<div class="ov-kpis">
+<div class="ov-card"><h3>Temperature</h3><p class="ov-kpi" id="ov-kpi-temp">—</p><p class="ov-sub">Annual mean</p></div>
+<div class="ov-card"><h3>Rainfall</h3><p class="ov-kpi" id="ov-kpi-rain">—</p><p class="ov-sub">Annual total</p></div>
+<div class="ov-card"><h3>Hot days</h3><p class="ov-kpi" id="ov-kpi-hot">—</p><p class="ov-sub">≥35 °C per year</p></div>
+</div>
+<div class="ov-compare">
+<h3>Selected vs baseline summary</h3>
+<p class="ov-sub" id="ov-compare-sub"></p>
+<table class="ov-table">
+<thead><tr><th scope="col">Measure</th><th scope="col">Baseline</th><th scope="col">Difference</th></tr></thead>
+<tbody id="ov-compare-body"></tbody>
+</table>
+<p class="ov-sub ov-note" id="ov-compare-note"></p>
+</div>
+</section>
+<section class="panel monthly-preview" id="monthly-preview" aria-labelledby="monthly-preview-title">
+<h2 id="monthly-preview-title">Monthly preview</h2>
+<p class="ov-sub">Average daily maximum for each month, 2015–2025, selected and baseline</p>
+<p class="ov-sub" id="ov-monthly-status" role="status"></p>
+<svg id="ov-monthly" viewBox="0 0 640 96" role="img" aria-label="Average daily maximum temperature by month"></svg>
+<ul class="ov-legend"><li><span class="ov-key ov-key-selected" aria-hidden="true"></span><span id="ov-monthly-legend-selected">No location selected</span></li><li><span class="ov-key ov-key-base" aria-hidden="true"></span><span id="ov-monthly-legend-base"></span></li></ul>
+<details class="ov-monthly-table"><summary>View the monthly values</summary><table><tbody id="ov-monthly-values"></tbody></table></details>
+</section>
+<section class="panel overview-caveats" id="overview-caveats" aria-labelledby="overview-caveats-title">
+<h2 id="overview-caveats-title">Interpretation and data caveats</h2>
+<ul>
+<li>ERA5 modelled estimates for 2015–2025, not weather station readings. Differences use the same period and model.</li>
+<li>No 1981–2010 averages are shown. Missing values appear as “No data”, never as zero.</li>
+</ul>
+</section>
+
 <details class="panel monthly-heat" id="location-card">
 <summary id="monthly-heat-title">Selected location: climate details and monthly highs</summary>
 <p>Select a location to see its climate figures and how its average daily maximum temperature changes month by month, based on the 2015–2025 period.</p>
@@ -96,7 +138,62 @@
 </div>
 <div role="tabpanel" id="panel-historical" aria-labelledby="tab-historical" hidden>
 
-<section class="panel history" id="history" aria-labelledby="history-title">   <!-- ADD from here -->
+<div class="hc-grid" id="hc-grid">
+<section class="panel hc-context" aria-labelledby="hc-context-title">
+<h2 id="hc-context-title">Selection context</h2>
+<p class="ov-sub">Selected</p>
+<p class="ov-big ov-big-selected" id="hc-selected-name">Choose a location</p>
+<p class="ov-sub">Baseline</p>
+<p class="ov-big ov-big-base" id="hc-baseline-name">Loading…</p>
+<table class="ov-table hc-measures">
+<thead><tr><th scope="col">Measure</th><th scope="col">Selected</th><th scope="col">Baseline</th></tr></thead>
+<tbody id="hc-context-body"></tbody>
+</table>
+</section>
+<section class="panel hc-card hc-card-monthly" aria-labelledby="hc-monthly-title">
+<h2 id="hc-monthly-title">Monthly maximum temperatures</h2>
+<p class="ov-sub">Average daily maximum for each month, 2015–2025</p>
+<p class="ov-sub" id="hc-monthly-status" role="status"></p>
+<svg id="hc-monthly" class="hc-svg" role="img" aria-label="Average daily maximum temperature by month"></svg>
+<ul class="ov-legend"><li><span class="ov-key ov-key-selected" aria-hidden="true"></span>Selected location</li><li><span class="ov-key ov-key-base" aria-hidden="true"></span>Baseline location (dashed)</li></ul>
+<table class="sr-only"><caption>Monthly maximum temperatures, selected and baseline</caption><tbody id="hc-monthly-values"></tbody></table>
+</section>
+<section class="panel hc-card hc-card-annual" aria-labelledby="hc-annual-title">
+<h2 id="hc-annual-title">Annual trend: 2015–2025</h2>
+<p class="ov-sub" id="hc-annual-status" role="status"></p>
+<svg id="hc-annual" class="hc-svg" role="img" aria-label="Annual mean temperature by year"></svg>
+<ul class="ov-legend"><li><span class="ov-key ov-key-selected" aria-hidden="true"></span>Selected location</li><li><span class="ov-key ov-key-base" aria-hidden="true"></span>Baseline location (dashed)</li></ul>
+<table class="sr-only"><caption>Annual mean temperature by year, selected and baseline</caption><tbody id="hc-annual-values"></tbody></table>
+</section>
+<section class="panel hc-card hc-card-seasons" aria-labelledby="hc-seasons-title">
+<h2 id="hc-seasons-title">Four seasonal comparisons</h2>
+<p class="ov-sub">Typical seasonal maximum, 2015–2025. Only complete seasons are used.</p>
+<p class="ov-sub" id="hc-seasons-status" role="status"></p>
+<svg id="hc-seasons" class="hc-svg" role="img" aria-label="Typical seasonal maximum temperature"></svg>
+<ul class="ov-legend"><li><span class="ov-key ov-key-selected" aria-hidden="true"></span>Selected location (solid)</li><li><span class="ov-key ov-key-hatch" aria-hidden="true"></span>Baseline location (striped)</li></ul>
+<table class="sr-only"><caption>Typical seasonal maximum, selected and baseline</caption><tbody id="hc-seasons-values"></tbody></table>
+</section>
+<section class="panel hc-card hc-card-summary" aria-labelledby="hc-summary-title">
+<h2 id="hc-summary-title">Selected vs baseline summary</h2>
+<p class="ov-sub" id="hc-summary-sub"></p>
+<table class="ov-table">
+<thead><tr><th scope="col">Measure</th><th scope="col">Selected</th><th scope="col">Baseline</th><th scope="col">Difference</th></tr></thead>
+<tbody id="hc-summary-body"></tbody>
+</table>
+<p class="ov-sub ov-note" id="hc-summary-note"></p>
+</section>
+<section class="panel hc-data" aria-labelledby="hc-data-title">
+<h2 id="hc-data-title">Historical comparison data table</h2>
+<table class="ov-table hc-data-table">
+<thead><tr><th scope="col">Location</th><th scope="col">Annual mean</th><th scope="col">Rainfall</th><th scope="col">Hottest 10%</th><th scope="col">Hot days</th></tr></thead>
+<tbody id="hc-table-body"></tbody>
+</table>
+<p class="ov-sub" id="hc-source">Source: Open-Meteo Historical Weather API. Modelled estimates, not weather station readings.</p>
+</section>
+</div>
+<details class="panel legacy-detail" id="hc-legacy"><summary>More detail: single-location trend and seasonal charts</summary>
+
+<section class="panel history" id="history" aria-labelledby="history-title">
 <h2 id="history-title">Historical Trends</h2>
 <p class="history-intro">See how yearly temperatures have varied at one location. Values are modelled estimates, not weather station readings.</p>
 <div class="history-controls">
@@ -126,15 +223,59 @@
   <svg id="seasons-chart" viewBox="0 0 800 380" role="img" aria-label="Bar chart of typical seasonal temperatures"></svg>
   <div id="seasons-legend" class="seasons-legend"></div>
   <p id="seasons-limits" class="seasons-limits"></p>
-  <div id="seasons-table"></div>
+  <details class="seasons-table-more"><summary>View the data as a table</summary><div id="seasons-table"></div></details>
   <details class="seasons-years">
     <summary>Which years are included</summary>
     <div id="seasons-years"></div>
   </details>
   <p id="seasons-source" class="seasons-source"></p>
 </section>
+</details>
 </div>
 <div role="tabpanel" id="panel-compare" aria-labelledby="tab-compare" hidden>
+
+<div class="cp-grid" id="cp-grid">
+<section class="panel cp-select" aria-labelledby="cp-select-title">
+<h2 id="cp-select-title">Two-location comparison selection</h2>
+<div class="cp-pair">
+<p class="cp-name cp-name-selected" id="cp-selected-name">Choose a location</p>
+<button type="button" class="cp-swap" id="cp-swap" aria-label="Swap the selected and baseline locations"><span aria-hidden="true">&#8644;</span></button>
+<p class="cp-name cp-name-base" id="cp-baseline-name">Loading…</p>
+</div>
+<p class="ov-sub" id="cp-sub"></p>
+</section>
+<div class="cp-cards">
+<div class="ov-card"><h3>Temperature difference</h3><p class="ov-kpi" id="cp-temp">—</p><p class="ov-sub">Selected minus baseline, annual mean</p></div>
+<div class="ov-card"><h3>Rainfall difference</h3><p class="ov-kpi" id="cp-rain">—</p><p class="ov-sub">Same yearly units</p></div>
+<div class="ov-card"><h3>Heat-day difference</h3><p class="ov-kpi" id="cp-heat">—</p><p class="ov-sub">Days at or above 35 °C per year</p></div>
+<div class="ov-card"><h3>Extreme-heat difference</h3><p class="ov-kpi" id="cp-extreme">—</p><p class="ov-sub">Average of the hottest 10% of days</p></div>
+</div>
+<section class="panel cp-summary" aria-labelledby="cp-summary-title">
+<h2 id="cp-summary-title">Selected vs baseline summary</h2>
+<p class="ov-sub" id="cp-summary-sub"></p>
+<table class="ov-table">
+<thead><tr><th scope="col">Measure</th><th scope="col">Selected</th><th scope="col">Baseline</th><th scope="col">Difference</th></tr></thead>
+<tbody id="cp-summary-body"></tbody>
+</table>
+</section>
+<section class="panel cp-monthly-card" aria-labelledby="cp-monthly-title">
+<h2 id="cp-monthly-title">Monthly climate comparison</h2>
+<p class="ov-sub">Average daily maximum for each month, 2015–2025</p>
+<p class="ov-sub" id="cp-monthly-status" role="status"></p>
+<svg id="cp-monthly" class="hc-svg" role="img" aria-label="Average daily maximum temperature by month"></svg>
+<ul class="ov-legend"><li><span class="ov-key ov-key-selected" aria-hidden="true"></span>Selected location</li><li><span class="ov-key ov-key-base" aria-hidden="true"></span>Baseline location (dashed)</li></ul>
+<table class="sr-only"><caption>Monthly maximum temperatures, selected and baseline</caption><tbody id="cp-monthly-values"></tbody></table>
+</section>
+<section class="panel cp-prov" aria-labelledby="cp-prov-title">
+<h2 id="cp-prov-title">Data provenance and limitations</h2>
+<ul class="cp-prov-list">
+<li id="cp-source"></li>
+<li id="cp-grid-note">The model works on a grid of about 25 km, so locations closer than that are not ranked against each other. Missing values appear as “No data”, never as zero. No 1981–2010 averages are shown.</li>
+</ul>
+<ul class="cp-prov-list" id="cp-notes"></ul>
+</section>
+</div>
+<details class="panel legacy-detail" id="cp-legacy"><summary>Compare up to three locations (table)</summary>
 
 <section class="panel compare" id="compare" aria-labelledby="compare-title">
   <h2 id="compare-title">Compare Locations</h2>
@@ -150,6 +291,7 @@
   <p id="compare-source" class="compare-source"></p>
   <p class="compare-limits">This compares modelled climate only. It does not show which place is better to live in, because that depends on many things this data does not cover.</p>
 </section>
+</details>
 </div>
 
 <section class="panel footnote" aria-label="Data sources and limitations">

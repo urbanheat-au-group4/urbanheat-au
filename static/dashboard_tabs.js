@@ -21,6 +21,8 @@
       }
     });
     window.dispatchEvent(new CustomEvent('urbanheat:tab', { detail: { tab: tab } }));
+    window.dispatchEvent(new Event('resize'));
+    try { window.sessionStorage.setItem('urbanheat.tab', tab); } catch (error) { /* storage unavailable */ }
   }
 
   buttons.forEach(function (button) {
@@ -45,7 +47,9 @@
     document.getElementById('tab-' + TABS[next]).focus();
   });
 
-  show('overview');
+  var saved = 'overview';
+  try { saved = window.sessionStorage.getItem('urbanheat.tab') || 'overview'; } catch (error) { /* storage unavailable */ }
+  show(saved === 'historical' || saved === 'compare' ? saved : 'overview');
 })();
 (function () {
   // On wide screens the location card sits beside the map, so start it open.

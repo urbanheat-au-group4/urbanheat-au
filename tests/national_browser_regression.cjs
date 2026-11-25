@@ -3,6 +3,7 @@
 // Production climate data and the saved historical snapshots are never modified.
 const { chromium } = require('@playwright/test');
 const assert = require('node:assert/strict');
+const { openLocationCard } = require('./browser_helpers.cjs');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -68,6 +69,7 @@ async function main() {
 
     // Location selection must present the reading belonging to that ID.
     await page.locator('#place').selectOption(vic[0].id);
+    await openLocationCard(page);
     assert.equal(await page.locator('#state').inputValue(), 'VIC');
     assert.match(await page.locator('#detail').innerText(), /20\.5 °C/);
     assert.match(await page.locator('.callout-tag[data-location-id="' + vic[0].id + '"] .callout-value').textContent(), /20\.5 °C/);
@@ -101,8 +103,10 @@ async function main() {
 
     // Unavailable data cannot be shown as numeric zero or a plausible reading.
     await page.locator('#place').selectOption(vic[1].id);
+    await openLocationCard(page);
     assert.match(await page.locator('#monthly-heat-values').innerText(), /33\.0 °C/);
     await page.locator('#place').selectOption(vic[2].id);
+    await openLocationCard(page);
     assert.equal(await page.locator('#monthly-heat-chart').isVisible(), false);
     assert.match(await page.locator('#monthly-heat-status').innerText(), /not available/);
     assert.match(await page.locator('#detail').innerText(), /No data/);
@@ -124,6 +128,7 @@ async function main() {
     await stale.waitForFunction(() => document.querySelector('#status')?.textContent?.includes('112 locations'));
     assert.match(await stale.locator('#heat-data-warning').innerText(), /python3 run\.py/);
     await stale.locator('#place').selectOption(outdated.locations[0].id);
+    await openLocationCard(stale);
     assert.match(await stale.locator('#monthly-heat-status').innerText(), /out of date/);
     await stale.close();
 
