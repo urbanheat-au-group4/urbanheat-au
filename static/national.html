@@ -22,6 +22,7 @@
 <script src="/static/compare.js" defer></script>
 </head>
 <body>
+<a class="skip-link" href="#dashboard-controls">Skip to dashboard controls</a>
 <header>
 <a class="brand-home" href="/"><img src="/static/logo.png" alt="UrbanHeat AU Australia, home" width="66" height="44"></a>
 <button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="site-nav">Menu</button>
@@ -39,7 +40,7 @@
 <h1>Compare climate across Australia</h1>
 <p id="dataset-coverage"></p>
 </div>
-<div class="control-strip" role="group" aria-label="Dashboard selections">
+<div class="control-strip" id="dashboard-controls" role="group" aria-label="Dashboard selections" tabindex="-1">
 <div class="control"><label for="state">State or territory</label>
 <select id="state"><option value="ALL">All Australia</option></select></div>
 <div class="control"><label for="metric">Map measure</label>
@@ -76,13 +77,13 @@
 <h2 class="highlights-title">Quick comparison</h2><div id="highlights" class="highlights" aria-live="polite"></div>
 </aside>
 <section class="panel map-panel">
-<div class="map-heading"><div><h2 id="map-title">Australia · National Overview</h2><button id="back-to-australia" type="button" hidden>← Back to Australia</button><button id="focus-samples" type="button" hidden>Focus sampled locations</button></div><span id="status" role="status">Loading…</span></div>
+<div class="map-heading"><div><h2 id="map-title" tabindex="-1">Australia · National Overview</h2><button id="back-to-australia" type="button" hidden>← Back to Australia</button><button id="focus-samples" type="button" hidden>Focus sampled locations</button></div><span id="status" role="status">Loading…</span></div>
 <p id="sample-coverage-note" class="sample-coverage-note" hidden></p>
 <p class="map-hint">Select a state to zoom in. Use the labelled location boxes to choose places, especially where nearby markers overlap.</p>
-<div id="heat-annotations" class="heat-annotations" aria-label="Climate comparisons by latitude"></div>
+<div id="heat-annotations" class="heat-annotations" role="group" aria-label="Climate comparisons by latitude"></div>
 <svg id="national-map" viewBox="0 0 1000 760" role="group" aria-label="Interactive map of Australian climate locations"></svg>
 <section id="state-locations" class="state-locations" hidden aria-label="Selected state locations"><h3 id="state-locations-title">All locations</h3><div id="state-location-list" class="state-location-list"></div></section>
-<div id="state-summary" class="state-summary" aria-label="State sample averages"></div>
+<div id="state-summary" class="state-summary" role="group" aria-label="State sample averages"></div>
 <div class="map-footer">
 <div class="legend"><span id="low">Cooler</span><span class="gradient"></span><span id="high">Warmer</span></div>
 <p class="note">Location labels and climate bands use modelled data for the period shown below. State shading averages the sampled locations with readings in each state or territory. Colours use the same scale across Australia.</p>
@@ -98,7 +99,7 @@
 <div class="monthly-heat-main" id="monthly-heat-content">
 <p id="monthly-heat-status" role="status" aria-live="polite">Choose a location above to see its monthly temperatures.</p>
 <svg id="monthly-heat-chart" viewBox="0 0 720 250" role="img" aria-label="Average daily maximum temperature by month" hidden></svg>
-<details class="monthly-heat-table"><summary>View the 12 monthly values</summary><div id="monthly-heat-values"></div></details>
+<details class="monthly-heat-table" hidden><summary>View the 12 monthly values</summary><div id="monthly-heat-values"></div></details>
 </div>
 </div>
 </div>
@@ -124,9 +125,9 @@
 <p id="history-summary" class="history-summary" role="status" aria-live="polite">Loading historical data…</p>
 <svg id="history-chart" viewBox="0 0 800 420" role="img" aria-label="Line chart of yearly temperatures"></svg>
 <div id="history-legend" class="history-legend"></div>
-<details class="history-table"><summary>View the data as a table</summary>
+<details class="history-table" hidden><summary>View the data as a table</summary>
 <p id="history-limits" class="history-limits"></p>
-<div id="history-table"></div>
+<div id="history-table" role="region" aria-label="Annual temperature data table" tabindex="0"></div>
 <p id="history-source" class="history-source">Source: Open-Meteo Historical Weather API. Modelled estimates.</p>
 </details>
 </section>
@@ -136,11 +137,11 @@
   <p id="seasons-summary" role="status" aria-live="polite">Loading seasonal data…</p>
   <svg id="seasons-chart" viewBox="0 0 800 380" role="img" aria-label="Bar chart of typical seasonal temperatures"></svg>
   <div id="seasons-legend" class="seasons-legend"></div>
-  <details class="seasons-years">
+  <details class="seasons-years" hidden>
     <summary>View seasonal data and years used</summary>
     <p id="seasons-limits" class="seasons-limits"></p>
-    <div id="seasons-table"></div>
-    <div id="seasons-years"></div>
+    <div id="seasons-table" role="region" aria-label="Typical seasonal values table" tabindex="0"></div>
+    <div id="seasons-years" role="region" aria-label="Seasonal data coverage by year" tabindex="0"></div>
     <p id="seasons-source" class="seasons-source"></p>
   </details>
 </section>

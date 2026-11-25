@@ -13,6 +13,7 @@
   var legend = document.getElementById('seasons-legend');
   var limits = document.getElementById('seasons-limits');
   var table = document.getElementById('seasons-table');
+  var tableDisclosure = table.closest('details');
   var yearsBox = document.getElementById('seasons-years');
   var sourceNote = document.getElementById('seasons-source');
   var data = null;
@@ -62,6 +63,7 @@
     limits.textContent = '';
     table.innerHTML = '';
     yearsBox.innerHTML = '';
+    tableDisclosure.hidden = true;
   }
 
   function node(name, attrs, text) {
@@ -249,6 +251,7 @@
     drawTable(place);
     drawLimits(place);
     drawYears(place);
+    tableDisclosure.hidden = false;
     sourceNote.textContent = 'Source: ' + data.source + ' (' + data.model + '), ' +
       prettyDate(data.start_date) + ' to ' + prettyDate(data.end_date) +
       '. Values are modelled estimates, not weather station readings. Summer is counted in the year it ends, ' +

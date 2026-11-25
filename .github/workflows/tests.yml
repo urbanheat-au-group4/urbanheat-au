@@ -76,6 +76,7 @@ jobs:
           python3 -m http.server 8001 --bind 127.0.0.1 --directory _site >/tmp/urbanheat-pages.log 2>&1 &
           sleep 1
           URBANHEAT_URL=http://127.0.0.1:8001/ npm run test:real-data
+          URBANHEAT_URL=http://127.0.0.1:8001/ URBANHEAT_EXPECT_DATA=1 npm run test:a11y
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
