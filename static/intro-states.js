@@ -24,6 +24,7 @@
     button.addEventListener('click', function () {
       if (typeof points === 'undefined' || !points.length) { return; }
       closeMenu(false);
+      window.UrbanHeatDashboard.show('overview');
       focusState(code);
       var heading = document.getElementById('map-title');
       if (heading) {

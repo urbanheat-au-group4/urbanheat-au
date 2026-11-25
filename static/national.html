@@ -7,6 +7,9 @@
 <link rel="stylesheet" href="/static/history.css">
 <link rel="stylesheet" href="/static/seasons.css">
 <link rel="stylesheet" href="/static/compare.css">
+<script src="/static/dashboard_state.js" defer></script>
+<script src="/static/dashboard_data.js" defer></script>
+<script src="/static/dashboard_tabs.js" defer></script>
 <script src="/static/national_annotations.js" defer></script>
 <script src="/static/national.js" defer></script>
 <script src="/static/intro-states.js" defer></script>
@@ -16,7 +19,6 @@
 <script src="/static/seasons.js" defer></script>
 <script src="/static/compare_core.js" defer></script>
 <script src="/static/compare.js" defer></script>
-<script src="/static/dashboard_tabs.js" defer></script>
 </head>
 <body>
 <header>
@@ -32,10 +34,14 @@
 <button type="button" data-tab-button="compare">Compare</button>
 </nav>
 <div class="app-body">
-<div class="control-strip" role="group" aria-label="Location and climate measure">
+<div class="dashboard-heading">
+<h1>Compare climate across Australia</h1>
+<p id="dataset-coverage"></p>
+</div>
+<div class="control-strip" role="group" aria-label="Dashboard selections">
 <div class="control"><label for="state">State or territory</label>
 <select id="state"><option value="ALL">All Australia</option></select></div>
-<div class="control"><label for="metric">Climate measure</label>
+<div class="control"><label for="metric">Map measure</label>
 <select id="metric">
 <option value="annual_mean_c">Average temperature (°C)</option>
 <option value="annual_average_max_c">Average daytime maximum (°C)</option>
@@ -49,6 +55,8 @@
 </select></div>
 <div class="control"><label for="place">Find a location</label>
 <select id="place"><option value="">Select a location</option></select></div>
+<div class="control"><label for="baseline">Comparison baseline</label>
+<select id="baseline" disabled><option value="">Choose a baseline</option></select></div>
 </div>
 <div class="tab-bar" role="tablist" aria-label="Dashboard views">
 <button type="button" role="tab" id="tab-overview" aria-controls="panel-overview" aria-selected="true" data-tab-button="overview">Overview</button>
@@ -56,9 +64,8 @@
 <button type="button" role="tab" id="tab-compare" aria-controls="panel-compare" aria-selected="false" tabindex="-1" data-tab-button="compare">Compare</button>
 </div>
 <main>
-<div role="tabpanel" id="panel-overview" aria-labelledby="tab-overview">
+<div role="tabpanel" id="panel-overview" aria-labelledby="tab-overview" tabindex="0">
 <section class="intro"><p class="eyebrow">AUSTRALIA · CLIMATE EXPLORER</p>
-<h1>Compare climate across Australia</h1>
 <p>Explore modelled historical weather for <span class="count" data-count="112">112</span> Australian locations. Select a state to explore its <span class="count" data-count="14">14</span> locations and compare regional conditions.</p>
 <div class="intro-tiles" id="intro-tiles" role="group" aria-label="Highlights from the data"></div></section>
 <section class="layout">
@@ -94,13 +101,12 @@
 </div>
 </details>
 </div>
-<div role="tabpanel" id="panel-historical" aria-labelledby="tab-historical" hidden>
+<div role="tabpanel" id="panel-historical" aria-labelledby="tab-historical" tabindex="0" hidden>
 
-<section class="panel history" id="history" aria-labelledby="history-title">   <!-- ADD from here -->
+<section class="panel history" id="history" aria-labelledby="history-title">
 <h2 id="history-title">Historical Trends</h2>
 <p class="history-intro">See how yearly temperatures have varied at one location. Values are modelled estimates, not weather station readings.</p>
 <div class="history-controls">
-<div><label for="history-place">Location</label><select id="history-place"></select></div>
 <div><label for="history-metric">Temperature measure</label>
 <select id="history-metric">
 <option value="both">Compare both measures</option>
@@ -118,10 +124,6 @@
 <section class="panel seasons" id="seasons" aria-labelledby="seasons-title">
   <h2 id="seasons-title">Seasonal Climate Comparison</h2>
   <p class="seasons-intro">Typical weather in each Australian season, from modelled historical estimates (not weather station readings). Summer is December to February, autumn March to May, winter June to August and spring September to November.</p>
-  <div class="seasons-controls">
-    <label for="seasons-place">Location</label>
-    <select id="seasons-place"></select>
-  </div>
   <p id="seasons-summary" role="status" aria-live="polite">Loading seasonal data…</p>
   <svg id="seasons-chart" viewBox="0 0 800 380" role="img" aria-label="Bar chart of typical seasonal temperatures"></svg>
   <div id="seasons-legend" class="seasons-legend"></div>
@@ -134,19 +136,18 @@
   <p id="seasons-source" class="seasons-source"></p>
 </section>
 </div>
-<div role="tabpanel" id="panel-compare" aria-labelledby="tab-compare" hidden>
+<div role="tabpanel" id="panel-compare" aria-labelledby="tab-compare" tabindex="0" hidden>
 
 <section class="panel compare" id="compare" aria-labelledby="compare-title">
   <h2 id="compare-title">Compare Locations</h2>
-  <p class="compare-intro">Choose two or three locations to see their historical climate side by side. All figures use the same period and model, and are modelled estimates, not weather station readings.</p>
+  <p class="compare-intro">Choose a location and a baseline above to compare their modelled climate. You can add a third location here.</p>
   <div class="compare-controls">
-    <div><label for="compare-1">Location 1</label><select id="compare-1"></select></div>
-    <div><label for="compare-2">Location 2</label><select id="compare-2"></select></div>
-    <div><label for="compare-3">Location 3 (optional)</label><select id="compare-3"></select></div>
+    <div><label for="compare-3">Third location (optional)</label><select id="compare-3" disabled></select></div>
+    <button id="swap-locations" type="button" disabled>Swap location and baseline</button>
   </div>
   <p id="compare-status" role="status" aria-live="polite">Loading comparison data…</p>
   <div id="compare-notes" class="compare-notes"></div>
-  <div id="compare-table" class="compare-table"></div>
+  <div id="compare-table" class="compare-table" role="region" aria-label="Climate comparison table"></div>
   <p id="compare-source" class="compare-source"></p>
   <p class="compare-limits">This compares modelled climate only. It does not show which place is better to live in, because that depends on many things this data does not cover.</p>
 </section>

@@ -86,9 +86,9 @@
     }).length;
     var period = data.start_date && data.end_date
       ? ' (' + data.start_date.slice(0, 4) + '\u2013' + data.end_date.slice(0, 4) + ')' : '';
-    add(box, 'small', 'intro-tiles-note', available
+    document.getElementById('dataset-coverage').textContent = available
       ? 'Modelled climate estimates for ' + available + ' of ' + data.locations.length + ' locations' + period + '.'
-      : 'Historical climate readings are unavailable. The map shows the location catalogue.');
+      : 'Historical climate readings are unavailable.';
 
     if (reduceMotion || !('IntersectionObserver' in window) || !counters.length) { return; }
     counters.forEach(function (c) {
@@ -106,10 +106,7 @@
     watcher.observe(box);
   }
 
-  fetch('/static/national_data.json', { cache: 'no-store' }).then(function (response) {
-    if (!response.ok) { throw new Error('HTTP ' + response.status); }
-    return response.json();
-  }).then(function (data) {
+  window.UrbanHeatData.read('map').then(function (data) {
     if (!data || !Array.isArray(data.locations) || !data.locations.length) { throw new Error('No locations'); }
     build(data);
   }).catch(function () {

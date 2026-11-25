@@ -1,10 +1,20 @@
 // UHA-112: switches between the Overview, Historical and Compare views.
 (function () {
   'use strict';
-  var TABS = ['overview', 'historical', 'compare'];
+  var TABS = window.UrbanHeatState.TABS;
   var buttons = document.querySelectorAll('[data-tab-button]');
+  var baseline = document.getElementById('baseline');
+  var swap = document.getElementById('swap-locations');
+  var currentTab = 'overview';
+  var store;
+
+  function notify(selection) {
+    window.dispatchEvent(new CustomEvent('urbanheat:selection', {detail: selection}));
+  }
 
   function show(tab) {
+    if (!TABS.includes(tab)) return;
+    currentTab = tab;
     TABS.forEach(function (name) {
       document.getElementById('panel-' + name).hidden = name !== tab;
     });
@@ -20,8 +30,36 @@
         button.removeAttribute('aria-current');
       }
     });
-    window.dispatchEvent(new CustomEvent('urbanheat:tab', { detail: { tab: tab } }));
+    document.querySelector('main').scrollTop = 0;
+    if (store) store.selectTab(tab);
+    else notify(null);
   }
+
+  function init(locations, metric) {
+    store = window.UrbanHeatState.newStore(locations, {tab: currentTab, metric: metric});
+    locations.forEach(function (point) {
+      baseline.add(new Option(point.name + ' (' + point.state + ')', point.id));
+    });
+    baseline.disabled = false;
+    baseline.addEventListener('change', function () { store.selectBaseline(baseline.value); });
+    swap.addEventListener('click', function () { store.swap(); });
+    store.subscribe(function (selection) {
+      baseline.value = selection.baselineId;
+      for (var option of baseline.options) {
+        option.disabled = !!selection.cityId && option.value === selection.cityId;
+      }
+      swap.disabled = !selection.cityId || !selection.baselineId;
+      notify(selection);
+    });
+    return store;
+  }
+
+  window.UrbanHeatDashboard = {
+    init: init,
+    show: show,
+    getState: function () { return store ? store.getState() : null; },
+    getTab: function () { return currentTab; }
+  };
 
   buttons.forEach(function (button) {
     button.addEventListener('click', function () {

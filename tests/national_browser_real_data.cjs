@@ -19,6 +19,38 @@ const METRICS = [
   ['hottest_day_c', '°C'],
 ];
 
+async function checkViews(page) {
+  for (const [width, height] of [[1440, 900], [1366, 768]]) {
+    await page.setViewportSize({width, height});
+    const overflow = await page.locator('main').evaluate(main => main.scrollHeight - main.clientHeight);
+    assert.ok(overflow <= 2, 'Overview needs scrolling at ' + width + '×' + height);
+    assert.ok(await page.getByRole('heading', {level: 1}).isVisible());
+  }
+
+  // These locations exercise readings that were missing from an earlier Pages release.
+  await page.locator('#place').selectOption('tas-launceston');
+  await page.locator('#baseline').selectOption('nt-timber-creek');
+  await page.locator('#tab-historical').click();
+  await page.getByText(/Launceston \(TAS\), 2015–2025/).first().waitFor();
+  assert.match(await page.locator('#seasons-summary').innerText(), /Launceston/);
+  assert.ok(await page.locator('#history-chart').isVisible());
+  assert.ok(await page.locator('#seasons-chart').isVisible());
+
+  await page.locator('#tab-compare').click();
+  assert.match(await page.locator('#compare-table caption').innerText(), /Timber Creek, Launceston/);
+  await page.locator('#compare-3').selectOption('sydney');
+  assert.match(await page.locator('#compare-table caption').innerText(), /Timber Creek, Launceston, Sydney/);
+  assert.doesNotMatch(await page.locator('#compare-table').innerText(), /No data/);
+  await page.setViewportSize({width: 390, height: 844});
+  const overflow = await page.evaluate(() =>
+    document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  assert.ok(overflow <= 2, 'Compare causes horizontal page scrolling on mobile');
+  await page.locator('#tab-overview').click();
+  assert.equal(await page.locator('#state').inputValue(), 'TAS');
+  assert.equal(await page.locator('#place').inputValue(), 'tas-launceston');
+  assert.equal(await page.locator('#baseline').inputValue(), 'nt-timber-creek');
+}
+
 async function main() {
   const data = JSON.parse(fs.readFileSync(path.join(ROOT, 'static', 'national_data.json'), 'utf8'));
   assert.equal(data.count, 112, 'No complete real-data map export: run python3 run.py --check first');
@@ -87,9 +119,11 @@ async function main() {
         state + ': monthly data table does not match export');
       report.states.push({state, location: sample.id, metrics: checked, monthly_points: 12});
     }
+    await checkViews(page);
+    report.dashboard_views = 'Selection, baseline, charts, comparison and viewport checks passed';
     assert.deepEqual(report.problems, [], 'Unexpected browser JavaScript errors');
     report.passed = true;
-    console.log('PASS: real data and rendered values match across eight jurisdictions');
+    console.log('PASS: real data and rendered values match across eight jurisdictions and dashboard tabs');
   } catch (error) {
     report.problems.push(String(error.stack || error));
     throw error;

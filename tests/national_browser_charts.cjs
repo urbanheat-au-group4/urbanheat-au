@@ -71,7 +71,17 @@ async function main() {
   try {
     const page = await browser.newPage({viewport: {width: 1440, height: 900}});
     page.on('pageerror', error => errors.push(error.message));
+    const requests = [];
+    page.on('request', request => {
+      const file = new URL(request.url()).pathname.split('/').at(-1);
+      if (['national_data.json', 'national_history.json', 'national_seasons.json'].includes(file)) requests.push(file);
+    });
     await start(page);
+    await page.locator('#place').selectOption('melbourne-cbd');
+    await page.locator('#tab-overview').press('ArrowRight');
+    assert.equal(await page.locator('#tab-historical').getAttribute('aria-selected'), 'true');
+    assert.ok(await page.locator('#tab-historical').evaluate(tab => tab === document.activeElement));
+    assert.ok(await page.locator('#panel-overview').isHidden());
     await page.waitForFunction(() =>
       document.querySelector('#history-summary')?.textContent?.includes('Melbourne CBD') &&
       document.querySelector('#seasons-summary')?.textContent?.includes('Melbourne CBD'));
@@ -87,20 +97,40 @@ async function main() {
     assert.match(await page.locator('#history-table').innerText(), /300 of 365 days/);
     assert.match(await page.locator('#history-source').innerText(), /era5/);
 
-    // Change the location and measure. The chart and table must follow.
-    await page.locator('#history-place').selectOption('sydney');
-    assert.match(await page.locator('#history-summary').innerText(), /Sydney/);
-    await page.locator('#history-metric').selectOption('average_max_c');
-    assert.match(await page.locator('#history-table').innerText(), /30.0/);
-
     // The seasonal view should show the four seasons and missing measurements.
     assert.equal(await page.locator('#seasons-chart rect').count(), 4);
     assert.notEqual(await page.locator('#seasons-chart').evaluate(node => getComputedStyle(node).display), 'none');
     assert.match(await page.locator('#seasons-table').innerText(), /No data/);
     assert.match(await page.locator('#seasons-limits').innerText(), /cannot be compared/);
     assert.match(await page.locator('#seasons-source').innerText(), /era5/);
-    await page.locator('#seasons-place').selectOption('sydney');
+    // One location selector changes both charts. A catalogue entry without chart data stays empty.
+    await page.locator('#place').selectOption('darwin');
+    assert.match(await page.locator('#history-summary').innerText(), /No historical data.*Darwin/);
+    assert.match(await page.locator('#seasons-summary').innerText(), /No seasonal data.*Darwin/);
+    await page.locator('#place').selectOption('sydney');
+    assert.match(await page.locator('#history-summary').innerText(), /Sydney/);
     assert.match(await page.locator('#seasons-summary').innerText(), /Sydney/);
+    await page.locator('#history-metric').selectOption('average_max_c');
+    assert.match(await page.locator('#history-table').innerText(), /30.0/);
+
+    // Carry the selected location and baseline across tabs, including after a swap.
+    await page.locator('#baseline').selectOption('melbourne-cbd');
+    await page.locator('#tab-historical').press('End');
+    assert.ok(await page.locator('#panel-compare').isVisible());
+    assert.match(await page.locator('#compare-table caption').innerText(), /Melbourne CBD, Sydney/);
+    assert.match(await page.locator('#compare-table th').nth(1).innerText(), /Melbourne CBD.*baseline/s);
+    await page.locator('#swap-locations').click();
+    assert.equal(await page.locator('#place').inputValue(), 'melbourne-cbd');
+    assert.equal(await page.locator('#baseline').inputValue(), 'sydney');
+    assert.match(await page.locator('#compare-table caption').innerText(), /Sydney, Melbourne CBD/);
+    await page.locator('#tab-compare').press('Home');
+    assert.ok(await page.locator('#panel-overview').isVisible());
+    assert.match(await page.locator('#detail').innerText(), /Melbourne CBD/);
+    await page.locator('#tab-historical').click();
+    assert.match(await page.locator('#history-summary').innerText(), /Melbourne CBD/);
+    assert.match(await page.locator('#seasons-summary').innerText(), /Melbourne CBD/);
+    assert.equal(await page.locator('#baseline').inputValue(), 'sydney');
+    assert.deepEqual(requests.sort(), ['national_data.json', 'national_history.json', 'national_seasons.json']);
 
     // Check both charts still fit on a phone and the selects work by keyboard.
     await page.setViewportSize({width: 390, height: 844});
@@ -113,15 +143,13 @@ async function main() {
     const overflow = await page.evaluate(() =>
       document.documentElement.scrollWidth - document.documentElement.clientWidth);
     assert.ok(overflow <= 2, 'Charts overflow the mobile screen by ' + overflow + 'px');
-    await page.locator('#history-place').focus();
-    await page.locator('#history-place').press('Home');
-    assert.equal(await page.locator('#history-place').inputValue(), 'melbourne-cbd');
     await page.close();
 
     // Visitors should not be told to run Python when chart data is unavailable.
     const failed = await browser.newPage();
     failed.on('pageerror', error => errors.push(error.message));
     await start(failed, true);
+    await failed.locator('#tab-historical').click();
     await failed.waitForFunction(() =>
       document.querySelector('#history-summary')?.textContent?.includes('unavailable right now') &&
       document.querySelector('#seasons-summary')?.textContent?.includes('unavailable right now'));

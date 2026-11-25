@@ -4,7 +4,7 @@
 (function () {
   'use strict';
 
-  const DATA_URL = '/static/national_history.json';
+  const dashboard = window.UrbanHeatDashboard;
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const METRICS = {
     annual_mean_c: {
@@ -17,7 +17,6 @@
     }
   };
 
-  const placeSelect = document.getElementById('history-place');
   const metricSelect = document.getElementById('history-metric');
   const chart = document.getElementById('history-chart');
   const summary = document.getElementById('history-summary');
@@ -25,7 +24,7 @@
   const limits = document.getElementById('history-limits');
   const tableBox = document.getElementById('history-table');
   const sourceNote = document.getElementById('history-source');
-  if (!placeSelect || !metricSelect || !chart || !summary) return;
+  if (!metricSelect || !chart || !summary) return;
 
   let trends = null;
 
@@ -294,9 +293,17 @@
   }
 
   function render(animate) {
-    if (!trends) return;
-    const place = trends.locations.find(l => l.id === placeSelect.value);
-    if (!place) { showMessage('Choose a location to see its historical trend.'); return; }
+    if (!trends || dashboard.getTab() !== 'historical') return;
+    const selection = dashboard.getState();
+    if (!selection?.cityId) {
+      showMessage('Choose a location above to see its historical trend.');
+      return;
+    }
+    const place = trends.locations.find(l => l.id === selection.cityId);
+    if (!place) {
+      showMessage('No historical data is available for ' + selection.selected.name + '.');
+      return;
+    }
     const keys = selectedKeys();
     const period = `${String(trends.start_date).slice(0, 4)}–${String(trends.end_date).slice(0, 4)}`;
     const measures = keys.map(k => METRICS[k].label).join(' and ');
@@ -321,9 +328,7 @@
 
   async function load() {
     try {
-      const response = await fetch(DATA_URL, { cache: 'no-store' });
-      if (!response.ok) throw new Error('not found');
-      const data = await response.json();
+      const data = await window.UrbanHeatData.read('history');
       if (!data || !Array.isArray(data.locations) || !data.locations.length ||
         !data.locations.every(l => l && typeof l.id === 'string' && Array.isArray(l.years))) {
         throw new Error('invalid');
@@ -333,14 +338,10 @@
       showMessage('Historical data is unavailable right now. Please try again later.');
       return;
     }
-    placeSelect.replaceChildren();
-    for (const place of trends.locations) placeSelect.add(new Option(`${place.name} (${place.state})`, place.id));
-    const preferred = trends.locations.find(l => l.id === 'melbourne-cbd') || trends.locations[0];
-    placeSelect.value = preferred.id;
     render(true);
   }
 
-  placeSelect.addEventListener('change', () => render(true));
+  window.addEventListener('urbanheat:selection', () => render(true));
   metricSelect.addEventListener('change', () => render(true));
   let resizeTimer = null;
   window.addEventListener('resize', () => {

@@ -1,5 +1,4 @@
-// Shared, read-only loader for the three existing UrbanHeat national exports.
-// Zero DOM changes: Dale's UI chooses how and when to display the returned data.
+// Shared loader for the three UrbanHeat national exports.
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.UrbanHeatData = factory();
@@ -11,6 +10,23 @@
     history: '/static/national_history.json',
     seasons: '/static/national_seasons.json'
   });
+  const requests = new Map();
+
+  async function fetchExport(name, fetcher) {
+    const response = await fetcher(FILES[name], {cache: 'no-store'});
+    if (!response || !response.ok) {
+      const error = new Error('HTTP ' + (response?.status || 'unknown'));
+      error.status = response?.status;
+      throw error;
+    }
+    return response.json();
+  }
+
+  // Share each request within the page. A missing chart file must not block the map.
+  function read(name) {
+    if (!requests.has(name)) requests.set(name, fetchExport(name, fetch));
+    return requests.get(name);
+  }
 
   function assertExport(data, label) {
     if (!data || !Array.isArray(data.locations)) {
@@ -101,11 +117,8 @@
     const names = Object.keys(FILES);
     // Start all three requests together, not three sequential network round trips.
     const documents = await Promise.all(names.map(async name => {
-      let response;
       try {
-        response = await fetcher(FILES[name], { cache: 'no-store' });
-        if (!response || !response.ok) throw new Error('HTTP ' + (response?.status || 'unknown'));
-        return await response.json();
+        return await fetchExport(name, fetcher);
       } catch (error) {
         throw new Error(name + ' export could not be loaded: ' + error.message);
       }
@@ -113,5 +126,5 @@
     return makeBundle(...documents);
   }
 
-  return Object.freeze({ FILES, makeBundle, load });
+  return Object.freeze({ FILES, makeBundle, load, read });
 }));

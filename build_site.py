@@ -14,7 +14,8 @@ OUT = ROOT / "_site"
 ASSETS = (
     "national.css", "history.css", "seasons.css", "compare.css",
     "national_annotations.js", "national.js", "intro-states.js", "intro.js",
-    "intro-tiles.js", "history.js", "seasons.js", "compare_core.js", "compare.js", "dashboard_tabs.js",
+    "intro-tiles.js", "history.js", "seasons.js", "compare_core.js", "compare.js",
+    "dashboard_state.js", "dashboard_data.js", "dashboard_tabs.js",
     "logo.png", "BG.jpg", "australia_states.geojson", *EXPORTS.values(),
 )
 
