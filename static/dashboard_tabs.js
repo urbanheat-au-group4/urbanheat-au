@@ -71,10 +71,13 @@
     document.querySelector('main').scrollTop = 0;
     if (store) store.selectTab(tab);
     else notify(null);
+    try { window.sessionStorage.setItem('urbanheat.tab', tab); } catch (error) { /* storage unavailable */ }
   }
 
   function init(locations, metric) {
     store = window.UrbanHeatState.newStore(locations, {tab: currentTab, metric: metric});
+    var savedBaseline = '';
+    try { savedBaseline = window.sessionStorage.getItem('urbanheat.baseline') || ''; } catch (error) { /* storage unavailable */ }
     locations.forEach(function (point) {
       baseline.add(new Option(point.name + ' (' + point.state + ')', point.id));
     });
@@ -83,12 +86,14 @@
     swap.addEventListener('click', function () { store.swap(); });
     store.subscribe(function (selection) {
       baseline.value = selection.baselineId;
+      try { window.sessionStorage.setItem('urbanheat.baseline', selection.baselineId || ''); } catch (error) { /* storage unavailable */ }
       for (var option of baseline.options) {
         option.disabled = !!selection.cityId && option.value === selection.cityId;
       }
       swap.disabled = !selection.cityId || !selection.baselineId;
       notify(selection);
     });
+    if (savedBaseline && locations.some(function (point) { return point.id === savedBaseline; })) store.selectBaseline(savedBaseline);
     return store;
   }
 
@@ -121,7 +126,9 @@
     document.getElementById('tab-' + TABS[next]).focus();
   });
 
-  show('overview');
+  var saved = 'overview';
+  try { saved = window.sessionStorage.getItem('urbanheat.tab') || 'overview'; } catch (error) { /* storage unavailable */ }
+  show(TABS.includes(saved) ? saved : 'overview');
 })();
 (function () {
   // On wide screens the location card sits beside the map, so start it open.
