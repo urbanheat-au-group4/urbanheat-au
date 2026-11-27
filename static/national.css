@@ -818,7 +818,6 @@ svg :focus-visible {
 /* UHA-112: shared control strip above the tabs. */
 .control-strip {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   padding: 10px max(20px, calc((100% - 1180px) / 2));
   background: #101b29;
@@ -831,12 +830,6 @@ svg :focus-visible {
 
 .control-strip select {
   padding: 8px 10px;
-}
-
-@media (max-width: 740px) {
-  .control-strip {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* UHA-112: compact desktop Overview. One screen, no page scroll. */
@@ -859,8 +852,6 @@ svg :focus-visible {
   #panel-overview {
     flex: 1; min-height: 0;
     display: grid; gap: 10px;
-    grid-template-columns: minmax(0, 1fr) 450px;
-    grid-template-rows: auto minmax(0, 1fr);
   }
   #panel-overview[hidden] { display: none; }
   #panel-overview > .intro { display: none; }
@@ -869,8 +860,6 @@ svg :focus-visible {
     grid-column: 1; grid-row: 1 / span 2; margin: 0; min-height: 0;
     display: flex; flex-direction: column; padding: 12px 16px;
   }
-  #panel-overview > .layout > aside { grid-column: 2; grid-row: 1; padding: 12px 16px; }
-  #panel-overview > #location-card { grid-column: 2; grid-row: 2; margin: 0; min-height: 0; overflow: auto; padding: 12px 16px; }
 
   .map-panel > * { flex: none; }
   .map-panel #national-map { flex: 1 1 0; min-height: 0; height: 0; max-width: none; width: 100%; }
@@ -882,19 +871,7 @@ svg :focus-visible {
   .map-footer { margin-top: 6px; }
   .map-footer .note { font-size: 11px; line-height: 1.3; margin: 0; }
 
-  aside .heat-helper { margin: 0 0 6px; }
-  aside .highlights-title { margin: 6px 0; }
-  aside .highlights { grid-template-columns: 1fr 1fr; }
-  aside .highlights > div { padding: 8px; }
-
-  aside .heat-helper { display: none; }
-  aside .highlights > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 8px; }
-  aside .highlights span { flex: 1 0 100%; }
-  aside .highlights strong { margin: 2px 0; flex: 1 1 auto; }
-  aside .highlights b { font-size: 17px; }
-
   /* Location card beside the map: details above, monthly chart below. */
-  #location-card > summary { font-size: 15px; padding: 0; margin: 0 0 6px; }
   #location-card > p { display: none; }
   #location-card .monthly-heat-grid { grid-template-columns: 1fr; gap: 6px; }
   #location-card .detail { font-size: 13px; line-height: 1.45; }
@@ -917,11 +894,6 @@ svg :focus-visible {
 
 /* Shorter laptop screens such as 1366 x 768: tighten spacing a little more. */
 @media (min-width: 1101px) and (max-height: 820px) {
-  #panel-overview > .layout > aside { padding: 8px 14px; }
-  aside .highlights-title { font-size: 13px; margin: 0 0 4px; }
-  aside .highlights > div { padding: 5px 8px; }
-  #panel-overview > #location-card { padding: 8px 14px; }
-  #location-card > summary { margin-bottom: 2px; }
   #location-card .detail { line-height: 1.3; }
   #location-card .detail strong { font-size: 15px; }
   #location-card .extreme-detail { margin: 4px 0; padding: 5px 10px; line-height: 1.3; }
@@ -931,12 +903,6 @@ svg :focus-visible {
 
 /* Short screens (about 790px tall or less, including 1366 x 768): squeeze the right column further. */
 @media (min-width: 1101px) and (max-height: 790px) {
-  aside .highlights-title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  aside .highlights > div { padding: 4px 8px; }
-  aside .highlights span { font-size: 10px; }
-  aside .highlights strong { font-size: 13px; }
-  aside .highlights b { font-size: 15px; }
-  #location-card > summary { font-size: 14px; }
   #location-card .detail { font-size: 12px; line-height: 1.25; }
   #location-card .detail strong { font-size: 14px; }
   #location-card .extreme-detail { margin: 3px 0; padding: 4px 8px; line-height: 1.25; }
@@ -948,22 +914,6 @@ svg :focus-visible {
 
 /* UHA-112: compact desktop Historical and Compare tabs. */
 @media (min-width: 1101px) {
-  #panel-historical:not([hidden]) {
-    flex: 1; min-height: 0;
-    display: grid; gap: 10px;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr);
-  }
-  #panel-compare:not([hidden]) {
-    flex: 1; min-height: 0;
-    display: flex; flex-direction: column;
-  }
-  #panel-historical > section, #panel-compare > section {
-    margin: 0; min-height: 0; overflow-y: auto;
-    display: flex; flex-direction: column; padding: 12px 16px;
-  }
-  #panel-compare > section { flex: 1; }
-  #panel-historical > section > *:not(svg), #panel-compare > section > * { flex: none; }
   #panel-historical h2, #panel-compare h2 { margin: 0 0 4px; }
   #panel-historical .history-intro, #panel-historical .seasons-intro, #panel-compare .compare-intro { display: none; }
   #panel-historical .history-controls { margin: 0 0 4px; }
@@ -1012,7 +962,6 @@ svg :focus-visible {
   .control-strip select { padding: 4px 10px; }
   .tab-bar { margin: 5px 0 0; }
   .tab-bar button { min-height: 32px; padding: 3px 14px; }
-  #panel-historical > section, #panel-compare > section { padding: 8px 14px; }
   #panel-historical h2, #panel-compare h2 { font-size: 18px; margin: 0 0 2px; }
   #panel-historical select, #panel-compare select { padding: 4px 10px; }
   #panel-historical #history-summary, #panel-historical #seasons-summary { font-size: 11px; margin: 3px 0; }
@@ -1035,7 +984,6 @@ table.sr-only { display: block; }
 .era5-badge { margin: 0; padding: 4px 10px; border: 1px solid #4d8a8f; border-radius: 8px; background: #12353b; color: #bff0ec; font-size: 11px; line-height: 1.25; }
 .control-strip select { font-size: 14px; }
 @media (max-width: 1100px) { .control-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } .era5-badge { grid-column: 1 / -1; max-width: none; } }
-@media (max-width: 740px) { .control-strip { grid-template-columns: 1fr; } }
 
 .overview-summary, .monthly-preview, .overview-caveats { margin-top: 14px; }
 .overview-summary h3, .overview-caveats h2, .monthly-preview h2 { margin: 0; }

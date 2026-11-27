@@ -412,7 +412,6 @@
     var detail = $('detail');
     if (detail) { new MutationObserver(render).observe(detail, { childList: true, characterData: true, subtree: true }); }
     $('cp-swap').addEventListener('click', swap);
-    document.addEventListener('urbanheat:tab', function () { setTimeout(render, 60); });
     Array.prototype.forEach.call(document.querySelectorAll('.legacy-detail'), function (d) {
       d.addEventListener('toggle', function () { window.dispatchEvent(new Event('resize')); });
     });

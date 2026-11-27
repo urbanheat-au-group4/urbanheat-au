@@ -51,8 +51,3 @@
   try { saved = window.sessionStorage.getItem('urbanheat.tab') || 'overview'; } catch (error) { /* storage unavailable */ }
   show(saved === 'historical' || saved === 'compare' ? saved : 'overview');
 })();
-(function () {
-  // On wide screens the location card sits beside the map, so start it open.
-  var card = document.getElementById('location-card');
-  if (card && window.matchMedia('(min-width: 1101px)').matches) card.open = true;
-})();
