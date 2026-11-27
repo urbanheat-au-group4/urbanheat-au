@@ -69,6 +69,7 @@ jobs:
           npm run test:cross-state
           npm run test:charts
           npm run test:a11y
+          npm run test:dashboard
       - name: Test packaged Pages build with real climate data
         run: |
           python3 build_site.py --climate-dir data/pages-climate

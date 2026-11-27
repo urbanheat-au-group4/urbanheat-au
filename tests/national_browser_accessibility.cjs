@@ -157,6 +157,7 @@ async function main() {
     const page = await browser.newPage({reducedMotion: 'reduce'});
     const errors = [];
     page.on('pageerror', e => errors.push(e.message));
+    await page.addInitScript(() => { try { window.sessionStorage.clear(); } catch (error) { /* storage unavailable */ } });
     for (const width of [320, 390, 768, 1366, 1440]) {
       await audit(page, width);
     }
